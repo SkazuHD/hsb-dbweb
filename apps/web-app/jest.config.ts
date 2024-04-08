@@ -1,9 +1,9 @@
 /* eslint-disable */
 export default {
-  displayName: 'hsb-dbweb',
+  displayName: 'web-app',
   preset: '../../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
-  coverageDirectory: '../../coverage/apps/hsb-dbweb',
+  coverageDirectory: '../../coverage/apps/web-app',
   transform: {
     '^.+\\.(ts|mjs|js|html)$': [
       'jest-preset-angular',
