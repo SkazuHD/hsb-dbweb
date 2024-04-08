@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import {Component, inject} from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { NxWelcomeComponent } from './nx-welcome.component';
+import {ApiServiceService} from "./services/api-service.service";
 
 @Component({
   standalone: true,
@@ -10,5 +11,6 @@ import { NxWelcomeComponent } from './nx-welcome.component';
   styleUrl: './app.component.scss',
 })
 export class AppComponent {
+  apiService = inject(ApiServiceService);
   title = 'hsb-dbweb';
 }

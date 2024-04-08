@@ -10,6 +10,10 @@ import * as process from "process";
 const app = express();
 
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
+app.use((req, res, next) => {
+  res.appendHeader('Access-Control-Allow-Origin', '*');
+  next();
+})
 
 app.get('/api', (req, res) => {
   res.send({ message: 'Welcome to express-api!' });
