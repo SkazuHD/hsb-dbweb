@@ -6,8 +6,21 @@ import * as process from "process";
 import * as argon2 from "@node-rs/argon2";
 
 const app = express();
+app.use(express.json());
 
+
+
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
+app.use((err : Error, req: Request, res:Response, next: NextFunction) => {
+  console.error(err.stack);
+  res.status(500).send({message: err.message ? err.message : 'Something broke!'});
+})
+app.use((req: Request, res:Response, next: NextFunction) => {
+  res.appendHeader('Access-Control-Allow-Origin', '*');
+  next();
+})
 app.get('/api', (req: Request, res: Response) => {
+  console.log(res.getHeaders())
   res.send({ message: 'Express API Work!' });
 });
 
@@ -48,15 +61,4 @@ const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}/api`);
 });
 
-app.use(express.json());
 
-app.use((req: Request, res:Response, next: NextFunction) => {
-  res.appendHeader('Access-Control-Allow-Origin', '*');
-  next();
-})
-
-app.use('/assets', express.static(path.join(__dirname, 'assets')));
-app.use((err : Error, req: Request, res:Response, next: NextFunction) => {
-  console.error(err.stack);
-  res.status(500).send({message: err.message ? err.message : 'Something broke!'});
-})
