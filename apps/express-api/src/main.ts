@@ -4,14 +4,22 @@ import { NextFunction, Request, Response } from "express";
 import * as path from 'path';
 import * as process from "process";
 import * as argon2 from "@node-rs/argon2";
+import serverLess from 'serverless-http';
 
 const app = express();
+const router = express.Router();
 
-app.get('/api', (req: Request, res: Response) => {
+router.use(express.json());
+
+
+router.get('/', (req: Request, res: Response) => {
   res.send({ message: 'Express API Work!' });
 });
+router.get('/hello', (req: Request, res: Response) => {
+  res.send({ message: 'Hello World!' });
+});
 
-app.post('/api/login', (req: Request, res: Response) => {
+router.post('/login', (req: Request, res: Response) => {
   const {username, password} = req.body;
   if (!username || !password) {
     res.status(400).send({message: 'Missing username or password'})
@@ -25,7 +33,7 @@ app.post('/api/login', (req: Request, res: Response) => {
   }
   res.status(200).send({message: 'Login successful'})
 })
-app.post('/api/register', async (req: Request, res: Response) => {
+router.post('/register', async (req: Request, res: Response) => {
   const {username, password} = req.body;
   if (!username || !password) {
     res.status(400).send({message: 'Missing username or password'})
@@ -36,27 +44,31 @@ app.post('/api/register', async (req: Request, res: Response) => {
 
   res.status(201)
 })
-app.get('/api/error', (req: Request, res:Response, next: NextFunction) => {
+router.get('/error', (req: Request, res:Response, next: NextFunction) => {
   next(new Error('Test error'));
 });
-app.get('/api/*', (req: Request, res: Response) => {
+router.get('/*', (req: Request, res: Response) => {
   res.status(404).send({ message: 'Not Found' });
 });
+
+router.use((req: Request, res:Response, next: NextFunction) => {
+  res.appendHeader('Access-Control-Allow-Origin', '*');
+  next();
+})
+
+router.use((err : Error, req: Request, res:Response, next: NextFunction) => {
+  console.error(err.stack);
+  res.status(500).send({message: err.message ? err.message : 'Something broke!'});
+})
+
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
+
+app.use('/api/', router);
+
 
 const port = process.env.PORT;
 const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}/api`);
 });
 
-app.use(express.json());
-
-app.use((req: Request, res:Response, next: NextFunction) => {
-  res.appendHeader('Access-Control-Allow-Origin', '*');
-  next();
-})
-
-app.use('/assets', express.static(path.join(__dirname, 'assets')));
-app.use((err : Error, req: Request, res:Response, next: NextFunction) => {
-  console.error(err.stack);
-  res.status(500).send({message: err.message ? err.message : 'Something broke!'});
-})
+export const handler = serverLess(app);
