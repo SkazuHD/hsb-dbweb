@@ -6,3 +6,10 @@
   from = "/api/*"
   status = 200
   to = "/.netlify/functions/main/:splat"
+[build]
+  functions = "apps/express-api/src"
+[dev]
+  base = "/"
+  command = "nx run express-api:serve"
+  framework = "#custom"
+  targetPort = 4201
