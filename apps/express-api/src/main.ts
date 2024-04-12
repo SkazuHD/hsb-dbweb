@@ -10,8 +10,10 @@ const app = express();
 const router = express.Router();
 
 router.use(express.json());
-
-
+router.use((req: Request, res:Response, next: NextFunction) => {
+  res.appendHeader('Access-Control-Allow-Origin', '*');
+  next();
+})
 router.get('/', (req: Request, res: Response) => {
   res.send({ message: 'Express API Work!' });
 });
@@ -51,10 +53,7 @@ router.get('/*', (req: Request, res: Response) => {
   res.status(404).send({ message: 'Not Found' });
 });
 
-router.use((req: Request, res:Response, next: NextFunction) => {
-  res.appendHeader('Access-Control-Allow-Origin', '*');
-  next();
-})
+
 
 router.use((err : Error, req: Request, res:Response, next: NextFunction) => {
   console.error(err.stack);
@@ -62,6 +61,8 @@ router.use((err : Error, req: Request, res:Response, next: NextFunction) => {
 })
 
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
+
+
 
 app.use('/api/', router);
 
