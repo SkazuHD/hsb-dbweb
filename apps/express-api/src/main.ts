@@ -53,8 +53,6 @@ router.get('/*', (req: Request, res: Response) => {
   res.status(404).send({ message: 'Not Found' });
 });
 
-
-
 router.use((err : Error, req: Request, res:Response, next: NextFunction) => {
   console.error(err.stack);
   res.status(500).send({message: err.message ? err.message : 'Something broke!'});
@@ -62,14 +60,12 @@ router.use((err : Error, req: Request, res:Response, next: NextFunction) => {
 
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
-
-
 app.use('/api/', router);
-
 
 const port = process.env.PORT;
 const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}/api`);
 });
 
+module.exports.handler = serverLess(app);
 export const handler = serverLess(app);
