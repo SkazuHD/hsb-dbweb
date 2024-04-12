@@ -67,5 +67,6 @@ const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}/api`);
 });
 
+module.exports = app;
 module.exports.handler = serverLess(app);
 export const handler = serverLess(app);
