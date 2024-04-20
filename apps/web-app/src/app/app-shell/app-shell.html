@@ -1,0 +1,51 @@
+<mat-sidenav-container class="@container">
+  <mat-sidenav mode="over" position="end" #sidenav class="px-12">
+    <mat-nav-list>
+      @for (link of links; track link) {
+      <a
+        mat-list-item
+        routerLink="{{link.route}}"
+        [class]="link.isInToolbar? '@lg:!hidden':''"
+      ><span class="flex gap-3 align-middle"><mat-icon>{{link.icon}}</mat-icon>{{link.label}}</span></a
+      >
+      }
+    </mat-nav-list>
+    <mat-list>
+      <mat-list-item>
+        <mat-slide-toggle (change)="onToggleTheme()" [formControl]="themeToggle" #darkModeSwitch> {{themeToggle.value === true ? 'Dark Mode': 'Light Mode'}}</mat-slide-toggle>
+      </mat-list-item>
+    </mat-list>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <div class="h-svh">
+      <mat-toolbar class="">
+        <div class="flex max-w-4xl !w-full mx-auto py-2 gap-4">
+          <button class="aspect-square" id="logo">
+            <img
+              ngSrc="assets/logo.jpg"
+              alt="logo"
+              width="50"
+              height="50"
+              priority
+            />
+          </button>
+          <mat-nav-list class="!hidden @lg:!flex !gap-3">
+            @for (link of links; track link) { @if ( link.isInToolbar){
+            <a mat-list-item routerLink="{{link.route}}" class="!w-auto">{{link.label}}</a>
+            } }
+          </mat-nav-list>
+          <span class="flex-auto"></span>
+          <span class="self-center flex-auto @lg:flex-[2_2_auto]">TITLE</span>
+          <button
+            mat-button
+            (click)="sidenav.toggle()"
+            class="self-center justify-self-end"
+          >
+            <mat-icon>menu</mat-icon>
+          </button>
+        </div>
+      </mat-toolbar>
+      <ng-content> </ng-content>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>
