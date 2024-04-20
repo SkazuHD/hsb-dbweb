@@ -6,6 +6,7 @@ const config: import('tailwindcss').Config = {
     join(__dirname, 'src/**/!(*.stories|*.spec).{ts,html}'),
     ...createGlobPatternsForDependencies(__dirname),
   ],
+  darkMode: 'selector',
   theme: {
     extend: {
       colors: {
@@ -14,11 +15,9 @@ const config: import('tailwindcss').Config = {
         custom_red: '#A30800',
         custom_yellow: '#F6AE2D',
       },
-      }
     },
-  plugins: [
-    require('@tailwindcss/container-queries'),
-  ],
+  },
+  plugins: [require('@tailwindcss/container-queries')],
 };
 
 export default config;
