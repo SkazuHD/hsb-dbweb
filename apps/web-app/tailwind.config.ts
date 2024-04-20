@@ -7,8 +7,15 @@ const config: import('tailwindcss').Config = {
     ...createGlobPatternsForDependencies(__dirname),
   ],
   theme: {
-    extend: {},
-  },
+    extend: {
+      colors: {
+        custom_dark: '#17191C',
+        custom_jet: '#313036',
+        custom_red: '#A30800',
+        custom_yellow: '#F6AE2D',
+      },
+      }
+    },
   plugins: [],
 };
 
