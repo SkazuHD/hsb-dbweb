@@ -16,7 +16,9 @@ const config: import('tailwindcss').Config = {
       },
       }
     },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/container-queries'),
+  ],
 };
 
 export default config;
