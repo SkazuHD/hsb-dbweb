@@ -1,3 +1,18 @@
 <app-shell>
   <router-outlet></router-outlet>
+  <app-article
+    [article]="{
+      title: 'Some Example',
+      author: 'author',
+      content: 'remove me asap when routing is implemented',
+      subtitle: 'subtitle',
+      date: '2024-04-26',
+      image: {
+        url: 'https://i.ytimg.com/vi/8u_LOAN9Su0/maxresdefault.jpg',
+        alt: 'alt'
+      },
+      id: '1'
+    }"
+  >
+  </app-article>
 </app-shell>

@@ -9,13 +9,8 @@ import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
 import { MatToolbar } from '@angular/material/toolbar';
 import { MatSlideToggle } from '@angular/material/slide-toggle';
+import { AppLink } from '../types/types';
 
-type AppLink = {
-  label: string;
-  route: string;
-  icon?: string;
-  isInToolbar?: boolean;
-};
 @Component({
   selector: 'app-shell',
   standalone: true,

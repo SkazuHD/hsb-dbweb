@@ -6,20 +6,29 @@
         mat-list-item
         routerLink="{{link.route}}"
         [class]="link.isInToolbar? '@lg:!hidden':''"
-      ><span class="flex gap-3 align-middle"><mat-icon>{{link.icon}}</mat-icon>{{link.label}}</span></a
+        ><span class="flex gap-3 align-middle"
+          ><mat-icon>{{link.icon}}</mat-icon>{{link.label}}</span
+        ></a
       >
       }
     </mat-nav-list>
     <mat-list>
       <mat-list-item>
-        <mat-slide-toggle (change)="onToggleTheme()" [formControl]="themeToggle" #darkModeSwitch> {{themeToggle.value === true ? 'Dark Mode': 'Light Mode'}}</mat-slide-toggle>
+        <mat-slide-toggle
+          (change)="onToggleTheme()"
+          [formControl]="themeToggle"
+          #darkModeSwitch
+        >
+          {{themeToggle.value === true ? 'Dark Mode':
+          'LightMode'}}</mat-slide-toggle
+        >
       </mat-list-item>
     </mat-list>
   </mat-sidenav>
   <mat-sidenav-content>
     <div class="h-svh">
       <mat-toolbar class="">
-        <div class="flex max-w-4xl !w-full mx-auto py-2 gap-4">
+        <div class="flex max-w-screen-2xl !w-full mx-auto py-2 gap-4">
           <button class="aspect-square" id="logo">
             <img
               ngSrc="assets/logo.jpg"
@@ -29,14 +38,31 @@
               priority
             />
           </button>
-          <mat-nav-list class="!hidden @lg:!flex !gap-3">
-            @for (link of links; track link) { @if ( link.isInToolbar){
-            <a mat-list-item routerLink="{{link.route}}" class="!w-auto">{{link.label}}</a>
-            } }
-          </mat-nav-list>
+          <nav>
+            <mat-nav-list
+              id="menu"
+              class="!hidden @lg:!flex !gap-3"
+              role="menu"
+              aria-labelledby="menubutton"
+            >
+              @for (link of links; track link) { @if ( link.isInToolbar){
+              <a
+                mat-list-item
+                routerLink="{{link.route}}"
+                class="!w-auto"
+                role="menuitem"
+                >{{link.label}}</a
+              >
+              } }
+            </mat-nav-list>
+          </nav>
           <span class="flex-auto"></span>
           <span class="self-center flex-auto @lg:flex-[2_2_auto]">TITLE</span>
           <button
+            id="menubutton"
+            aria-haspopup="menu"
+            aria-controls="menu"
+            aria-label="menu"
             mat-button
             (click)="sidenav.toggle()"
             class="self-center justify-self-end"
@@ -45,7 +71,9 @@
           </button>
         </div>
       </mat-toolbar>
-      <ng-content> </ng-content>
+      <main class="@container max-w-screen-2xl mx-auto @sm:p-2 @md:p-3 @lg:p-4">
+        <ng-content> </ng-content>
+      </main>
     </div>
   </mat-sidenav-content>
 </mat-sidenav-container>
