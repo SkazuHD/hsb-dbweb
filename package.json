@@ -17,6 +17,7 @@
     "@angular/platform-browser": "17.3.3",
     "@angular/platform-browser-dynamic": "17.3.3",
     "@angular/router": "17.3.3",
+    "@angular/service-worker": "17.3.3",
     "@netlify/functions": "^2.6.0",
     "@nx/angular": "18.3.3",
     "axios": "^1.6.8",
@@ -37,6 +38,7 @@
     "@angular/compiler-cli": "17.3.3",
     "@angular/language-service": "17.3.3",
     "@angular/material": "^17.3.3",
+    "@angular/pwa": "^17.3.6",
     "@node-rs/argon2": "^1.8.0",
     "@nx/eslint": "18.3.3",
     "@nx/eslint-plugin": "18.3.3",
@@ -77,4 +79,3 @@
     "webpack-cli": "5.1.4"
   }
 }
-
