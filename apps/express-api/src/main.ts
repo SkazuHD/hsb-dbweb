@@ -5,6 +5,16 @@ import * as process from 'process';
 import serverLess from 'serverless-http';
 import { sseConnections, sseMiddleware, SSEResponse } from './sse';
 
+import { initializeApp } from 'firebase-admin/app';
+
+const firebaseConfig = {
+  apiKey: 'AIzaSyAQ2p-heYZkI-vhLOuEoZB3dtLnM-Xcd_Y',
+  authDomain: 'hsb-dbweb.firebaseapp.com',
+  projectId: 'hsb-dbweb',
+  storageBucket: 'hsb-dbweb.appspot.com',
+};
+const firebase = initializeApp(firebaseConfig);
+
 const app = express();
 const router = express.Router();
 
@@ -21,8 +31,12 @@ app
 router
   .use(express.json())
   .use((req: Request, res: Response, next: NextFunction) => {
-    res.appendHeader('Access-Control-Allow-Origin', '*');
-    //res.flushHeaders();
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200'); // replace with your Angular app's URL
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+    );
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
     next();
   })
   .use((err: Error, req: Request, res: Response, next: NextFunction) => {
@@ -50,6 +64,7 @@ app
 //API routes
 router
   .get('/', (req: Request, res: Response) => {
+    console.log(req.header('Authorization'));
     res.send({ message: 'Express API Work!' });
   })
   .get('/hello', (req: Request, res: Response) => {

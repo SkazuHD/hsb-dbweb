@@ -1,16 +1,19 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { map, Observable, retry, RetryConfig } from 'rxjs';
+import {inject, Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {map, Observable, retry, RetryConfig} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ApiServiceService {
-  constructor(private http: HttpClient) {
-    http.get('http://127.0.0.1:4201/api').subscribe((data) => {
+  private http: HttpClient = inject(HttpClient);
+
+  constructor() {
+    this.http.get('http://127.0.0.1:4201/api').subscribe((data) => {
       console.log(data);
     });
   }
+
   private constructSSERequest(url: string) {
     const retryConfig: RetryConfig = {
       delay: 1000,
