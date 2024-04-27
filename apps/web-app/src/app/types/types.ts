@@ -16,6 +16,7 @@ export type AppLink = {
   route: string;
   icon?: string;
   isInToolbar?: boolean;
+  requiresAuth: boolean;
 };
 
 export type InfoText = {

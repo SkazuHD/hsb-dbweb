@@ -83,9 +83,68 @@ body.dark{
 /* You can add global styles to this file, and also import other style files */
 
 html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+body {
+  --mat-dialog-headline-padding: 9px 24px !important;
+  margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 *, *::after, *::before { box-sizing: border-box; }
+
+a {
+  @apply underline text-blue-600 hover:text-blue-800 visited:text-purple-600
+}
+
+.mat-mdc-snack-bar-container.error > *{
+  background: #a30800 #{!important};
+  .mat-mdc-snack-bar-label{
+    color: white #{!important};
+  }
+  .mat-mdc-snack-bar-action{
+    color: white #{!important};
+  }
+  color: white #{!important};
+}
+
+.mat-mdc-snack-bar-container.success > *{
+  background: forestgreen #{!important};
+  .mat-mdc-snack-bar-label{
+    color: white #{!important};
+  }
+  .mat-mdc-snack-bar-action{
+    color: white #{!important};
+  }
+  color: white #{!important};
+}
+
+.mat-mdc-snack-bar-container.warn > *{
+  background: #f07224 #{!important};
+  .mat-mdc-snack-bar-label{
+    color: white #{!important};
+  }
+  .mat-mdc-snack-bar-action{
+    color: white #{!important};
+  }
+  color: white #{!important};
+}
+.mat-mdc-snack-bar-container.info > *{
+  .mat-mdc-snack-bar-label{
+    color: white #{!important};
+  }
+  .mat-mdc-snack-bar-action{
+    color: white #{!important};
+  }
+  color: white #{!important};
+}
+.dark{
+  .mat-mdc-snack-bar-container.info > *{
+    .mat-mdc-snack-bar-label{
+      color: black #{!important};
+    }
+    .mat-mdc-snack-bar-action{
+      color: black #{!important};
+    }
+    color: black #{!important};
+  }
+}
 
 // Typography for markdown content
 .markdown {

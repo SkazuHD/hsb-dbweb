@@ -1,14 +1,12 @@
-import { inject, Injectable, OnInit } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Meta } from '@angular/platform-browser';
 import { Article } from '../types/types';
 
 @Injectable({
   providedIn: 'root',
 })
-export class MetatagService implements OnInit {
+export class MetatagService {
   private meta: Meta = inject(Meta);
-
-  ngOnInit(): void {}
 
   addTagsForArticle(article: Article): void {
     const tags = [

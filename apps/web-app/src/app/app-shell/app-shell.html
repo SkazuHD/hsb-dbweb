@@ -1,15 +1,49 @@
 <mat-sidenav-container class="@container">
   <mat-sidenav mode="over" position="end" #sidenav class="px-12">
     <mat-nav-list>
+      @if (authService.user()) {
+        <a
+          mat-list-item
+          (click)="authService.logout()"
+          routerLink=""
+          class="!w-auto"
+        >
+        <span class="flex gap-3 align-middle"
+        ><mat-icon>logout</mat-icon>Sign Out</span
+        >
+        </a>
+      } @else {
+        <a
+          mat-list-item
+          (click)="authService.requestLoginDialog()"
+          class="!w-auto"
+          routerLink=""
+        >
+        <span class="flex gap-3 align-middle">
+          <mat-icon>login</mat-icon>Sign In
+        </span>
+        </a>
+      }
       @for (link of links; track link) {
-      <a
-        mat-list-item
-        routerLink="{{link.route}}"
-        [class]="link.isInToolbar? '@lg:!hidden':''"
-        ><span class="flex gap-3 align-middle"
-          ><mat-icon>{{link.icon}}</mat-icon>{{link.label}}</span
-        ></a
-      >
+        @if (!link.requiresAuth || authService.user()) {
+          <a
+            mat-list-item
+            routerLink="{{link.route}}"
+            [class]="link.isInToolbar? '@lg:!hidden':''"
+          ><span class="flex gap-3 align-middle"
+          ><mat-icon>{{ link.icon }}</mat-icon>
+            {{ link.label }}</span
+          ></a>
+        } @else {
+          <a
+            mat-list-item
+            (click)="authService.requestLoginDialog()"
+            [class]="link.isInToolbar? '@lg:!hidden':''"
+          ><span class="flex gap-3 align-middle"
+          ><mat-icon>{{ link.icon }}</mat-icon>
+            {{ link.label }}</span
+          ></a>
+        }
       }
     </mat-nav-list>
     <mat-list>
@@ -17,11 +51,12 @@
         <mat-slide-toggle
           (change)="onToggleTheme()"
           [formControl]="themeToggle"
-          #darkModeSwitch
-        >
-          {{themeToggle.value === true ? 'Dark Mode':
-          'LightMode'}}</mat-slide-toggle
-        >
+          #darkModeSwitch>
+          {{
+            themeToggle.value === true ? 'Dark Mode' :
+              'LightMode'
+          }}
+        </mat-slide-toggle>
       </mat-list-item>
     </mat-list>
   </mat-sidenav>
@@ -35,25 +70,25 @@
               alt="logo"
               width="50"
               height="50"
-              priority
-            />
+              priority/>
           </button>
-          <nav>
+          <nav class="!hidden @lg:!block">
             <mat-nav-list
               id="menu"
               class="!hidden @lg:!flex !gap-3"
               role="menu"
-              aria-labelledby="menubutton"
-            >
-              @for (link of links; track link) { @if ( link.isInToolbar){
-              <a
-                mat-list-item
-                routerLink="{{link.route}}"
-                class="!w-auto"
-                role="menuitem"
-                >{{link.label}}</a
-              >
-              } }
+              aria-labelledby="menubutton">
+              @for (link of links; track link) {
+                @if (link.isInToolbar) {
+                  <a
+                    mat-list-item
+                    routerLink="{{link.route}}"
+                    class="!w-auto"
+                    role="menuitem"
+                  >{{ link.label }}</a
+                  >
+                }
+              }
             </mat-nav-list>
           </nav>
           <span class="flex-auto"></span>
@@ -65,15 +100,13 @@
             aria-label="menu"
             mat-button
             (click)="sidenav.toggle()"
-            class="self-center justify-self-end"
-          >
+            class="self-center justify-self-end">
             <mat-icon>menu</mat-icon>
           </button>
         </div>
       </mat-toolbar>
-      <main class="@container max-w-screen-2xl mx-auto @sm:p-2 @md:p-3 @lg:p-4">
-        <ng-content> </ng-content>
-      </main>
+      <ng-content></ng-content>
+      <router-outlet></router-outlet>
     </div>
   </mat-sidenav-content>
 </mat-sidenav-container>

@@ -1,15 +1,17 @@
-import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
-import { CommonModule, NgOptimizedImage } from '@angular/common';
-import { RouterLink, RouterOutlet } from '@angular/router';
-import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
-import { MatList, MatListItem, MatNavList } from '@angular/material/list';
-import { MatCheckbox } from '@angular/material/checkbox';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatButton, MatIconButton } from '@angular/material/button';
-import { MatIcon } from '@angular/material/icon';
-import { MatToolbar } from '@angular/material/toolbar';
-import { MatSlideToggle } from '@angular/material/slide-toggle';
-import { AppLink } from '../types/types';
+import {AfterViewInit, Component, ElementRef, inject, ViewChild,} from '@angular/core';
+import {CommonModule, NgOptimizedImage} from '@angular/common';
+import {RouterLink, RouterOutlet} from '@angular/router';
+import {MatSidenav, MatSidenavModule} from '@angular/material/sidenav';
+import {MatList, MatListItem, MatNavList} from '@angular/material/list';
+import {MatCheckbox} from '@angular/material/checkbox';
+import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {MatButton, MatIconButton} from '@angular/material/button';
+import {MatIcon} from '@angular/material/icon';
+import {MatToolbar} from '@angular/material/toolbar';
+import {MatSlideToggle} from '@angular/material/slide-toggle';
+import {AuthService} from '../services/auth.service';
+import {AppLink} from '../utils/types/types';
+import {NotificationService} from '../services/notification.service';
 
 @Component({
   selector: 'app-shell',
@@ -38,29 +40,45 @@ import { AppLink } from '../types/types';
 })
 export class AppShellComponent implements AfterViewInit {
   links: AppLink[] = [
-    { label: 'Home', route: '/home', icon: 'home', isInToolbar: true },
+    {
+      label: 'Home',
+      route: '/home',
+      icon: 'home',
+      isInToolbar: true,
+      requiresAuth: false,
+    },
     {
       label: 'About',
       route: '/about',
       icon: 'info_outline',
       isInToolbar: true,
+      requiresAuth: false,
     },
     {
       label: 'Contact',
       route: '/contact',
       icon: 'contact_mail',
       isInToolbar: true,
+      requiresAuth: false,
     },
     {
-      label: 'Settings',
-      route: '/settings',
-      icon: 'settings',
+      label: 'Profile',
+      route: '/profiles/:username',
+      icon: 'person',
       isInToolbar: false,
+      requiresAuth: true,
+    },
+    {
+      label: 'Testing',
+      route: '/markdown',
+      icon: 'person',
+      isInToolbar: false,
+      requiresAuth: false,
     },
   ];
 
   themeToggle = new FormControl(false);
-  @ViewChild('darkModeSwitch', { read: ElementRef }) element:
+  @ViewChild('darkModeSwitch', {read: ElementRef}) element:
     | ElementRef
     | undefined;
 
@@ -80,6 +98,9 @@ export class AppShellComponent implements AfterViewInit {
     }
   }
 
+  authService: AuthService = inject(AuthService);
+  notification = inject(NotificationService);
+
   constructor() {
     //Apply theme based on prefered color scheme or local storage value
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
@@ -94,6 +115,7 @@ export class AppShellComponent implements AfterViewInit {
       this.themeToggle.setValue(true);
     }
   }
+
   onToggleTheme() {
     document.body.classList.toggle('dark');
     if (document.body.classList.contains('dark')) {

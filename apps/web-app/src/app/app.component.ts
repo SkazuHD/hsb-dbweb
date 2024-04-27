@@ -1,20 +1,14 @@
-import { Component, inject } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { ApiServiceService } from './services/api-service.service';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AppShellComponent } from './app-shell/app-shell';
-import { ArticleComponent } from './article/article.component';
-import {MarkdownPlaygroundComponent} from "./markdown-playground/markdown-playground.component";
+import {Component, inject} from '@angular/core';
+import {RouterModule} from '@angular/router';
+import {ApiServiceService} from './services/api-service.service';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {AppShellComponent} from './app-shell/app-shell';
+import {ArticleComponent} from './components/article/article.component';
 import { InfoPageComponent } from './infopage/info-page.component';
 
 @Component({
   standalone: true,
-  imports: [
-    RouterModule,
-    ArticleComponent,
-    AppShellComponent,
-    MarkdownPlaygroundComponent,
-    InfoPageComponent,
+  imports: [RouterModule, ArticleComponent, AppShellComponent,    InfoPageComponent,
   ],
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -23,9 +17,20 @@ import { InfoPageComponent } from './infopage/info-page.component';
 export class AppComponent {
   apiService = inject(ApiServiceService);
   title = 'hsb-dbweb';
+
   constructor() {
     this.apiService.events$.pipe(takeUntilDestroyed()).subscribe((event) => {
       console.log(JSON.parse(event.data));
     });
+
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+    const storedTheme = localStorage.getItem('theme');
+    if (storedTheme) {
+      if (storedTheme === 'dark') {
+        document.body.classList.add('dark');
+      }
+    } else if (prefersDark.matches) {
+      document.body.classList.add('dark');
+    }
   }
 }
