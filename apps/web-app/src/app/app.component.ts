@@ -1,9 +1,9 @@
-import {Component, inject} from '@angular/core';
-import {RouterModule} from '@angular/router';
-import {ApiServiceService} from './services/api-service.service';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {AppShellComponent} from './app-shell/app-shell';
-import {InfoPageComponent} from "./components/infopage/info-page.component";
+import { Component, inject } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { ApiServiceService } from './services/api-service.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AppShellComponent } from './app-shell/app-shell';
+import { InfoPageComponent } from './components/infopage/info-page.component';
 
 @Component({
   standalone: true,
