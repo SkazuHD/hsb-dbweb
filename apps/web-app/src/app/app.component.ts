@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AppShellComponent } from './app-shell/app-shell';
 import { ArticleComponent } from './article/article.component';
 import {MarkdownPlaygroundComponent} from "./markdown-playground/markdown-playground.component";
+import { InfoPageComponent } from './infopage/info-page.component';
 
 @Component({
   standalone: true,
@@ -13,6 +14,7 @@ import {MarkdownPlaygroundComponent} from "./markdown-playground/markdown-playgr
     ArticleComponent,
     AppShellComponent,
     MarkdownPlaygroundComponent,
+    InfoPageComponent,
   ],
   selector: 'app-root',
   templateUrl: './app.component.html',

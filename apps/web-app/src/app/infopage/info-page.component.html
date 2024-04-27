@@ -1,0 +1,37 @@
+<article role="article" class="@container flex flex-col gap-3 justify-between">
+
+
+  <div class="mt-3 gap-5 grid grid-cols-1 @6xl:grid-cols-[2fr_1fr]">
+    <div class="grid gap-2">
+      <h2
+        role="heading"
+        class="text-xl @md:text-2xl @lg:text-3xl @xl:text-4xl @2xl:text-5xl font-semibold">
+        {{ infotext().title }}
+      </h2>
+      <div [innerHTML]="infotext().content | markdown"></div>
+    </div>
+
+    <div class=" grid grid-rows-[1fr_2fr]">
+      <div>
+        <h3 class="text-l @md:text-xl @lg:text-2xl @xl:text-3xl font-semibold">{{ infotext().schedule_title }}</h3>
+        <p class="text-m @md:text-l @lg:text-xl @xl:text-2xl">{{ infotext().schedule_days }}</p>
+      </div>
+      <div class="flex gap-7 text-m @md:text-l @lg:text-xl @xl:text-2xl ">
+        <ul>
+          @for (schedule of infotext().schedule; track schedule) {
+            <li>
+              {{ schedule.time }}
+            </li>
+          }
+        </ul>
+        <ul>
+          @for (schedule of infotext().schedule; track schedule) {
+            <li>
+              <p>{{ schedule.age }}</p>
+            </li>
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+</article>

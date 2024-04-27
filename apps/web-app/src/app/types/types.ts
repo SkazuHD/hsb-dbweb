@@ -17,3 +17,12 @@ export type AppLink = {
   icon?: string;
   isInToolbar?: boolean;
 };
+
+export type InfoText = {
+  title: string;
+  content: string;
+  schedule?: {time:string, age:string}[]; 
+  schedule_title?: string;
+  schedule_days?: string;
+};
+
