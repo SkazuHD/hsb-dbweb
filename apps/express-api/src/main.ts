@@ -2,7 +2,6 @@ import express, { NextFunction, Request, Response } from 'express';
 
 import * as path from 'path';
 import * as process from 'process';
-//import * as argon2 from "@node-rs/argon2";
 import serverLess from 'serverless-http';
 import { sseConnections, sseMiddleware, SSEResponse } from './sse';
 
@@ -62,8 +61,7 @@ router
       res.status(400).send({ message: 'Missing username or password' });
       return;
     }
-    //TODO DB STUFF
-    const isValid = true; //argon2.verify(password, 'HASH_FROM_DB')
+    const isValid = true;
     if (!isValid) {
       res.status(403).send({ message: 'Invalid password' });
       return;
@@ -76,7 +74,6 @@ router
       res.status(400).send({ message: 'Missing username or password' });
       return;
     }
-    //const hash = await argon2.hash(password)
     //TODO DB STUFF
 
     res.status(201);
