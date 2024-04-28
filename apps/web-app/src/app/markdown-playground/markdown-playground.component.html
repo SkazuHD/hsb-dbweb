@@ -1,0 +1,9 @@
+<div class="grid grid-cols-2 w-full min-h-56">
+  <div class="!w-full">
+    <mat-form-field class="!w-full !min-w-full !h-full">
+      <mat-label>Markdown Input</mat-label>
+      <textarea matInput #input></textarea>
+    </mat-form-field>
+  </div>
+  <div [innerHTML]="input.value | markdown"></div>
+</div>
