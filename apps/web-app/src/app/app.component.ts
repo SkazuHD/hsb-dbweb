@@ -4,10 +4,16 @@ import { ApiServiceService } from './services/api-service.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AppShellComponent } from './app-shell/app-shell';
 import { ArticleComponent } from './article/article.component';
+import {MarkdownPlaygroundComponent} from "./markdown-playground/markdown-playground.component";
 
 @Component({
   standalone: true,
-  imports: [ RouterModule, ArticleComponent, AppShellComponent],
+  imports: [
+    RouterModule,
+    ArticleComponent,
+    AppShellComponent,
+    MarkdownPlaygroundComponent,
+  ],
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
