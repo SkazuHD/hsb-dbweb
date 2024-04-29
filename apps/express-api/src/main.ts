@@ -4,6 +4,7 @@ import * as path from 'path';
 import * as process from 'process';
 import serverLess from 'serverless-http';
 import { sseConnections, sseMiddleware, SSEResponse } from './sse';
+import * as db from  './db'
 
 import { initializeApp } from 'firebase-admin/app';
 
@@ -21,7 +22,10 @@ const router = express.Router();
 const port = process.env.PORT;
 const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}/api`);
+  db.init()
 });
+
+
 
 export const handler = serverLess(app);
 
@@ -64,7 +68,6 @@ app
 //API routes
 router
   .get('/', (req: Request, res: Response) => {
-    console.log(req.header('Authorization'));
     res.send({ message: 'Express API Work!' });
   })
   .get('/hello', (req: Request, res: Response) => {
@@ -99,3 +102,4 @@ router
   .get('/*', (req: Request, res: Response) => {
     res.status(404).send({ message: 'Not Found' });
   });
+
