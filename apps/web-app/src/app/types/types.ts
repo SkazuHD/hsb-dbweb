@@ -11,6 +11,21 @@ export type Article = {
   id: string;
   content: string;
 };
+
+export type Contact = {
+  additionalDescription: string;
+  location: string;
+  street: string;
+  titleMap: string;
+  titleLocation: string;
+  titleContact: string;
+  content: string;
+  email: string;
+  telephone: string;
+  fax: string;
+  mobil: string;
+  name: string;
+};
 export type AppLink = {
   label: string;
   route: string;

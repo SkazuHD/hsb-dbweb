@@ -1,14 +1,70 @@
-import { inject, Injectable, OnInit } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Meta } from '@angular/platform-browser';
-import { Article } from '../types/types';
+import { Article, Contact } from '../types/types';
 
 @Injectable({
   providedIn: 'root',
 })
-export class MetatagService implements OnInit {
+export class MetatagService {
   private meta: Meta = inject(Meta);
 
-  ngOnInit(): void {}
+  
+
+  addTagsForContact(contact: Contact): void {
+    const tags = [
+      {
+        name: 'Street',
+        content: contact.street,
+      },
+      {
+        name: 'Location',
+        content: contact.location,
+      },
+      {
+        name: 'AdditionalDescription',
+        content: contact.additionalDescription,
+      },
+      {
+        name: 'TitleContact',
+        content: contact.titleContact,
+      },
+      {
+        name: 'TitleLocation',
+        content: contact.titleLocation,
+      },
+      {
+        name: 'TitleMap',
+        content: contact.titleMap,
+      },
+      {
+        name: 'content',
+        content: contact.content,
+      },
+      {
+        name: 'email',
+        content: contact.email,
+      },
+      {
+        name: 'name',
+        content: contact.name,
+      },
+      {
+        name: 'telephone',
+        content: contact.telephone,
+      },
+      {
+        name: 'fax',
+        content: contact.fax,
+      },
+
+      {
+        name: 'mobil',
+        content: contact.mobil
+      },
+
+    ]
+    tags.forEach((tag) => this.meta.updateTag(tag));
+  }
 
   addTagsForArticle(article: Article): void {
     const tags = [

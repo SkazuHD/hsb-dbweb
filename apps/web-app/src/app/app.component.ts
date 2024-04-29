@@ -4,6 +4,7 @@ import { ApiServiceService } from './services/api-service.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AppShellComponent } from './app-shell/app-shell';
 import { ArticleComponent } from './article/article.component';
+import { ContactComponent } from './contact/contact.component';
 import {MarkdownPlaygroundComponent} from "./markdown-playground/markdown-playground.component";
 
 @Component({
@@ -13,6 +14,7 @@ import {MarkdownPlaygroundComponent} from "./markdown-playground/markdown-playgr
     ArticleComponent,
     AppShellComponent,
     MarkdownPlaygroundComponent,
+    ContactComponent,
   ],
   selector: 'app-root',
   templateUrl: './app.component.html',
