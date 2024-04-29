@@ -1,0 +1,59 @@
+<main>
+  <div class="@container">
+    <div class="grid gap-8 grid-cols-1 md:grid-cols-2">
+      <div class="grid gap-6 grid-rows-[2fr_1fr]">
+        <section class="text-base md:text-lg lg:text-xl xl:text-2xl">
+          <p class="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold">
+            {{ contact().titleContact }}
+          </p>
+          <p class="">
+            {{ contact().content }}
+          </p>
+          <p class="">
+            {{ contact().email }}
+          </p>
+          <p class="">
+            {{ contact().name }}
+          </p>
+          <p class="">
+            {{ contact().telephone }}
+          </p>
+          <p class="">
+            {{ contact().fax }}
+          </p>
+          <p class="">
+            {{ contact().mobil }}
+          </p>
+        </section>
+        <section class="text-base md:text-lg lg:text-xl xl:text-2xl">
+          <p class="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold">
+            {{ contact().titleLocation }}
+          </p>
+          <p class="">
+            {{ contact().street }}
+          </p>
+          <p class="">
+            {{ contact().location }}
+          </p>
+          <p class="">
+            {{ contact().additionalDescription }}
+          </p>
+        </section>
+      </div>
+      <section>
+        <p class="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold">
+          {{ contact().titleMap }}
+        </p>
+        <iframe
+          class="w-full h-64 md:h-80 lg:h-96 xl:h-112 2xl:h-128"
+          frameborder="0"
+          scrolling="no"
+          marginheight="0"
+          marginwidth="0"
+          id="gmap_canvas"
+          src="https://maps.google.com/maps?width=771&amp;height=573&amp;hl=en&amp;q=Beethovenstra%C3%9Fe%2018A%20Duisburg+()&amp;t=&amp;z=18&amp;ie=UTF8&amp;iwloc=B&amp;output=embed"
+        ></iframe>
+      </section>
+    </div>
+  </div>
+</main>

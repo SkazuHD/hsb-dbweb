@@ -4,10 +4,11 @@ import { ApiServiceService } from './services/api-service.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AppShellComponent } from './app-shell/app-shell';
 import { ArticleComponent } from './article/article.component';
+import { ContactComponent } from './contact/contact.component';
 
 @Component({
   standalone: true,
-  imports: [ RouterModule, ArticleComponent, AppShellComponent],
+  imports: [ RouterModule, ArticleComponent, AppShellComponent, ContactComponent],
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
