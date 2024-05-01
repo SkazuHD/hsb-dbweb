@@ -3,13 +3,11 @@ import {RouterModule} from '@angular/router';
 import {ApiServiceService} from './services/api-service.service';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {AppShellComponent} from './app-shell/app-shell';
-import {ArticleComponent} from './components/article/article.component';
-import { InfoPageComponent } from './infopage/info-page.component';
+import {InfoPageComponent} from "./components/infopage/info-page.component";
 
 @Component({
   standalone: true,
-  imports: [RouterModule, ArticleComponent, AppShellComponent,    InfoPageComponent,
-  ],
+  imports: [RouterModule, AppShellComponent, InfoPageComponent],
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',

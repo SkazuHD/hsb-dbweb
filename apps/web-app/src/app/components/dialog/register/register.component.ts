@@ -8,7 +8,7 @@ import {
   ValidatorFn,
   Validators,
 } from '@angular/forms';
-import { AuthService } from '../services/auth.service';
+import { AuthService } from '../../../services/auth.service';
 import {
   MatDialogClose,
   MatDialogContent,

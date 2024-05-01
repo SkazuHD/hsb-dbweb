@@ -5,7 +5,7 @@ import {
   HttpInterceptor,
   HttpRequest,
 } from '@angular/common/http';
-import { NotificationService } from '../services/notification.service';
+import { NotificationService } from '../../services/notification.service';
 import { catchError } from 'rxjs';
 
 @Injectable()

@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
 import { MatInput } from '@angular/material/input';
-import { MarkdownPipe } from '../pipes/markdown.pipe';
+import { MarkdownPipe } from '../../utils/pipes/markdown.pipe';
 
 @Component({
   selector: 'app-markdown-playground',

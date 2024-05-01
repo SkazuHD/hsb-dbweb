@@ -2,6 +2,7 @@ import {Route} from '@angular/router';
 import {AppComponent} from './app.component';
 import {AppShellComponent} from './app-shell/app-shell';
 import {ArticleComponent} from './components/article/article.component';
+import {InfoPageComponent} from "./components/infopage/info-page.component";
 
 export const appRoutes: Route[] = [
   {
@@ -20,8 +21,8 @@ export const appRoutes: Route[] = [
           {path: 'articles', component: ArticleComponent},
           {path: 'articles/:slugId', component: ArticleComponent},
           {path: 'profiles/:username', component: AppComponent},
-          {path: 'info', component: AppComponent},
-          {path: 'info/:id', component: AppComponent},
+          {path: 'info', component: InfoPageComponent},
+          {path: 'info/:id', component: InfoPageComponent},
           {path: 'contact', component: AppComponent},
           {path: 'impressum', component: AppComponent},
           {path: 'datenschutz', component: AppComponent},
