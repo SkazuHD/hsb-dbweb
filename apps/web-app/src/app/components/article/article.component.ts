@@ -1,7 +1,7 @@
 import { Component, inject, Input, model, OnInit } from '@angular/core';
 import { CommonModule, NgOptimizedImage } from '@angular/common';
-import { Article } from '../types/types';
-import { MetatagService } from '../services/metatag.service';
+import { Article } from '../../utils/types/types';
+import { MetatagService } from '../../services/metatag.service';
 
 @Component({
   selector: 'app-article',

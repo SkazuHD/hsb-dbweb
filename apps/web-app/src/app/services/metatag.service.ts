@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Meta } from '@angular/platform-browser';
-import { Article } from '../types/types';
+import { Article } from '../utils/types/types';
 
 @Injectable({
   providedIn: 'root',
