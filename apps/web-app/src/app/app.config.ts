@@ -7,11 +7,9 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {AuthInterceptor} from './utils/http-interceptor/auth.interceptor';
 import {ErrorInterceptor} from './utils/http-interceptor/error.interceptor';
 import {initializeApp, provideFirebaseApp} from '@angular/fire/app';
-import {getFirestore, provideFirestore} from '@angular/fire/firestore';
 import {getAuth, provideAuth} from '@angular/fire/auth';
 import {provideServiceWorker} from '@angular/service-worker';
 import {AuthService} from "./services/auth.service";
-import {getAnalytics, provideAnalytics} from "@angular/fire/analytics";
 
 const firebaseProviders: EnvironmentProviders = importProvidersFrom([
   provideFirebaseApp(() =>
@@ -27,8 +25,6 @@ const firebaseProviders: EnvironmentProviders = importProvidersFrom([
     }),
   ),
   provideAuth(() => getAuth()),
-  provideFirestore(() => getFirestore()),
-  provideAnalytics(() => getAnalytics())
 ]);
 
 export const appConfig: ApplicationConfig = {
