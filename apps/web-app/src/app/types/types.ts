@@ -21,8 +21,11 @@ export type Contact = {
   titleContact: string;
   content: string;
   email: string;
+  telephoneNumbers: string;
   telephone: string;
+  faxNumbers: string;
   fax: string;
+  mobilNumbers: string;
   mobil: string;
   name: string;
 };
