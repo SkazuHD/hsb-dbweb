@@ -13,53 +13,8 @@ export class MetatagService {
   addTagsForContact(contact: Contact): void {
     const tags = [
       {
-        name: 'Street',
-        content: contact.street,
-      },
-      {
-        name: 'Location',
-        content: contact.location,
-      },
-      {
-        name: 'AdditionalDescription',
-        content: contact.additionalDescription,
-      },
-      {
-        name: 'TitleContact',
-        content: contact.titleContact,
-      },
-      {
-        name: 'TitleLocation',
-        content: contact.titleLocation,
-      },
-      {
-        name: 'TitleMap',
-        content: contact.titleMap,
-      },
-      {
-        name: 'content',
-        content: contact.content,
-      },
-      {
-        name: 'email',
-        content: contact.email,
-      },
-      {
-        name: 'name',
-        content: contact.name,
-      },
-      {
-        name: 'telephone',
-        content: contact.telephone,
-      },
-      {
-        name: 'fax',
-        content: contact.fax,
-      },
-
-      {
-        name: 'mobil',
-        content: contact.mobil
+        name: 'description',
+        content: this.generateContactDesciption(contact),
       },
 
     ]
@@ -115,5 +70,22 @@ export class MetatagService {
       article?.date,
       article?.subtitle,
     ].join(', ');
+  }
+
+  private generateContactDesciption(contact: Contact): string {
+    return [
+      contact?.street,
+      contact?.location,
+      contact?.additionalDescription,
+      contact?.titleContact,
+      contact?.titleLocation,
+      contact?.titleMap,
+      contact?.content,
+      contact?.email,
+      contact?.name,
+      contact?.telephone,
+      contact?.fax,
+      contact?.mobil,
+    ].join(' ');
   }
 }
