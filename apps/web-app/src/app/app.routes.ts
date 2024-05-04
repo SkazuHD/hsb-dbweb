@@ -3,6 +3,7 @@ import {AppComponent} from './app.component';
 import {AppShellComponent} from './app-shell/app-shell';
 import {ArticleComponent} from './components/article/article.component';
 import {InfoPageComponent} from "./components/infopage/info-page.component";
+import { ContactComponent } from './components/contacts/contact.component';
 
 export const appRoutes: Route[] = [
   {
@@ -23,7 +24,7 @@ export const appRoutes: Route[] = [
           {path: 'profiles/:username', component: AppComponent},
           {path: 'info', component: InfoPageComponent},
           {path: 'info/:id', component: InfoPageComponent},
-          {path: 'contact', component: AppComponent},
+          {path: 'contact', component: ContactComponent},
           {path: 'impressum', component: AppComponent},
           {path: 'datenschutz', component: AppComponent},
           {path: 'sponsor', component: AppComponent},
