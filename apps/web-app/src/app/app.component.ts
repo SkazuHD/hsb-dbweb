@@ -1,25 +1,21 @@
 import {Component, inject} from '@angular/core';
 import {RouterModule} from '@angular/router';
-import {ApiServiceService} from './services/api-service.service';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {AppShellComponent} from './app-shell/app-shell';
-import {InfoPageComponent} from "./components/infopage/info-page.component";
+import {ApiService} from "./services/api.service";
+
 
 @Component({
   standalone: true,
-  imports: [RouterModule, AppShellComponent, InfoPageComponent],
+  imports: [RouterModule],
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
 export class AppComponent {
-  apiService = inject(ApiServiceService);
+  private apiService = inject(ApiService);
   title = 'hsb-dbweb';
 
   constructor() {
-    this.apiService.events$.pipe(takeUntilDestroyed()).subscribe((event) => {
-      console.log(JSON.parse(event.data));
-    });
+    this.apiService.testApi();
 
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     const storedTheme = localStorage.getItem('theme');
@@ -31,4 +27,5 @@ export class AppComponent {
       document.body.classList.add('dark');
     }
   }
+
 }

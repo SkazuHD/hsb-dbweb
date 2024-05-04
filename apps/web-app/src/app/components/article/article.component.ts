@@ -1,12 +1,13 @@
-import { Component, inject, Input, model, OnInit } from '@angular/core';
-import { CommonModule, NgOptimizedImage } from '@angular/common';
-import { Article } from '../../utils/types/types';
-import { MetatagService } from '../../services/metatag.service';
+import {Component, inject, Input, model, OnInit} from '@angular/core';
+import {CommonModule, NgOptimizedImage} from '@angular/common';
+import {Article} from '../../utils/types/types';
+import {MetatagService} from '../../services/metatag.service';
+import {MarkdownPipe} from "../../utils/pipes/markdown.pipe";
 
 @Component({
   selector: 'app-article',
   standalone: true,
-  imports: [CommonModule, NgOptimizedImage],
+  imports: [CommonModule, NgOptimizedImage, MarkdownPipe],
   templateUrl: './article.component.html',
   styleUrl: './article.component.css',
 })
@@ -35,9 +36,11 @@ export class ArticleComponent implements OnInit {
     const regex = /^[a-z][a-z0-9-]*[0-9]$/;
     return regex.test(value);
   }
+
   getSlugFromSlugId(slugId: string): string {
     return slugId.split('-').slice(0, -1).join('-');
   }
+
   getIdFromSlugId(slugId: string): string {
     return slugId.split('-').pop() ?? '';
   }
