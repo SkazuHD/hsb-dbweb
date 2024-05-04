@@ -29,7 +29,7 @@ $custom_red-palette: (
   )
 );
 $custom_accent-palette: (
-  50:#fef7e2 ,
+  50:#fef7e2,
   100:#fdeab7,
   200:#fbdd89,
   300:#fad15c,
@@ -40,7 +40,7 @@ $custom_accent-palette: (
   800:#f38e28,
   900:#f07224,
   contrast:(
-   50: rgba(black, 0.87),
+    50: rgba(black, 0.87),
     100: rgba(black, 0.87),
     200: rgba(black, 0.87),
     300: rgba(black, 0.87),
@@ -50,10 +50,9 @@ $custom_accent-palette: (
     700: rgba(black, 0.87),
     800: rgba(black, 0.87),
     900: rgba(black, 0.87),
-
   )
 );
-$typography : mat.define-typography-config(
+$typography: mat.define-typography-config(
   $font-family: 'Roboto, "Helvetica Neue", sans-serif',
 );
 $my-light-theme: mat.define-light-theme((
@@ -77,71 +76,94 @@ $my-dark-theme: mat.define-dark-theme((
 ));
 @include mat.all-component-themes($my-light-theme);
 
-body.dark{
+body.dark {
   @include mat.all-component-colors($my-dark-theme);
 }
+
 /* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; }
+html, body {
+  height: 100%;
+}
+
 body {
   --mat-dialog-headline-padding: 9px 24px !important;
-  margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+}
 
-*, *::after, *::before { box-sizing: border-box; }
+*, *::after, *::before {
+  box-sizing: border-box;
+}
 
 a {
   @apply underline text-blue-600 hover:text-blue-800 visited:text-purple-600
 }
 
-.mat-mdc-snack-bar-container.error > *{
+.mat-mdc-snack-bar-container.error > * {
   background: #a30800 #{!important};
-  .mat-mdc-snack-bar-label{
+
+  .mat-mdc-snack-bar-label {
     color: white #{!important};
   }
-  .mat-mdc-snack-bar-action{
+
+  .mat-mdc-snack-bar-action {
     color: white #{!important};
   }
+
   color: white #{!important};
 }
 
-.mat-mdc-snack-bar-container.success > *{
+.mat-mdc-snack-bar-container.success > * {
   background: forestgreen #{!important};
-  .mat-mdc-snack-bar-label{
+
+  .mat-mdc-snack-bar-label {
     color: white #{!important};
   }
-  .mat-mdc-snack-bar-action{
+
+  .mat-mdc-snack-bar-action {
     color: white #{!important};
   }
+
   color: white #{!important};
 }
 
-.mat-mdc-snack-bar-container.warn > *{
+.mat-mdc-snack-bar-container.warn > * {
   background: #f07224 #{!important};
-  .mat-mdc-snack-bar-label{
+
+  .mat-mdc-snack-bar-label {
     color: white #{!important};
   }
-  .mat-mdc-snack-bar-action{
+
+  .mat-mdc-snack-bar-action {
     color: white #{!important};
   }
+
   color: white #{!important};
 }
-.mat-mdc-snack-bar-container.info > *{
-  .mat-mdc-snack-bar-label{
+
+.mat-mdc-snack-bar-container.info > * {
+  .mat-mdc-snack-bar-label {
     color: white #{!important};
   }
-  .mat-mdc-snack-bar-action{
+
+  .mat-mdc-snack-bar-action {
     color: white #{!important};
   }
+
   color: white #{!important};
 }
-.dark{
-  .mat-mdc-snack-bar-container.info > *{
-    .mat-mdc-snack-bar-label{
+
+.dark {
+  .mat-mdc-snack-bar-container.info > * {
+    .mat-mdc-snack-bar-label {
       color: black #{!important};
     }
-    .mat-mdc-snack-bar-action{
+
+    .mat-mdc-snack-bar-action {
       color: black #{!important};
     }
+
     color: black #{!important};
   }
 }
@@ -151,39 +173,49 @@ a {
   h1 {
     @apply text-4xl
   }
+
   h2 {
     @apply text-3xl
   }
+
   h3 {
     @apply text-2xl
   }
+
   h4 {
     @apply text-xl
   }
+
   h5 {
     @apply text-lg
   }
+
   h6 {
     @apply text-base
   }
+
   p {
     @apply text-base
   }
+
   ol {
     @apply list-decimal list-inside;
     ul, ol {
       @apply list-inside pl-4;
     }
   }
+
   ul {
     @apply list-disc list-inside;
     ul, ol {
       @apply list-inside pl-4;
     }
   }
+
   a {
     @apply text-blue-500 underline;
   }
+
   blockquote {
     @apply border-l-4 m-4 p-4;
     background: mat.get-theme-color($my-light-theme, background, card);
@@ -207,30 +239,31 @@ a {
     background: mat.get-theme-color($my-light-theme, background, background);
     border-color: mat.get-theme-color($my-light-theme, primary);
   }
+
   .dark & {
     blockquote {
       @apply border-l-4 m-4 p-4;
       background: mat.get-theme-color($my-dark-theme, background, card);
       border-color: mat.get-theme-color($my-dark-theme, primary);
-  }
+    }
 
-  blockquote > blockquote {
-    @apply border-l-4 m-4 p-4;
-    background: mat.get-theme-color($my-dark-theme, background, background);
-    border-color: mat.get-theme-color($my-dark-theme, primary);
-  }
+    blockquote > blockquote {
+      @apply border-l-4 m-4 p-4;
+      background: mat.get-theme-color($my-dark-theme, background, background);
+      border-color: mat.get-theme-color($my-dark-theme, primary);
+    }
 
-  blockquote > blockquote > blockquote {
-    @apply border-l-4 m-4 p-4;
-    background: mat.get-theme-color($my-dark-theme, background, card);
-    border-color: mat.get-theme-color($my-dark-theme, primary);
-  }
+    blockquote > blockquote > blockquote {
+      @apply border-l-4 m-4 p-4;
+      background: mat.get-theme-color($my-dark-theme, background, card);
+      border-color: mat.get-theme-color($my-dark-theme, primary);
+    }
 
-  blockquote > blockquote > blockquote > blockquote {
-    @apply border-l-4 m-4 p-4;
-    background: mat.get-theme-color($my-dark-theme, background, background);
-    border-color: mat.get-theme-color($my-dark-theme, primary);
-  }
+    blockquote > blockquote > blockquote > blockquote {
+      @apply border-l-4 m-4 p-4;
+      background: mat.get-theme-color($my-dark-theme, background, background);
+      border-color: mat.get-theme-color($my-dark-theme, primary);
+    }
   }
 }
 
