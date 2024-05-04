@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButton } from '@angular/material/button';
-import { NewsfeedComponent } from './newsfeed.component';
+import { NewsfeedComponent } from '../newsFeed/newsfeed.component';
 
 @Component({
   selector: 'app-landing-page',
