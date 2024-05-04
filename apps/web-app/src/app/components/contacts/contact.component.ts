@@ -3,11 +3,12 @@ import {CommonModule} from "@angular/common";
 import {MetatagService} from "../../services/metatag.service";
 import {Contact} from "../../utils/types/types";
 import {ApiService} from "../../services/api.service";
+import {TelefonPipe} from "../../utils/pipes/telefon.pipe";
 
 @Component({
   selector: "app-contact",
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TelefonPipe],
   templateUrl: "./contact.component.html",
   styleUrl: "./contact.component.css",
 })
