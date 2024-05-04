@@ -69,17 +69,23 @@ export class AuthService {
 
   async requestLoginDialog() {
     const {LoginComponent} = await import('../components/dialog/login/login.component');
-    return this.dialog.open(LoginComponent, {});
+    return this.dialog.open(LoginComponent, {
+      autoFocus: 'input'
+    });
   }
 
   async requestRegisterDialog() {
     const {RegisterComponent} = await import('../components/dialog/register/register.component');
-    return this.dialog.open(RegisterComponent, {});
+    return this.dialog.open(RegisterComponent, {
+      autoFocus: 'input'
+    });
   }
 
   requestEmailVerification(user: User) {
     //TODO
-    this.dialog.open(MatDialog, {}).close(
+    this.dialog.open(MatDialog, {
+      autoFocus: 'input'
+    }).close(
       sendEmailVerification(user).then(() => {
         console.debug('Email verification sent');
       }),
@@ -89,7 +95,9 @@ export class AuthService {
   async requestPasswordReset() {
     const {ResetPasswordComponent} = await import('../components/dialog/reset-password/reset-password.component');
     return this.dialog
-      .open(ResetPasswordComponent, {})
+      .open(ResetPasswordComponent, {
+        autoFocus: 'input'
+      })
       .afterClosed()
       .subscribe((email) => {
         if (!email) {
