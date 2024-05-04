@@ -35,14 +35,14 @@
             {{ link.label }}</span
           ></a>
         } @else {
-          <a
+          <button
             mat-list-item
             (click)="authService.requestLoginDialog()"
             [class]="link.isInToolbar? '@lg:!hidden':''"
           ><span class="flex gap-3 align-middle"
           ><mat-icon>{{ link.icon }}</mat-icon>
             {{ link.label }}</span
-          ></a>
+          ></button>
         }
       }
     </mat-nav-list>
@@ -61,7 +61,7 @@
     </mat-list>
   </mat-sidenav>
   <mat-sidenav-content>
-    <div class="h-svh">
+    <div class="h-svh ">
       <mat-toolbar class="">
         <div class="flex max-w-screen-2xl !w-full mx-auto py-2 gap-4">
           <button class="aspect-square" id="logo">
@@ -84,9 +84,9 @@
                     mat-list-item
                     routerLink="{{link.route}}"
                     class="!w-auto"
-                    role="menuitem"
-                  >{{ link.label }}</a
-                  >
+                    role="menuitem">
+                    {{ link.label }}
+                  </a>
                 }
               }
             </mat-nav-list>
@@ -105,8 +105,11 @@
           </button>
         </div>
       </mat-toolbar>
-      <ng-content></ng-content>
-      <router-outlet></router-outlet>
+      <div class="max-w-screen-2xl mx-auto my-8">
+        <ng-content></ng-content>
+        <router-outlet></router-outlet>
+      </div>
+
     </div>
   </mat-sidenav-content>
 </mat-sidenav-container>

@@ -1,17 +1,22 @@
-import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { map, Observable, of, retry, RetryConfig } from 'rxjs';
+import {inject, Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {map, Observable, of, retry, RetryConfig} from 'rxjs';
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import { Contact, InfoText } from '../utils/types/types';
 
 @Injectable({
   providedIn: 'root',
 })
-export class ApiServiceService {
+export class ApiService {
   private http: HttpClient = inject(HttpClient);
 
-  constructor() {
-    this.http.get('http://127.0.0.1:4201/api').subscribe((data) => {
-      console.log(data);
+  testApi() {
+    this.http.get('http://127.0.0.1:4201/api').pipe(takeUntilDestroyed()).subscribe((data) => {
+      console.debug(data);
+    });
+
+    this.events$.pipe(takeUntilDestroyed()).subscribe((event) => {
+      console.debug(JSON.parse(event.data));
     });
   }
 
@@ -87,4 +92,6 @@ export class ApiServiceService {
       schedule_days: 'Montag und Freitag',
     });
   }
+
+
 }

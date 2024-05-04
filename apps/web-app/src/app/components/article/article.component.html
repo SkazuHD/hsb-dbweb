@@ -4,23 +4,23 @@
       <div>
         <h2
           role="heading"
-          class="text-3xl @md:text-4xl @lg:text-5xl @xl:text-6xl @2xl:text-7xl font-bold"
-        >
+          class="text-3xl @md:text-4xl @lg:text-5xl @xl:text-6xl @2xl:text-7xl font-bold">
           {{ article().title }}
         </h2>
-        <p
-          *ngIf="article().subtitle"
-          class="text-xl @md:text-2xl @lg:text-3xl @xl:text-4xl @2xl:text-5xl font-semibold"
-        >
-          {{ article().subtitle }}
-        </p>
+        @if (article().subtitle) {
+          <p
+            class="text-xl @md:text-2xl @lg:text-3xl @xl:text-4xl @2xl:text-5xl font-semibold">
+            {{ article().subtitle }}
+          </p>
+        }
         <div class="flex gap-3">
-          <address
-            *ngIf="article().author"
-            class="text-md @md:text-lg @lg:text-xl @xl:text-2xl @2xl:text-3xl font-semibold text-gray-400"
-          >
-            {{ article().author }}
-          </address>
+          @if (article().author) {
+            <address
+              class="text-md @md:text-lg @lg:text-xl @xl:text-2xl @2xl:text-3xl font-semibold text-gray-400"
+            >
+              {{ article().author }}
+            </address>
+          }
           @if (article().author && article().date) {
             <span
               class="text-md @md:text-lg @lg:text-xl @xl:text-2xl @2xl:text-3xl font-semibold text-gray-400"
@@ -54,11 +54,6 @@
         }
       </div>
     </div>
-    <div class="mt-8">
-      <p class="text-md @md:text-lg @lg:text-xl @xl:text-2xl">
-        <!-- TODO add markdown support -->
-        {{ article().content }}
-      </p>
-    </div>
+    <div class="mt-8" [innerHTML]="article().content | markdown"></div>
   </div>
 </article>

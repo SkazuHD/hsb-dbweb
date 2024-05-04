@@ -14,7 +14,7 @@ import {
 
 import {computed, inject, Injectable, signal} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
-import {from, Observable, of} from 'rxjs';
+import {from, Observable} from 'rxjs';
 import {NotificationService} from './notification.service';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 
@@ -154,10 +154,6 @@ export class AuthService {
           return error;
         }),
     );
-  }
-
-  isSignedIn(): Observable<boolean> {
-    return of(this.auth.currentUser !== null);
   }
 
   logout() {

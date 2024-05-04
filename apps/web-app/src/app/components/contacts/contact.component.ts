@@ -1,8 +1,8 @@
-import { Component, OnInit, inject, input, model } from "@angular/core";
-import { CommonModule } from "@angular/common";
-import { MetatagService } from "../../services/metatag.service";
-import { Contact } from "../../utils/types/types";
-import { ApiServiceService } from "../../services/api-service.service";
+import {Component, inject, model, OnInit} from "@angular/core";
+import {CommonModule} from "@angular/common";
+import {MetatagService} from "../../services/metatag.service";
+import {Contact} from "../../utils/types/types";
+import {ApiService} from "../../services/api.service";
 
 @Component({
   selector: "app-contact",
@@ -13,7 +13,7 @@ import { ApiServiceService } from "../../services/api-service.service";
 })
 export class ContactComponent implements OnInit {
   private meta: MetatagService = inject(MetatagService);
-  apiService = inject(ApiServiceService);
+  apiService = inject(ApiService);
   contact = model.required<Contact>();
 
   ngOnInit(): void {
