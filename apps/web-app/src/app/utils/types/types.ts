@@ -22,7 +22,7 @@ export type AppLink = {
 export type InfoText = {
   title: string;
   content: string;
-  schedule?: {time:string, age:string}[]; 
+  schedule?: { time: string, age: string }[];
   schedule_title?: string;
   schedule_days?: string;
 };
@@ -36,11 +36,8 @@ export type Contact = {
   titleContact: string;
   content: string;
   email: string;
-  telephoneNumbers: string;
   telephone: string;
-  faxNumbers: string;
   fax: string;
-  mobilNumbers: string;
-  mobil: string;
+  mobile: string;
   name: string;
 };

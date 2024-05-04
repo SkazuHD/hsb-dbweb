@@ -1,6 +1,6 @@
-import { inject, Injectable } from "@angular/core";
-import { Meta } from "@angular/platform-browser";
-import { Article, Contact } from "../utils/types/types";
+import {inject, Injectable} from "@angular/core";
+import {Meta} from "@angular/platform-browser";
+import {Article, Contact} from "../utils/types/types";
 
 @Injectable({
   providedIn: "root",
@@ -60,6 +60,7 @@ export class MetatagService {
 
     tags.forEach((tag) => this.meta.updateTag(tag));
   }
+
   private generateKeywords(article: Article): string {
     return [
       article?.title,
@@ -82,7 +83,7 @@ export class MetatagService {
       contact?.name,
       contact?.telephone,
       contact?.fax,
-      contact?.mobil,
+      contact?.mobile,
     ].join(" ");
   }
 }
