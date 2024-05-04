@@ -11,6 +11,21 @@ export type Article = {
   id: string;
   content: string;
 };
+export type AppLink = {
+  label: string;
+  route: string;
+  icon?: string;
+  isInToolbar?: boolean;
+  requiresAuth: boolean;
+};
+
+export type InfoText = {
+  title: string;
+  content: string;
+  schedule?: {time:string, age:string}[]; 
+  schedule_title?: string;
+  schedule_days?: string;
+};
 
 export type Contact = {
   additionalDescription: string;
@@ -28,10 +43,4 @@ export type Contact = {
   mobilNumbers: string;
   mobil: string;
   name: string;
-};
-export type AppLink = {
-  label: string;
-  route: string;
-  icon?: string;
-  isInToolbar?: boolean;
 };
