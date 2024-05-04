@@ -1,0 +1,14 @@
+<div class="flex items-center">
+  @if (isLiked()) {
+    <button mat-flat-button (click)="onClick()">
+      <mat-icon class="motion-safe:animate-ping-once">thumb_up</mat-icon>
+      <span>{{ likes() }}</span>
+    </button>
+  } @else {
+    <button mat-flat-button (click)="onClick()">
+      <mat-icon fontSet="material-icons-outlined">thumb_up</mat-icon>
+      <span>{{ likes() }}</span>
+    </button>
+  }
+
+</div>

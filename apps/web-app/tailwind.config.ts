@@ -15,6 +15,9 @@ const config: import('tailwindcss').Config = {
         custom_red: '#A30800',
         custom_yellow: '#F6AE2D',
       },
+      animation: {
+        'ping-once': 'ping 300ms ease-out 1 reverse',
+      }
     },
   },
   plugins: [require('@tailwindcss/container-queries')],
