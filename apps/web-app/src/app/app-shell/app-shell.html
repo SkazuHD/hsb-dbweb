@@ -1,115 +1,69 @@
-<mat-sidenav-container class="@container relative">
-  <mat-sidenav mode="over" autoFocus="false" position="end" #sidenav class="px-12">
-    <mat-nav-list>
-      @if (authService.user()) {
-        <a
-          mat-list-item
-          (click)="authService.logout()"
-          routerLink=""
-          class="!w-auto"
-        >
-        <span class="flex gap-3 align-middle"
-        ><mat-icon>logout</mat-icon>Sign Out</span
-        >
-        </a>
-      } @else {
-        <a
-          mat-list-item
-          (click)="authService.requestLoginDialog()"
-          class="!w-auto"
-          routerLink=""
-        >
-        <span class="flex gap-3 align-middle">
-          <mat-icon>login</mat-icon>Sign In
-        </span>
-        </a>
-      }
-      @for (link of links; track link) {
-        @if (!link.requiresAuth || authService.user()) {
-          <a
+<div class="@container flex flex-col absolute top-0 bottom-0 left-0 right-0">
+
+
+  <app-toolbar [links]="links" [sideNav]="sidenav"></app-toolbar>
+
+  <mat-sidenav-container class="h-full">
+    <mat-sidenav #sidenav autoFocus="false" mode="side" position="end">
+      <mat-nav-list>
+        @if (authService.user()) {
+          <button
             mat-list-item
-            routerLink="{{link.route}}"
-            [class]="link.isInToolbar? '@lg:!hidden':''"
-          ><span class="flex gap-3 align-middle"
-          ><mat-icon>{{ link.icon }}</mat-icon>
-            {{ link.label }}</span
-          ></a>
+            (click)="authService.logout()"
+          >
+        <span class="flex gap-3 align-middle">
+          <mat-icon>logout</mat-icon>Sign Out</span>
+          </button>
         } @else {
           <button
             mat-list-item
             (click)="authService.requestLoginDialog()"
-            [class]="link.isInToolbar? '@lg:!hidden':''"
-          ><span class="flex gap-3 align-middle"
-          ><mat-icon>{{ link.icon }}</mat-icon>
-            {{ link.label }}</span
-          ></button>
+          >
+        <span class="flex gap-3 align-middle">
+          <mat-icon>login</mat-icon>Sign In
+        </span>
+          </button>
         }
-      }
-    </mat-nav-list>
-    <mat-list>
-      <mat-list-item>
-        <mat-slide-toggle
-          (change)="onToggleTheme()"
-          [formControl]="themeToggle"
-          #darkModeSwitch>
-          {{
-            themeToggle.value === true ? 'Dark Mode' :
-              'LightMode'
-          }}
-        </mat-slide-toggle>
-      </mat-list-item>
-    </mat-list>
-  </mat-sidenav>
-  <mat-sidenav-content>
-    <div class="h-svh ">
-      <mat-toolbar class="sticky top-0 z-10">
-        <div class="flex max-w-screen-2xl !w-full mx-auto py-2 gap-4">
-          <button class="aspect-square" id="logo">
-            <img
-              ngSrc="assets/logo.jpg"
-              alt="logo"
-              width="50"
-              height="50"
-              priority/>
-          </button>
-          <nav class="!hidden @lg:!block">
-            <mat-nav-list
-              id="menu"
-              class="!hidden @lg:!flex !gap-3"
-              role="menu"
-              aria-labelledby="menubutton">
-              @for (link of links; track link) {
-                @if (link.isInToolbar) {
-                  <a
-                    mat-list-item
-                    routerLink="{{link.route}}"
-                    class="!w-auto"
-                    role="menuitem">
-                    {{ link.label }}
-                  </a>
-                }
-              }
-            </mat-nav-list>
-          </nav>
-          <span class="flex-auto"></span>
-          <span class="self-center flex-auto @lg:flex-[2_2_auto]">TITLE</span>
-          <button
-            id="menubutton"
-            aria-haspopup="menu"
-            aria-controls="menu"
-            aria-label="menu"
-            mat-button
-            (click)="sidenav.toggle()"
-            class="self-center justify-self-end">
-            <mat-icon>menu</mat-icon>
-          </button>
-        </div>
-      </mat-toolbar>
-      <div class="max-w-screen-2xl mx-auto my-8">
-        <ng-content></ng-content>
+        @for (link of links; track link) {
+          @if (!link.requiresAuth || authService.user()) {
+            <a
+              mat-list-item
+              routerLink="{{link.route}}"
+              [class]="link.isInToolbar? '@lg:!hidden':''"
+            ><span class="flex gap-3 align-middle"
+            ><mat-icon>{{ link.icon }}</mat-icon>
+              {{ link.label }}</span
+            ></a>
+          } @else {
+            <button
+              mat-list-item
+              (click)="authService.requestLoginDialog()"
+              [class]="link.isInToolbar? '@lg:!hidden':''"
+            ><span class="flex gap-3 align-middle"
+            ><mat-icon>{{ link.icon }}</mat-icon>
+              {{ link.label }}</span
+            ></button>
+          }
+        }
+      </mat-nav-list>
+      <mat-list>
+        <mat-list-item>
+          <mat-slide-toggle
+            #darkModeSwitch
+            (change)="onToggleTheme()"
+            [formControl]="themeToggle">
+            {{
+              themeToggle.value === true ? 'Dark Mode' :
+                'LightMode'
+            }}
+          </mat-slide-toggle>
+        </mat-list-item>
+      </mat-list>
+    </mat-sidenav>
+    <mat-sidenav-content>
+      <div class="min-h-fit max-w-screen-2xl mx-auto my-8">
         <router-outlet></router-outlet>
       </div>
-
-    </div>
-  </mat-sidenav-content>
-</mat-sidenav-container>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

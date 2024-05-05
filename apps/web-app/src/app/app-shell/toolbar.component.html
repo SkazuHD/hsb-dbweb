@@ -1,0 +1,46 @@
+<mat-toolbar class="sticky top-0 z-10">
+  <div class="flex max-w-screen-2xl !w-full mx-auto py-2 gap-4">
+    <button class="aspect-square" id="logo">
+      <img
+        ngSrc="assets/logo.jpg"
+        alt="logo"
+        width="50"
+        height="50"
+        priority/>
+    </button>
+    <nav class="!hidden @lg:!block">
+      <mat-nav-list
+        id="menu"
+        class="!hidden @lg:!flex !gap-3"
+        role="menu"
+        aria-labelledby="menubutton">
+        @for (link of links(); track link) {
+          @if (link.isInToolbar) {
+            <a
+              mat-list-item
+              class="!w-auto"
+              routerLink="{{link.route}}"
+              role="menuitem">
+
+              {{ link.label }}
+            </a>
+          }
+        }
+      </mat-nav-list>
+    </nav>
+    <span class="flex-auto"></span>
+    <span class="self-center flex-auto @lg:flex-[2_2_auto]">TITLE</span>
+    @if (sideNav()) {
+      <button
+        id="menubutton"
+        aria-haspopup="menu"
+        aria-controls="menu"
+        aria-label="menu"
+        mat-icon-button
+        (click)="sideNav()?.toggle()"
+        class="self-center justify-self-end">
+        <mat-icon>{{ sideNav()?.opened ? 'close' : 'menu' }}</mat-icon>
+      </button>
+    }
+  </div>
+</mat-toolbar>
