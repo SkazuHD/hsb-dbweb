@@ -1,5 +1,5 @@
-import { createGlobPatternsForDependencies } from '@nx/angular/tailwind';
-import { join } from 'path';
+import {createGlobPatternsForDependencies} from '@nx/angular/tailwind';
+import {join} from 'path';
 
 const config: import('tailwindcss').Config = {
   content: [
@@ -20,7 +20,7 @@ const config: import('tailwindcss').Config = {
       }
     },
   },
-  plugins: [require('@tailwindcss/container-queries')],
+  plugins: [require('@tailwindcss/container-queries'), require('@tailwindcss/typography')],
 };
 
 export default config;
