@@ -55,11 +55,22 @@ a {
 }
 
 mat-toolbar {
+  background: mat.get-theme-color($light-theme, surface-container-highest) !important;
+}
+
+mat-sidenav {
   background: mat.get-theme-color($light-theme, surface-container-high) !important;
 }
 
-.dark mat-toolbar {
-  background: mat.get-theme-color($dark-theme, surface-container-high) !important;
+
+.dark {
+  mat-toolbar {
+    background: mat.get-theme-color($dark-theme, surface-container-highest) !important;
+  }
+
+  mat-sidenav {
+    background: mat.get-theme-color($dark-theme, surface-container-high) !important;
+  }
 }
 
 mat-slide-toggle {
