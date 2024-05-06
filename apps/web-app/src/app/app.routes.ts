@@ -4,6 +4,7 @@ import {AppShellComponent} from './app-shell/app-shell';
 import {ArticleComponent} from './components/article/article.component';
 import {InfoPageComponent} from "./components/infopage/info-page.component";
 import {ContactComponent} from './components/contacts/contact.component';
+import {adminGuard} from "./utils/guards/admin.guard";
 
 export const appRoutes: Route[] = [
   {
@@ -26,6 +27,12 @@ export const appRoutes: Route[] = [
           import('./components/page-not-found/page-not-found.component').then(m => m.PageNotFoundComponent)
       },
     ],
+  },
+  {
+    path: 'admin',
+    loadComponent: () => import('./admin/admin.component').then(m => m.AdminComponent),
+    canActivate: [adminGuard],
+    children: []
   },
   {
     path: '**',

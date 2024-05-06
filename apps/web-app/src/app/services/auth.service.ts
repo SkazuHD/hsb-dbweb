@@ -39,7 +39,7 @@ export class AuthService {
     inject(NotificationService);
   private auth: Auth = inject(Auth);
   //Sources
-  private user$ = authState(this.auth);
+  user$ = authState(this.auth);
   private idToken$ = idToken(this.auth);
   //State
   private state = signal<AuthState>({
@@ -53,6 +53,7 @@ export class AuthService {
   constructor() {
     // Side effects
     this.user$.pipe(takeUntilDestroyed()).subscribe((user) => {
+      console.debug('User', user);
       return this.state.update((state) => ({
         ...state,
         user,
@@ -109,13 +110,6 @@ export class AuthService {
       });
   }
 
-  private handleSignIn(user: User) {
-    if (!user.emailVerified) {
-      this.requestEmailVerification(user);
-    }
-    return user;
-  }
-
   signInWithGoogle$(): Observable<User | null> {
     const provider = new GoogleAuthProvider();
     return from(
@@ -168,5 +162,12 @@ export class AuthService {
     signOut(this.auth).then(() => {
       this.notificationService.info('Signed out');
     });
+  }
+
+  private handleSignIn(user: User) {
+    if (!user.emailVerified) {
+      this.requestEmailVerification(user);
+    }
+    return user;
   }
 }
