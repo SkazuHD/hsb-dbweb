@@ -3,6 +3,7 @@ import {CommonModule, NgOptimizedImage} from '@angular/common';
 import {Article} from '../../utils/types/types';
 import {MetatagService} from '../../services/metatag.service';
 import {MarkdownPipe} from "../../utils/pipes/markdown.pipe";
+import {ApiService} from "../../services/api.service";
 
 @Component({
   selector: 'app-article',
@@ -12,23 +13,22 @@ import {MarkdownPipe} from "../../utils/pipes/markdown.pipe";
   styleUrl: './article.component.css',
 })
 export class ArticleComponent implements OnInit {
-  @Input() slugId = '';
-  private meta: MetatagService = inject(MetatagService);
   article = model.required<Article>();
+  private meta: MetatagService = inject(MetatagService);
+  private api: ApiService = inject(ApiService);
+
+  @Input() set slugId(id: string) {
+    this.api.getArticleById(id).subscribe((article) => {
+      this.article.set(article);
+    });
+  }
 
   ngOnInit(): void {
-    if (!this.article()) {
-      this.article.set({
-        title: 'CALL API TO GET ARTICLE',
-        content: 'IMPLEMENT ME',
-        id: this.slugId,
-      });
-    }
     this.meta.addTagsForArticle(this.article());
   }
 
   /* TODO GET ARTICLE FROM API BY ID
-  ? Route Guard ?
+  ? Route Guard or in ApiService ?
     IF NOT FOUND TRY TO GET ARTICLE BY SLUG
     IF SLUG != ID REDIRECT TO CORRECT URL
     IF NOT FOUND SHOW 404 PAGE */

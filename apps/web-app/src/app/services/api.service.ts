@@ -2,13 +2,17 @@ import {inject, Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {map, Observable, of, retry, RetryConfig} from 'rxjs';
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
-import {Contact, InfoText} from '../utils/types/types';
+import {Article, Contact, InfoText} from '../utils/types/types';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ApiService {
   private http: HttpClient = inject(HttpClient);
+
+  get events$(): Observable<MessageEvent> {
+    return this.constructSSERequest('http://localhost:4201/events');
+  }
 
   testApi() {
     this.http.get('http://127.0.0.1:4201/api').pipe(takeUntilDestroyed()).subscribe((data) => {
@@ -18,27 +22,6 @@ export class ApiService {
     this.events$.pipe(takeUntilDestroyed()).subscribe((event) => {
       console.debug(JSON.parse(event.data));
     });
-  }
-
-  private constructSSERequest(url: string) {
-    const retryConfig: RetryConfig = {
-      delay: 1000,
-      resetOnSuccess: true,
-    };
-    return new Observable<MessageEvent>((observer) => {
-      const eventSource = new EventSource(url);
-      eventSource.onmessage = (event) => observer.next(event);
-      eventSource.onerror = (error) => observer.error(error);
-    }).pipe(
-      retry(retryConfig),
-      map((event: MessageEvent) => {
-        return event;
-      }),
-    );
-  }
-
-  get events$(): Observable<MessageEvent> {
-    return this.constructSSERequest('http://localhost:4201/events');
   }
 
   getContact(): Observable<Contact> {
@@ -90,5 +73,29 @@ export class ApiService {
     });
   }
 
+  getArticleById(id: string): Observable<Article> {
+    return of({
+      title: 'CALL API TO GET ARTICLE',
+      content: 'IMPLEMENT ME',
+      id: id,
+    })
+  }
+
+  private constructSSERequest(url: string) {
+    const retryConfig: RetryConfig = {
+      delay: 1000,
+      resetOnSuccess: true,
+    };
+    return new Observable<MessageEvent>((observer) => {
+      const eventSource = new EventSource(url);
+      eventSource.onmessage = (event) => observer.next(event);
+      eventSource.onerror = (error) => observer.error(error);
+    }).pipe(
+      retry(retryConfig),
+      map((event: MessageEvent) => {
+        return event;
+      }),
+    );
+  }
 
 }
