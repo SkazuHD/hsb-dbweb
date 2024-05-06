@@ -1,4 +1,4 @@
-import {Component, inject, model, OnInit} from '@angular/core';
+import {Component, inject, Input, model} from '@angular/core';
 import {CommonModule, NgFor} from '@angular/common';
 import {MarkdownPipe} from "../../utils/pipes/markdown.pipe";
 import {InfoText} from "../../utils/types/types";
@@ -11,12 +11,13 @@ import {ApiService} from "../../services/api.service";
   styleUrl: './info-page.component.css',
   imports: [CommonModule, NgFor, MarkdownPipe]
 })
-export class InfoPageComponent implements OnInit {
-  apiService = inject(ApiService);
-  infotext = model.required<InfoText>();
+export class InfoPageComponent {
 
-  ngOnInit(): void {
-    this.apiService.getInfo('1').subscribe((info) => {
+  infotext = model.required<InfoText>();
+  private apiService = inject(ApiService);
+
+  @Input() set id(id: string) {
+    this.apiService.getInfo(id).subscribe((info) => {
       this.infotext.set(info)
     });
   }
