@@ -7,7 +7,8 @@
     "build": "nx run-many -t build -p express-api web-app",
     "test": "nx run-many -t test -p express-api web-app",
     "lint": "nx run-many -t lint -p express-api web-app",
-    "deploy-firebase": "npm run build && firebase deploy"
+    "deploy-firebase": "npm run build && firebase deploy",
+    "update-deps-minor": "npx npm-check-updates --target minor -u && npm install"
   },
   "private": true,
   "dependencies": {
