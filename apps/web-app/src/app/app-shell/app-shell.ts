@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, inject, ViewChild,} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, inject, Signal, viewChild,} from '@angular/core';
 import {CommonModule, NgOptimizedImage} from '@angular/common';
 import {Router, RouterLink, RouterOutlet} from '@angular/router';
 import {MatSidenav, MatSidenavModule} from '@angular/material/sidenav';
@@ -13,6 +13,7 @@ import {AuthService} from '../services/auth.service';
 import {AppLink} from '../utils/types/types';
 import {ToolbarComponent} from "./toolbar.component";
 import {BreakpointObserver, Breakpoints} from "@angular/cdk/layout";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 
 @Component({
   selector: 'app-shell',
@@ -41,11 +42,8 @@ import {BreakpointObserver, Breakpoints} from "@angular/cdk/layout";
   styleUrl: './app-shell.css',
 })
 export class AppShellComponent implements AfterViewInit {
-  @ViewChild('sidenav', {read: MatSidenav}) sidenav: MatSidenav;
-
-  @ViewChild('darkModeSwitch', {read: ElementRef}) element:
-    | ElementRef
-    | undefined;
+  sidenav: Signal<MatSidenav> = viewChild.required('sidenav', {read: MatSidenav});
+  themeToggleRef: Signal<ElementRef> = viewChild.required('darkModeSwitch', {read: ElementRef});
 
   authService: AuthService = inject(AuthService);
   breakpointObserver = inject(BreakpointObserver);
@@ -82,8 +80,8 @@ export class AppShellComponent implements AfterViewInit {
     },
     {
       label: 'Testing',
-      route: '/markdown',
-      icon: 'person',
+      route: '/demo',
+      icon: 'code',
       isInToolbar: false,
       requiresAuth: false,
     },
@@ -113,32 +111,29 @@ export class AppShellComponent implements AfterViewInit {
 
 
     //Listen for route changes to close the sidenav
-    this.router.events.subscribe(() => {
-      if (this.sidenav && this.sidenav.mode === 'over') {
-        this.sidenav.close();
+    this.router.events.pipe(takeUntilDestroyed()).subscribe(() => {
+      if (this.sidenav() && this.sidenav()?.mode === 'over') {
+        this.sidenav().close();
       }
     });
   }
 
   ngAfterViewInit() {
-    if (this.element) {
-      this.element.nativeElement
+    if (this.themeToggleRef()) {
+      this.themeToggleRef().nativeElement
         .querySelector('.mdc-switch__icon--on')
         .firstChild.setAttribute('d', this.moon);
-      this.element.nativeElement
+      this.themeToggleRef().nativeElement
         .querySelector('.mdc-switch__icon--off')
         .firstChild.setAttribute('d', this.sun);
     }
-    const isHandset = this.breakpointObserver.isMatched(Breakpoints.Handset);
-    if (!isHandset) {
-      this.sidenav.open();
-    }
 
     this.breakpointObserver.observe([Breakpoints.Handset]).subscribe(result => {
+      if (!this.sidenav) return
       if (result.matches) {
-        this.sidenav.mode = 'over';
+        this.sidenav().mode = 'over';
       } else {
-        this.sidenav.mode = 'side';
+        this.sidenav().mode = 'side';
       }
     })
 
