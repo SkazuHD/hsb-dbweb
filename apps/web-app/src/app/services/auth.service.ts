@@ -108,6 +108,8 @@ export class AuthService {
     });
   }
 
+
+
   async requestRegisterDialog() {
     const {RegisterComponent} = await import(
       '../components/dialog/register/register.component'

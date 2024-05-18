@@ -4,6 +4,9 @@ export type Image = {
   url: string;
   alt?: string;
 };
+
+
+
 export type Article = {
   title: string;
   subtitle?: string;

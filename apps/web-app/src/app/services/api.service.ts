@@ -1,14 +1,22 @@
+import {inject, Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {exhaustMap, forkJoin, map, Observable, of, retry, RetryConfig} from 'rxjs';
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
+import { Article, Contact, Event, Image, InfoText } from '@hsb-dbweb/shared';
+import { MatDialog } from '@angular/material/dialog';
+import { AddPictureComponent } from '../components/dialog/add-picture/add-picture.component';
 import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { exhaustMap, forkJoin, map, Observable, of, retry, RetryConfig } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Article, Comment, CommentCreate, Contact, Event, InfoText } from '@hsb-dbweb/shared';
+import { Article, Comment, CommentCreate, Image, Contact, Event, InfoText } from '@hsb-dbweb/shared';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
   private http: HttpClient = inject(HttpClient);
+  private dialog = inject(MatDialog);
   private apiURL = 'http://localhost:4201/api';
 
   get events$(): Observable<MessageEvent> {
@@ -16,9 +24,12 @@ export class ApiService {
   }
 
   testApi() {
-    this.http.get(this.apiURL).pipe(takeUntilDestroyed()).subscribe((data) => {
-      console.debug(data);
-    });
+    this.http
+      .get(this.apiURL)
+      .pipe(takeUntilDestroyed())
+      .subscribe((data) => {
+        console.debug(data);
+      });
 
     this.events$.pipe(takeUntilDestroyed()).subscribe((event) => {
       console.debug(JSON.parse(event.data));
@@ -33,14 +44,42 @@ export class ApiService {
       titleContact: 'Kontakt',
       titleLocation: 'Trainingshalle',
       titleMap: 'Karte',
-      content: 'Wir freuen uns auf Fragen und Mitteilungen! Sendet einfach eine E-Mail oder ruft an.',
+      content:
+        'Wir freuen uns auf Fragen und Mitteilungen! Sendet einfach eine E-Mail oder ruft an.',
       email: 'info@atemschulung-griepentrog.de',
       name: 'Peter Griepentrog',
       telephone: '02065679631',
       fax: '0206563841',
-      mobile: '01709042408'
+      mobile: '01709042408',
     });
   }
+
+
+   requestAddPictureDialog():Observable<any> {
+    return this.dialog.open(AddPictureComponent, {
+      autoFocus: 'input',
+    }).afterClosed();
+  }
+
+
+  getGallery(): Observable<Image[]> {
+    return this.http.get(this.apiURL + '/gallery/').pipe() as Observable<Image[]>;
+  }
+
+  deleteImage(image: string){
+    return this.http.delete(this.apiURL + '/gallery', {
+      body: {
+        url: image
+      }
+    });
+  }
+
+  addPicture(image: Image) {
+    return this.http.post(this.apiURL + '/gallery', image);
+  }
+
+
+
 
   getInfo(id: string): Observable<InfoText> {
     return of({

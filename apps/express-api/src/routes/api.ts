@@ -18,10 +18,11 @@ import {JwtManager} from '../jwt';
 
 
 const router: Router = express.Router();
-const authRouter = express.Router();
-const profileRouter = express.Router();
-const articleRouter = express.Router();
-const eventRouter = express.Router();
+const authRouter = express.Router()
+const profileRouter = express.Router()
+const articleRouter = express.Router()
+const galleryRouter = express.Router()
+const eventRouter = express.Router()
 const db = Database.getInstance();
 const jwt = new JwtManager('replace-me-with-a-real-secret');
 
@@ -131,16 +132,63 @@ router
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     next();
   })
-  .use('/auth/', authRouter)
-  .use('/profile/', profileRouter)
-  .use('/article/', articleRouter)
-  .use('/events/', eventRouter)
+  .use("/auth/", authRouter)
+  .use("/profile/", profileRouter)
+  .use("/article/", articleRouter)
+  .use("/gallery/", galleryRouter)
+  .use("/events/", eventRouter)
   .use((err: Error, req: Request, res: Response, next: NextFunction) => {
     console.error(err.stack);
     res
       .status(500)
       .send({message: err.message ? err.message : 'Something broke!'});
   });
+
+
+galleryRouter
+  .get('/', (req: Request, res: Response) => {
+    const qb = new SqlQueryBuilder().select('*').from('Gallery');
+    db.query(qb.build()).then((result) => {
+      res.send(result);
+    }).catch((err) => {
+      res.status(500).send({ message: 'Error fetching gallery items' });
+    });
+  })
+
+  .post('/',requireAuthorization(UserRole.ADMIN), async (req: Request, res: Response) => {
+    if (!req.body.url || ! req.body.alt) {
+      return res.status(400).json({error: 'missing Parameters'});
+    }
+    const qb = new SqlQueryBuilder()
+      .insertInto('Gallery', ['Url','Alt']).values(2)
+    db.query(qb.build(), [req.body.url, req.body.alt]).then((result) => {
+      if (result.affectedRows === 0) {
+        res.status(500).send({ message: 'Error creating gallery item' });
+        return;
+      }
+      res.status(201).send({ message: 'Gallery item created' });
+    }).catch((err) => {
+      res.status(500).send({ message: 'Error creating gallery item' });
+    });
+  })
+  .delete('/',requireAuthorization(UserRole.ADMIN), (req: Request, res: Response) => {
+    const qb = new SqlQueryBuilder()
+      .deleteFrom('Gallery')
+      .where('url')
+    db.query(qb.build(), [req.body.url]).then((result) => {
+      console.log(req.body.url)
+      console.log(qb.build())
+      console.log(result)
+      if (result.affectedRows === 0) {
+        res.status(404).send({ message: 'Gallery item not found' });
+        return;
+      }
+      res.send({ message: 'Gallery item deleted' });
+    }).catch((err) => {
+      res.status(500).send({ message: 'Error deleting gallery item' });
+    });
+  });
+
 
 
 //Auth routes

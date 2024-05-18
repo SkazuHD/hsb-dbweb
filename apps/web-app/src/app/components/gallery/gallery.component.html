@@ -1,0 +1,41 @@
+<main>
+  <div class="@container">
+    <div class="grid grid-cols-2">
+      <h1 class="text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold">
+        Galerie
+      </h1>
+      @if(isAdmin()){
+      <button
+        mat-flat-button
+        class="ml-auto"
+        (click)="requestAddPictureDialog()"
+      >
+        Bild hinzufügen
+      </button>
+    }
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      @for (image of gallery(); track image) {
+       
+        <div class="relative">
+          @if(isAdmin()){
+          <button
+            aria-label="close dialog "
+            class="absolute top-2 right-2 "
+            (click)="onDelete(image.url)"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+          }
+          <img
+            class="w-full sm:w-2/3 md:w-3/4 lg:w-full h-auto rounded"
+            [src]="image.url"
+            [alt]="image.alt"
+            
+            priority
+          />
+        </div>
+      }
+    </div>
+  </div>
+</main>
