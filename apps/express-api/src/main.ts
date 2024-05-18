@@ -5,7 +5,6 @@ import * as process from 'process';
 import router from "./routes/api";
 import serverLess from 'serverless-http';
 import {sseConnections, sseMiddleware, SSEResponse} from './sse';
-import Database from './db'
 
 import {initializeApp} from 'firebase-admin/app';
 
@@ -22,10 +21,6 @@ const app = express();
 const port = process.env.PORT;
 const server = app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}/api`);
-  const db = Database.getInstance();
-  db.query('SHOW TABLES', []).then((result) => {
-    console.log(result);
-  });
 });
 
 export const handler = serverLess(app);

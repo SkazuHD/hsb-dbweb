@@ -1,4 +1,4 @@
-import {Component, inject, Input, model, OnInit} from '@angular/core';
+import {Component, inject, Input, model} from '@angular/core';
 import {CommonModule, NgOptimizedImage} from '@angular/common';
 import {Article} from '../../utils/types/types';
 import {MetatagService} from '../../services/metatag.service';
@@ -12,7 +12,7 @@ import {ApiService} from "../../services/api.service";
   templateUrl: './article.component.html',
   styleUrl: './article.component.css',
 })
-export class ArticleComponent implements OnInit {
+export class ArticleComponent {
   article = model.required<Article>();
   private meta: MetatagService = inject(MetatagService);
   private api: ApiService = inject(ApiService);
@@ -20,12 +20,11 @@ export class ArticleComponent implements OnInit {
   @Input() set slugId(id: string) {
     this.api.getArticleById(id).subscribe((article) => {
       this.article.set(article);
+      this.meta.addTagsForArticle(article);
+
     });
   }
 
-  ngOnInit(): void {
-    this.meta.addTagsForArticle(this.article());
-  }
 
   /* TODO GET ARTICLE FROM API BY ID
   ? Route Guard or in ApiService ?

@@ -1,10 +1,13 @@
 import express, {NextFunction, Request, Response, Router} from "express";
+import Database from "../db";
 
 const router: Router = express.Router();
 const authRouter = express.Router()
 const profileRouter = express.Router()
 const articleRouter = express.Router()
 const eventRouter = express.Router()
+const db = Database.getInstance();
+
 
 /* TODO
  *   Add DB logic to routes
@@ -26,10 +29,6 @@ const requireAuth = (req: Request, res: Response, next: NextFunction) => {
 
 router
   .use(express.json())
-  .use("/auth/", authRouter)
-  .use("/profile/", profileRouter)
-  .use("/article/", articleRouter)
-  .use("/events/", eventRouter)
   .use((req: Request, res: Response, next: NextFunction) => {
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200'); // replace with your Angular app's URL
     res.setHeader(
@@ -39,12 +38,17 @@ router
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     next();
   })
+  .use("/auth/", authRouter)
+  .use("/profile/", profileRouter)
+  .use("/article/", articleRouter)
+  .use("/events/", eventRouter)
   .use((err: Error, req: Request, res: Response, next: NextFunction) => {
     console.error(err.stack);
     res
       .status(500)
       .send({message: err.message ? err.message : 'Something broke!'});
-  });
+  })
+
 
 //Auth routes
 authRouter
@@ -95,7 +99,15 @@ articleRouter
     res.send({message: 'Article works!'})
   })
   .get('/:id', (req: Request, res: Response) => {
-    res.send({message: 'Article works!'});
+    console.log(res.getHeaders())
+    db.query('SELECT * FROM article WHERE id = ?', [req.params.id]).then((result) => {
+      if (result.length === 0) {
+        res.status(404).send({message: 'Article not found'});
+        return;
+      }
+      
+      res.send(result[0]);
+    })
   })
   .post('/', (req: Request, res: Response) => {
     res.send({message: 'Article works!'});
