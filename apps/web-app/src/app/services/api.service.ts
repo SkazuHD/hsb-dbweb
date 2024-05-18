@@ -74,6 +74,10 @@ export class ApiService {
     });
   }
 
+  getArticles(): Observable<Article[]> {
+    return this.http.get(this.apiURL + '/article').pipe() as Observable<Article[]>;
+  }
+
   getArticleById(id: string): Observable<Article> {
     return this.http.get(this.apiURL + '/article/' + id).pipe() as Observable<Article>;
 
