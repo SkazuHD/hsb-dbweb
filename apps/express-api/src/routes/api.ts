@@ -99,17 +99,61 @@ authRouter
 //Profile routes
 profileRouter.use(requireAuth)
 profileRouter
-  .get('/:username', (req: Request, res: Response) => {
-    res.send({message: 'Profile works!'});
+  .get('/', (req: Request, res: Response) => {
+    db.query('SELECT * FROM User').then((result) => {
+      res.send(result);
+    }).catch((err) => {
+      res.status(500).send({message: 'Error fetching users'});
+    })
   })
-  .post('/:username', (req: Request, res: Response) => {
-    res.send({message: 'Profile works!'});
+  .get('/:username', (req: Request, res: Response) => {
+    db.query('SELECT * FROM User WHERE uid = ?', [req.params.username]).then((result) => {
+      if (result.length === 0) {
+        res.status(404).send({message: 'User not found'});
+        return;
+      }
+      res.send({message: 'User found!'});
+      res.send(result[0]);
+    }).catch((err) => {
+      res.status(500).send({message: 'Error fetching user'});
+    })
+  })
+  .post('/', (req: Request, res: Response) => {
+    const id = generateId(idType.User)
+    db.query('INSERT INTO User (uid, username, password, email, role, activated) VALUES (?, ?, ?, ?, ?, ?)',
+      [id, req.body.username, req.body.password, req.body.email, req.body.role, req.body.activated]).then((result) => {
+      if (result.affectedRows === 0) {
+        res.status(500).send({message: 'Error creating user'});
+        return;
+      }
+      res.status(201).send({message: 'User created'});
+    }).catch((err) => {
+      res.status(500).send({message: 'Error creating user'});
+    })
   })
   .put('/:username', (req: Request, res: Response) => {
-    res.send({message: 'Profile works!'});
+    db.query('UPDATE User SET username = ?, password = ?, email = ?, role = ?, activated = ? WHERE uid = ?',
+      [req.body.username, req.body.password, req.body.email, req.body.role, req.body.activated, req.params.username]).then((result) => {
+      if (result.affectedRows === 0) {
+        res.status(404).send({message: 'User not found'});
+        return;
+      }
+      res.send({message: 'User updated'});
+    }).catch((err) => {
+        res.status(500).send({message: 'Error updating user'});
+      }
+    )
   })
   .delete('/:username', (req: Request, res: Response) => {
-    res.send({message: 'Profile works!'});
+    db.query('DELETE FROM User WHERE uid = ?', [req.params.username]).then((result) => {
+      if (result.affectedRows === 0) {
+        res.status(404).send({message: 'User not found'});
+        return;
+      }
+      res.send({message: 'User deleted'});
+    }).catch((err) => {
+      res.status(500).send({message: 'Error deleting user'});
+    })
   });
 //Article routes
 articleRouter
