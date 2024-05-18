@@ -1,27 +1,6 @@
-<!--<div class="@container/newsfeed">
-  <div class="@lg/newsfeed">
-    <div class="basis-2/3">
-      <h1 class="text-lg font-bold">Überschrift X</h1>
-      <p>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat optio
-        exercitationem suscipit, ad veniam ipsa, natus cumque maxime
-        reprehenderit nisi pariatur? Doloremque exercitationem repudiandae illo,
-        mollitia ipsa accusamus enim? Vitae.
-      </p>
-      <button mat-flat-button color="accent">Weiterlesen</button>
-    </div>
-    <div class="basis-1/3 flex justify-end px-20">
-      <img
-        class="max-h-24"
-        src="https://s-media-cache-ak0.pinimg.com/236x/ff/a4/11/ffa4116b4db241296e9afc20c1c5131c.jpg"
-        alt="Description of the image"
-      />
-    </div>
-  </div>
-</div>-->
-<mat-card class="@container/newsfeed m-10 !rounded-lg">
-  <div class="@6xl:grid-cols-[2fr_1fr]">
-    <div>
+<mat-card class="@container/newsfeed p-10 !rounded-lg">
+  <div class="@lg:grid grid-rows-3 grid-flow-col gap-8">
+    <div class="row-span-2 col-span-2">
       <mat-card-header>
         <h3 class="text-lg font-bold">Überschrift X</h3>
       </mat-card-header>
@@ -33,14 +12,15 @@
           illo, mollitia ipsa accusamus enim? Vitae.
         </p>
       </mat-card-content>
+    </div>
+    <div class="col-span-2 justify-self-center">
       <mat-card-actions>
         <button mat-flat-button color="accent">Weiterlesen</button>
       </mat-card-actions>
     </div>
-    <div>
+    <div class="row-span-3 justify-items-end">
       <img
-        mat-card-lg-image
-        class="p-5"
+        class="w-32 lg:w-48 rounded-[10px]"
         src="https://s-media-cache-ak0.pinimg.com/236x/ff/a4/11/ffa4116b4db241296e9afc20c1c5131c.jpg"
         alt="Bild"
       />
