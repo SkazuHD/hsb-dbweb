@@ -9,13 +9,14 @@ import {Article, Contact, InfoText} from '../utils/types/types';
 })
 export class ApiService {
   private http: HttpClient = inject(HttpClient);
+  private apiURL = 'http://localhost:4201/api';
 
   get events$(): Observable<MessageEvent> {
     return this.constructSSERequest('http://localhost:4201/events');
   }
 
   testApi() {
-    this.http.get('http://127.0.0.1:4201/api').pipe(takeUntilDestroyed()).subscribe((data) => {
+    this.http.get(this.apiURL).pipe(takeUntilDestroyed()).subscribe((data) => {
       console.debug(data);
     });
 
@@ -74,11 +75,8 @@ export class ApiService {
   }
 
   getArticleById(id: string): Observable<Article> {
-    return of({
-      title: 'CALL API TO GET ARTICLE',
-      content: 'IMPLEMENT ME',
-      id: id,
-    })
+    return this.http.get(this.apiURL + '/article/' + id).pipe() as Observable<Article>;
+
   }
 
   private constructSSERequest(url: string) {

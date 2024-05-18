@@ -22,11 +22,11 @@ export class MetatagService {
     const tags = [
       {
         name: "author",
-        content: article.author ?? "Unknown Author",
+        content: article?.author ?? "Unknown Author",
       },
       {
         name: "description",
-        content: article.content ?? article.subtitle,
+        content: article?.content ?? article?.subtitle,
       },
       {
         name: "keywords",
@@ -34,7 +34,7 @@ export class MetatagService {
       },
       {
         name: "og:title",
-        content: article.title,
+        content: article?.title,
       },
       {
         name: "og:type",
@@ -42,11 +42,11 @@ export class MetatagService {
       },
       {
         name: "og:description",
-        content: article.content,
+        content: article?.content,
       },
       {
         name: "og:image",
-        content: article.image?.url ?? "",
+        content: article?.image?.url ?? "",
       },
       {
         name: "og:url",
