@@ -1,0 +1,31 @@
+<div mat-dialog-title class="!flex !items-center">
+    <h2>Bild hinzufügen</h2>
+    <button mat-icon-button aria-label="close dialog" class="ml-auto" mat-dialog-close>
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  
+  <mat-dialog-content>
+    <div class="@container grid gap-5 @md:p-3 @lg:p-6 max-w-full w-96">
+      <form class="grid" [formGroup]="formGroup">
+        <mat-form-field>
+          <input matInput placeholder="Picture Link" formControlName="picture" autocomplete="Picture Link"/>
+          @if (formGroup.get('Picture-Link')?.hasError('required')) {
+            <mat-error>Please enter a link of a picture</mat-error>
+          }
+        </mat-form-field>
+  
+        <mat-form-field>
+          <input matInput placeholder="Alternative text" formControlName="alt" autocomplete="Alternative"/>
+          @if (formGroup.get('Alt')?.hasError('required')) {
+            <mat-error>Please enter an Alternative text to you image</mat-error>
+          }
+        </mat-form-field>
+  
+        <button class="mt-2" mat-flat-button color="primary" type="submit" [disabled]="isLoading" (click)="onAdd()">
+          Add Now
+        </button>
+      </form>
+    </div>
+  </mat-dialog-content>
+    

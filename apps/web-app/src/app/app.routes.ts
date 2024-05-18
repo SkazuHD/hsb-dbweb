@@ -7,6 +7,7 @@ import {ContactComponent} from './components/contacts/contact.component';
 import {adminGuard} from "./utils/guards/admin.guard";
 import { LandingPageComponent } from './components/landingpage/landingPage.component';
 import { ArticlelistComponent } from './components/articlelist/articlelist.component';
+import {GalleryComponent} from './components/gallery/gallery.component';
 
 export const appRoutes: Route[] = [
   {
@@ -14,6 +15,7 @@ export const appRoutes: Route[] = [
     component: AppShellComponent,
     children: [
       {path: '', component: LandingPageComponent},
+      {path:'gallery', component: GalleryComponent},
       {path: 'articles', component: ArticlelistComponent},
       {path: 'articles/:slugId', component: ArticleComponent},
       {path: 'profiles/:username', component: AppComponent},

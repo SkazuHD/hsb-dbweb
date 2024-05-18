@@ -1,7 +1,7 @@
-### GET request to example server
-GET http://localhost:4201/api/article/A-19871716047693297/likes
+### Test POST request to gallery endpoint
+DELETE http://localhost:4201/api/gallery/
+Content-Type: application/json
 
-###
-POST http://localhost:4201/api/article/A-19871716047693297/likes
-Authorization: Bearer <token>
-
+{
+  "url": "https://media.discordapp.net/attachments/1232311018143617096/1254732056642977854/cover.thumb256.png?ex=667a8fca&is=66793e4a&hm=0ad68a4f35823bbb87c9eae3c3628aa56e3d3f1882107c4a452f271b6cc4f5b0&=&format=webp&quality=lossless&width=384&height=384",
+}
