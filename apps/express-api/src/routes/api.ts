@@ -1,5 +1,6 @@
 import express, {NextFunction, Request, Response, Router} from "express";
 import Database from "../db";
+import * as crypto from "node:crypto";
 
 const router: Router = express.Router();
 const authRouter = express.Router()
@@ -16,8 +17,25 @@ const db = Database.getInstance();
  *   Error handling
  */
 
+enum idType {
+  Article,
+  Event,
+  User,
+}
+
+function generateId(type: idType) {
+  if (type === idType.Article)
+    return "A-" + crypto.randomInt(10000) + Date.now()
+  else if (type === idType.Event)
+    return "E-" + crypto.randomInt(10000) + Date.now()
+  else if (type === idType.User)
+    return crypto.randomInt(10000) + Date.now()
+
+}
+
 const requireAuth = (req: Request, res: Response, next: NextFunction) => {
   //Auth middleware | Checks if user is authenticated and provides valid token
+  console.debug(req.header("Authorization"))
   if (req.header("Authorization") === undefined) {
     res.status(401).send({message: "Unauthorized"})
     return;
@@ -96,27 +114,58 @@ profileRouter
 //Article routes
 articleRouter
   .get('/', (req: Request, res: Response) => {
-    res.send({message: 'Article works!'})
+    db.query('SELECT * FROM Article').then((result) => {
+      res.send(result);
+    }).catch((err) => {
+      res.status(500).send({message: 'Error fetching articles'});
+    })
   })
   .get('/:id', (req: Request, res: Response) => {
-    console.log(res.getHeaders())
-    db.query('SELECT * FROM article WHERE id = ?', [req.params.id]).then((result) => {
+    db.query('SELECT * FROM Article WHERE uid = ?', [req.params.id]).then((result) => {
       if (result.length === 0) {
         res.status(404).send({message: 'Article not found'});
         return;
       }
-      
       res.send(result[0]);
+    }).catch((err) => {
+      res.status(500).send({message: 'Error fetching article'});
     })
   })
   .post('/', (req: Request, res: Response) => {
-    res.send({message: 'Article works!'});
+    const id = generateId(idType.Article)
+    db.query('INSERT INTO Article (uid, title, content, subtitle, author, media, userUid) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [id, req.body.title, req.body.content, req.body.subtitle, req.body.author, req.body.media, req.body.userUid]).then((result) => {
+      if (result.affectedRows === 0) {
+        res.status(500).send({message: 'Error creating article'});
+        return;
+      }
+      res.status(201).send({message: 'Article created'});
+    }).catch((err) => {
+      res.status(500).send({message: 'Error creating article'});
+    })
   })
   .put('/:id', (req: Request, res: Response) => {
-    res.send({message: 'Article works!'});
+    db.query('UPDATE Article SET title = ?, content = ?, subtitle = ?, author = ?, media = ?, userUid = ? WHERE uid = ?',
+      [req.body.title, req.body.content, req.body.subtitle, req.body.author, req.body.media, req.body.userUid, req.params.id]).then((result) => {
+      if (result.affectedRows === 0) {
+        res.status(404).send({message: 'Article not found'});
+        return;
+      }
+      res.send({message: 'Article updated'});
+    }).catch((err) => {
+      res.status(500).send({message: 'Error updating article'});
+    })
   })
   .delete('/:id', (req: Request, res: Response) => {
-    res.send({message: 'Article works!'});
+    db.query('DELETE FROM Article WHERE uid = ?', [req.params.id]).then((result) => {
+      if (result.affectedRows === 0) {
+        res.status(404).send({message: 'Article not found'});
+        return;
+      }
+      res.send({message: 'Article deleted'});
+    }).catch((err) => {
+      res.status(500).send({message: 'Error deleting article'});
+    })
   });
 //Event routes
 eventRouter
