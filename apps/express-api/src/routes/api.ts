@@ -3,6 +3,10 @@ import Database from "../db";
 import * as crypto from "node:crypto";
 import {Article, Event, User} from "@hsb-dbweb/shared"
 import {SqlQueryBuilder} from "./SqlQueryBuilder";
+import bcrypt from 'bcrypt';
+import {jwtVerify, SignJWT} from 'jose';
+import {rateLimit} from "express-rate-limit";
+
 
 const router: Router = express.Router();
 const authRouter = express.Router()
@@ -10,7 +14,6 @@ const profileRouter = express.Router()
 const articleRouter = express.Router()
 const eventRouter = express.Router()
 const db = Database.getInstance();
-
 
 /* TODO
  *   Add DB logic to routes
@@ -31,33 +34,62 @@ function generateId(type: idType) {
   else if (type === idType.Event)
     return "E-" + crypto.randomInt(10000) + Date.now()
   else if (type === idType.User)
-    return crypto.randomInt(10000) + Date.now()
+    return "U-" + crypto.randomInt(10000) + Date.now()
 
 }
 
-const requireAuthentication = (req: Request, res: Response, next: NextFunction) => {
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
+  standardHeaders: 'draft-7', // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
+  // store: ... , // Redis, Memcached, etc. See below.
+})
+
+const requireAuthentication = async (req: Request, res: Response, next: NextFunction) => {
   //Auth middleware | Checks if user is authenticated and provides valid token
   console.debug(req.header("Authorization"))
+
+  const authHeader = req.header("Authorization");
+
   if (req.header("Authorization") === undefined) {
     res.status(401).send({message: "Unauthorized"})
     return;
   }
+
+  const token = authHeader.split(' ')[1];
+  if (!token) {
+    res.status(401).send({message: "Unauthorized"});
+    return;
+  }
+
+  try {
+    const secret = new TextEncoder().encode('your-secret-key'); // Use the same secret key
+    const {payload} = await jwtVerify(token, secret);
+    req.body.user = payload;
+    next();
+  } catch (err) {
+    res.status(401).send({message: "Invalid token"});
+  }
+
   //TODO check if token is valid
   next();
 }
-const requireAuthorization = (req: Request, res: Response, next: NextFunction) => {
-  // Authorization middleware | Will check if user is authorized to access the resource
-  console.debug(req.header("Authorization"))
-  if (req.header("Authorization") === undefined) {
-    res.status(401).send({message: "Unauthorized"})
-    return;
 
-  }
-  // TODO Decode JWT and check if user has the required role
-  next();
-}
+const requireAuthorization = (requiredRole: string) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (req.body.role !== requiredRole) {
+      res.status(403).send({message: "Forbidden"});
+      return;
+    }
+    // TODO Decode JWT and check if user has the required role
+    next();
+  };
+};
+
 
 router
+  .use(limiter)
   .use(express.json())
   .use((req: Request, res: Response, next: NextFunction) => {
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200'); // replace with your Angular app's URL
@@ -82,29 +114,80 @@ router
 
 //Auth routes
 authRouter
-  .post('/login', (req: Request, res: Response) => {
-    const {username, password} = req.body;
-    if (!username || !password) {
-      res.status(400).send({message: 'Missing username or password'});
-      return;
-    }
-    const isValid = true;
-    if (!isValid) {
-      res.status(403).send({message: 'Invalid password'});
-      return;
-    }
-    res.status(200).send({message: 'Login successful'});
-  })
-  .post('/register', async (req: Request, res: Response) => {
-    const {username, password} = req.body;
-    if (!username || !password) {
-      res.status(400).send({message: 'Missing username or password'});
-      return;
-    }
-    //TODO DB STUFF
+  .post('/login', async (req: Request, res: Response) => {
+    const qb = new SqlQueryBuilder()
+    qb.select('*').from('User').where('email')
+    try {
+      const result = await db.query(qb.build(), [req.body.email]);
+      if (result.length === 0) {
+        res.status(401).send({message: 'Invalid username or password'});
+        return;
+      }
 
-    res.status(201);
+      const hashedPassword = result[0].password;
+      const match = bcrypt.compare(req.body.password, hashedPassword);
+      if (!match) {
+        res.status(401).send({message: 'Invalid username or password'});
+        return;
+      }
+      const user: Omit<User, 'password'> = {...result[0], password: null}
+      const secret = new TextEncoder().encode('your-secret-key'); // Use a strong secret key
+      const token = await new SignJWT({user})
+        .setProtectedHeader({alg: 'HS256'})
+        .setIssuedAt()
+        .setExpirationTime('2h')
+        .sign(secret);
+
+      res.setHeader('Authorization', `Bearer ${token}`)
+      res.status(200).send({message: 'Login successful', token, user});
+    } catch (err) {
+      res.status(500).send({message: 'Error logging in'});
+    }
   })
+
+
+  .post('/register', async (req: Request, res: Response) => {
+    if (!req.body.password || !req.body.username || !req.body.email) {
+      return res.status(400).json({error: 'missing Parameters'});
+    }
+
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
+    const id = generateId(idType.User)
+    const qb = new SqlQueryBuilder()
+    qb.insertInto('User', ['uid', 'username', 'password', 'email', 'role', 'activated']).values(6)
+    // Todo add role table as FK constraint^
+    console.log(req.body)
+    db.query(qb.build(),
+      [id, req.body.username, hashedPassword, req.body.email, "user", true]).then(async (result) => {
+      if (result.affectedRows === 0) {
+        res.status(500).send({message: 'Error creating user'});
+        return;
+      }
+      const secret = new TextEncoder().encode('your-secret-key'); // Use a strong secret key
+
+      const user: Omit<User, 'password'> = {
+        uid: id,
+        username: req.body.username,
+        email: req.body.email,
+        role: "user",
+        activated: true
+      }
+
+      const token = await new SignJWT({user})
+        .setProtectedHeader({alg: 'HS256'})
+        .setIssuedAt()
+        .setExpirationTime('2h')
+        .sign(secret);
+
+      res.setHeader('Authorization', `Bearer ${token}`)
+      res.status(201).send({message: 'User created', token, user});
+    }).catch((err) => {
+      res.status(500).send({message: 'Error creating user'});
+    })
+  })
+
+
   .get("/test", (req: Request, res: Response) => {
     res.send({message: "Auth Router works"})
   })
@@ -113,8 +196,8 @@ profileRouter.use(requireAuthentication)
 profileRouter
   .get('/', (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder()
-    .select(['uid', 'username', 'email','name', 'role', 'activated'])
-    .from('User')
+      .select(['uid', 'username', 'email', 'name', 'role', 'activated'])
+      .from('User')
 
     db.query(qb.build()).then((result) => {
       res.send(result);
@@ -124,9 +207,9 @@ profileRouter
   })
   .get('/:id', (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder()
-    .select(['uid', 'username', 'email','name', 'role', 'activated'])
-    .from('User')
-    .where('uid')
+      .select(['uid', 'username', 'email', 'name', 'role', 'activated'])
+      .from('User')
+      .where('uid')
 
     db.query(qb.build(), [req.params.id]).then((result) => {
       if (result.length === 0) {
@@ -139,52 +222,9 @@ profileRouter
       res.status(500).send({message: 'Error fetching user'});
     })
   })
-  .post('/', (req: Request, res: Response) => {
-    const id = generateId(idType.User)
-    const user: Partial<User> = req.body;
-    const qb = new SqlQueryBuilder()
-    .insertInto('User', ["uid", "username", "password", "email", "role", "activated"])
-    .values(6)
-    db.query(qb.build(),
-      [id, user.username, user.password, user.email, user.role, user.activated]).then((result) => {
-      if (result.affectedRows === 0) {
-        res.status(500).send({message: 'Error creating user'});
-        return;
-      }
-      res.status(201).send({message: 'User created'});
-    }).catch((err) => {
-      res.status(500).send({message: 'Error creating user'});
-    })
-  })
-  .put('/:id', (req: Request, res: Response) => {
-    const user: Partial<User> = req.body;
-    const params = []
-    const qb = new SqlQueryBuilder()
-    .update("User")
-    if (user.username){
-      qb.set("username")
-      params.push(user.username)
-    }
-    if (user.password){
-      // TODO HASH PASSWORD HERE
-      qb.set("password")
-      params.push(user.password)
-    }
-    if (user.email){
-      qb.set("email")
-      params.push(user.email)
-    }
-    if (user.role){
-      qb.set("role")
-      params.push(user.role)
-    }
-    if (user.activated){
-      qb.set("activated")
-      params.push(user.activated)
-    }
-    qb.where("uid")
-    params.push(req.params.username)
-    db.query(qb.build(), params).then((result) => {
+  .put('/:username', (req: Request, res: Response) => {
+    db.query('UPDATE User SET username = ?, password = ?, email = ?, role = ?, activated = ? WHERE uid = ?',
+      [req.body.username, req.body.password, req.body.email, req.body.role, req.body.activated, req.params.username]).then((result) => {
       if (result.affectedRows === 0) {
         res.status(404).send({message: 'User not found'});
         return;
@@ -197,8 +237,8 @@ profileRouter
   })
   .delete('/:id', (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder()
-    .deleteFrom("User")
-    .where("uid")
+      .deleteFrom("User")
+      .where("uid")
 
     db.query(qb.build(), [req.params.username]).then((result) => {
       if (result.affectedRows === 0) {
@@ -214,8 +254,8 @@ profileRouter
 articleRouter
   .get('/', (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder()
-    .select('*')
-    .from('Article')
+      .select('*')
+      .from('Article')
 
     db.query(qb.build()).then((result) => {
       res.send(result);
@@ -225,9 +265,9 @@ articleRouter
   })
   .get('/:id', (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder()
-    .select('*')
-    .from('Article')
-    .where('uid')
+      .select('*')
+      .from('Article')
+      .where('uid')
 
     db.query(qb.build(), [req.params.id]).then((result) => {
       if (result.length === 0) {
@@ -243,8 +283,8 @@ articleRouter
     const id = generateId(idType.Article)
     const article: Partial<Article> = req.body;
     const qb = new SqlQueryBuilder()
-    .insertInto('Article', ["uid", "title", "content", "subtitle", "author", "media", "userUid"])
-    .values(7)
+      .insertInto('Article', ["uid", "title", "content", "subtitle", "author", "media", "userUid"])
+      .values(7)
 
     db.query(qb.build(),
       [id, article.title, article.content, article.subtitle, article.author, article.media, article.userUid]).then((result) => {
@@ -261,28 +301,28 @@ articleRouter
     const params = []
     const article: Partial<Article> = req.body;
     const qb = new SqlQueryBuilder()
-    .update("Article")
-    if (article.title){
+      .update("Article")
+    if (article.title) {
       qb.set("title")
       params.push(article.title)
     }
-    if (article.content){
+    if (article.content) {
       qb.set("content")
       params.push(article.content)
     }
-    if (article.subtitle){
+    if (article.subtitle) {
       qb.set("subtitle")
       params.push(article.subtitle)
     }
-    if (article.author){
+    if (article.author) {
       qb.set("author")
       params.push(article.author)
     }
-    if (article.media){
+    if (article.media) {
       qb.set("media")
       params.push(article.media)
     }
-    if (article.userUid){
+    if (article.userUid) {
       qb.set("userUid")
       params.push(article.userUid)
     }
@@ -300,8 +340,8 @@ articleRouter
   })
   .delete('/:id', (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder()
-    .deleteFrom("Article")
-    .where("uid")
+      .deleteFrom("Article")
+      .where("uid")
 
     db.query(qb.build(), [req.params.id]).then((result) => {
       if (result.affectedRows === 0) {

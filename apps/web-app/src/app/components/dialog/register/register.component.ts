@@ -22,6 +22,7 @@ import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatDivider } from '@angular/material/divider';
 import { AsyncPipe } from '@angular/common';
 import { MatIcon, MatIconModule } from '@angular/material/icon';
+import { registerCredential } from '@hsb-dbweb/shared';
 
 @Component({
   selector: 'app-register',
@@ -50,6 +51,7 @@ export class RegisterComponent {
   private authService = inject(AuthService);
   formGroup: FormGroup = new FormGroup(
     {
+      username: new FormControl('', [Validators.required]),
       email: new FormControl('', [Validators.required, Validators.email]),
       password1: new FormControl('', [
         Validators.required,
@@ -82,10 +84,14 @@ export class RegisterComponent {
       return;
     }
     this.isLoading = true;
+    const credentials: registerCredential = {
+      username: this.formGroup.get('username')?.value,
+      password: this.formGroup.get('password1')?.value,
+      email: this.formGroup.get('email')?.value,
+    };
     this.authService
       .signUpWithEmail$(
-        this.formGroup.get('email')?.value,
-        this.formGroup.get('password1')?.value,
+        credentials
       )
       .subscribe({
         next: (result) => {

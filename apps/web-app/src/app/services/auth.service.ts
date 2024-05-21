@@ -1,54 +1,47 @@
-import {
-  Auth,
-  authState,
-  createUserWithEmailAndPassword,
-  GoogleAuthProvider,
-  idToken,
-  sendEmailVerification,
-  sendPasswordResetEmail,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  signOut,
-  User,
-} from '@angular/fire/auth';
-
 import {computed, inject, Injectable, signal} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
-import {from, Observable} from 'rxjs';
+import {BehaviorSubject, map, Observable, tap} from 'rxjs';
 import {NotificationService} from './notification.service';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {HttpClient} from '@angular/common/http';
+import {registerCredential, User} from '@hsb-dbweb/shared';
+import {Error} from "@firebase/auth-types";
 
 export type AuthUser = User | null | undefined;
+export type AuthIdToken = string | null | undefined;
+
+interface AuthState {
+  user: AuthUser;
+  idToken: AuthIdToken;
+}
 
 export type Credentials = {
   email: string;
   password: string;
-}
-
-interface AuthState {
-  user: AuthUser;
-  idToken: string | null | undefined;
-}
+};
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
+  user$ = new BehaviorSubject<AuthUser>(null)
+  //Sources
   private dialog = inject(MatDialog);
   private notificationService: NotificationService =
     inject(NotificationService);
-  private auth: Auth = inject(Auth);
-  //Sources
-  user$ = authState(this.auth);
-  private idToken$ = idToken(this.auth);
+  private http = inject(HttpClient);
+  private idToken$ = new BehaviorSubject<AuthIdToken>(null)
   //State
   private state = signal<AuthState>({
     user: undefined,
-    idToken: undefined
+    idToken: undefined,
   });
   //Selectors
   user = computed(() => this.state().user);
   idToken = computed(() => this.state().idToken);
+  private apiURL = 'http://localhost:4201/api';
+
+  // TODO IMPLEMENT PERSISTENCE OF JWT TOKEN 
 
   constructor() {
     // Side effects
@@ -65,109 +58,88 @@ export class AuthService {
         idToken,
       }));
     });
-
   }
 
   async requestLoginDialog() {
-    const {LoginComponent} = await import('../components/dialog/login/login.component');
+    const {LoginComponent} = await import(
+      '../components/dialog/login/login.component'
+      );
     return this.dialog.open(LoginComponent, {
-      autoFocus: 'input'
+      autoFocus: 'input',
     });
   }
 
   async requestRegisterDialog() {
-    const {RegisterComponent} = await import('../components/dialog/register/register.component');
+    const {RegisterComponent} = await import(
+      '../components/dialog/register/register.component'
+      );
     return this.dialog.open(RegisterComponent, {
-      autoFocus: 'input'
+      autoFocus: 'input',
     });
   }
 
-  requestEmailVerification(user: User) {
-    //TODO
-    this.dialog.open(MatDialog, {
-      autoFocus: 'input'
-    }).close(
-      sendEmailVerification(user).then(() => {
-        console.debug('Email verification sent');
-      }),
-    );
-  }
 
   async requestPasswordReset() {
-    const {ResetPasswordComponent} = await import('../components/dialog/reset-password/reset-password.component');
+    const {ResetPasswordComponent} = await import(
+      '../components/dialog/reset-password/reset-password.component'
+      );
     return this.dialog
       .open(ResetPasswordComponent, {
-        autoFocus: 'input'
+        autoFocus: 'input',
       })
       .afterClosed()
       .subscribe((email) => {
         if (!email) {
           return;
         }
-        sendPasswordResetEmail(this.auth, email).then(() => {
-          this.notificationService.info('Password reset email sent');
-        });
+        this.notificationService.error('Currently not Available');
+
       });
   }
 
   signInWithGoogle$(): Observable<User | null> {
-    const provider = new GoogleAuthProvider();
-    return from(
-      signInWithPopup(this.auth, provider)
-        .then((result) => {
-          this.notificationService.success('Login successful');
-          return result.user;
-        })
-        .catch((error) => {
-          this.notificationService.error(error.code);
-          throw error;
-        }),
-    );
+    this.notificationService.error('Currently not Available');
+    return new Observable();
   }
 
-  signInWithEmail$(
-    credentials: Credentials,
-  ): Observable<User | null | Error> {
-    return from(
-      signInWithEmailAndPassword(this.auth, credentials.email, credentials.password)
-        .then((result) => {
-          this.notificationService.success('Login successful');
-          return this.handleSignIn(result.user);
-        })
-        .catch((error) => {
-          this.notificationService.error(error.code);
-          return error;
-        }),
-    );
+  signInWithEmail$(credentials: Credentials): Observable<AuthUser | Error> {
+    //TODO ERROR HANDLING
+    return this.http.post<AuthState & { message: string }>(this.apiURL + '/auth' + '/login', {
+      email: credentials.email,
+      password: credentials.password,
+
+    }).pipe(tap((res) => {
+      this.user$.next(res.user);
+      this.idToken$.next(res.idToken);
+      this.notificationService.success(res.message);
+
+    }), map((res) => res.user));
   }
 
   signUpWithEmail$(
-    email: string,
-    password: string,
-  ): Observable<User | null | Error> {
-    return from(
-      createUserWithEmailAndPassword(this.auth, email, password)
-        .then((result) => {
-          this.notificationService.success('Registration successful');
-          return result.user;
-        })
-        .catch((error) => {
-          this.notificationService.error(error.code);
-          return error;
-        }),
-    );
+    credentials: registerCredential,
+  ): Observable<AuthUser | Error> {
+    //TODO ERROR HANDLING
+    return this.http.post<AuthState & { message: string }>(
+      this.apiURL + '/auth' + '/register',
+      {
+        username: credentials.username,
+        password: credentials.password,
+        email: credentials.email,
+      },
+    ).pipe(tap((res) => {
+      this.user$.next(res.user);
+      this.idToken$.next(res.idToken);
+      this.notificationService.success(res.message);
+
+    }), map((res) => res.user));
   }
 
   logout() {
-    signOut(this.auth).then(() => {
-      this.notificationService.info('Signed out');
-    });
+    this.user$.next(null);
+    this.idToken$.next(null);
+    this.notificationService.success('Logged out');
   }
 
-  private handleSignIn(user: User) {
-    if (!user.emailVerified) {
-      this.requestEmailVerification(user);
-    }
-    return user;
-  }
+
 }

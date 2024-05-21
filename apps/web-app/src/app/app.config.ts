@@ -15,7 +15,7 @@ import {AuthService} from "./services/auth.service";
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(appRoutes, withComponentInputBinding()),
-    {provide: AuthService},
+    {provide: AuthService, useClass: AuthService},
     provideHttpClient(),
     provideNativeDateAdapter(),
     provideFirebaseApp(() =>

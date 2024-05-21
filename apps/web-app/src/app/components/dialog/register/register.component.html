@@ -1,18 +1,23 @@
 <div mat-dialog-title class="!flex !items-center">
   <h2>Reset your Password</h2>
-
-  <button
-    mat-icon-button
-    aria-label="close dialog"
-    class="ml-auto"
-    mat-dialog-close
-  >
+  <button mat-icon-button aria-label="close dialog" class="ml-auto" mat-dialog-close>
     <mat-icon>close</mat-icon>
   </button>
 </div>
+
 <mat-dialog-content>
   <div class="@container grid gap-5 @md:p-3 @lg:p-6 max-w-full w-96">
     <form class="grid" [formGroup]="formGroup">
+      <mat-form-field>
+        <input matInput placeholder="Username" formControlName="username" autocomplete="username"/>
+        @if (formGroup.get('username')?.hasError('required')) {
+          <mat-error>Please enter an username address</mat-error>
+        }
+        @if (formGroup.get('username')?.hasError('username')) {
+          <mat-error>Please enter a valid username address</mat-error>
+        }
+      </mat-form-field>
+
       <mat-form-field>
         <input matInput placeholder="E-Mail" formControlName="email" autocomplete="email"/>
         @if (formGroup.get('email')?.hasError('required')) {
@@ -22,14 +27,9 @@
           <mat-error>Please enter a valid email address</mat-error>
         }
       </mat-form-field>
+
       <mat-form-field>
-        <input
-          matInput
-          placeholder="Password"
-          type="password"
-          formControlName="password1"
-          autocomplete="current-password"
-        />
+        <input matInput placeholder="Password" type="password" formControlName="password1" autocomplete="current-password"/>
         @if (formGroup.get('password1')?.hasError('required')) {
           <mat-error>Please enter a password</mat-error>
         }
@@ -37,14 +37,9 @@
           <mat-error>Password must be at least 8 characters long</mat-error>
         }
       </mat-form-field>
+
       <mat-form-field>
-        <input
-          matInput
-          placeholder="Password"
-          type="password"
-          formControlName="password2"
-          autocomplete="current-password"
-        />
+        <input matInput placeholder="Confirm Password" type="password" formControlName="password2" autocomplete="current-password"/>
         @if (formGroup.get('password2')?.hasError('required')) {
           <mat-error>Please enter a password</mat-error>
         }
@@ -55,14 +50,8 @@
           <mat-error>Password must be at least 8 characters long</mat-error>
         }
       </mat-form-field>
-      <button
-        class="mt-2"
-        mat-flat-button
-        color="primary"
-        type="submit"
-        [disabled]="isLoading"
-        (click)="onSignUp()"
-      >
+
+      <button class="mt-2" mat-flat-button color="primary" type="submit" [disabled]="isLoading" (click)="onSignUp()">
         Register Now
       </button>
     </form>
@@ -72,3 +61,4 @@
     </button>
   </div>
 </mat-dialog-content>
+  
