@@ -27,7 +27,7 @@ export const handler = serverLess(app);
 
 app
   .use('/api/', router)
-  .use('/assets', express.static(path.join(__dirname, 'assets')));
+  .use('/assets', express.static(path.join(__dirname, 'assets')))
 
 //App routes
 

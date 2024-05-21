@@ -62,3 +62,9 @@ export type User = {
   activated: boolean;
   uid: string;
 }
+
+export type registerCredential = {
+  username: string;
+  email: string;
+  password: string;
+}
