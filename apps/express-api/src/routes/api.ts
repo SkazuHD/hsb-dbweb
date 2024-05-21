@@ -3,6 +3,8 @@ import Database from "../db";
 import * as crypto from "node:crypto";
 import {Event} from "@hsb-dbweb/shared"
 import {SqlQueryBuilder} from "./SqlQueryBuilder";
+import bcrypt from 'bcrypt';
+
 
 const router: Router = express.Router();
 const authRouter = express.Router()
@@ -79,32 +81,60 @@ router
       .send({message: err.message ? err.message : 'Something broke!'});
   })
 
+  const saltRounds = 10;
 
 //Auth routes
 authRouter
-  .post('/login', (req: Request, res: Response) => {
+  .post('/login', async (req: Request, res: Response) => {
     const {username, password} = req.body;
     if (!username || !password) {
       res.status(400).send({message: 'Missing username or password'});
       return;
     }
-    const isValid = true;
-    if (!isValid) {
-      res.status(403).send({message: 'Invalid password'});
-      return;
+
+    try {
+      const result = await db.query('SELECT password FROM Users WHERE username = ?', [username]);
+      if (result.length === 0) {
+        res.status(401).send({ message: 'Invalid username or password' });
+        return;
+      }
+
+      const hashedPassword = result[0].password;
+      const match = await bcrypt.compare(password, hashedPassword);
+      if (!match) {
+        res.status(401).send({ message: 'Invalid username or password' });
+        return;
+      }
+
+      // Bei erfolgreicher Anmeldung
+      res.status(200).send({ message: 'Login successful' });
+    } catch (err) {
+      res.status(500).send({ message: 'Error logging in' });
     }
-    res.status(200).send({message: 'Login successful'});
   })
+
+
   .post('/register', async (req: Request, res: Response) => {
-    const {username, password} = req.body;
-    if (!username || !password) {
-      res.status(400).send({message: 'Missing username or password'});
+    const {username, password, name, email, role, activated, external_uid} = req.body;
+    if (!username || !password || !name || !email || !role || activated === undefined || !external_uid) {
+      res.status(400).send({message: 'Missing required fields'});
       return;
     }
     //TODO DB STUFF
 
-    res.status(201);
+    try {
+      const uid = generateId(idType.User);
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      await db.query(
+        'INSERT INTO Users (uid, username, password, name, email, role, activated, external_uid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [uid, username, hashedPassword, name, email, role, activated, external_uid]
+      );
+      res.status(201).send({message: 'User registered'});
+    } catch (err) {
+      res.status(500).send({message: 'Error registering user'});
+    }
   })
+
   .get("/test", (req: Request, res: Response) => {
     res.send({message: "Auth Router works"})
   })

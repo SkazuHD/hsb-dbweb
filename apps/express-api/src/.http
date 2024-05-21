@@ -1,0 +1,27 @@
+### Test Registration
+POST http://localhost:4201/auth/register
+Content-Type: application/json
+
+{
+  "username": "exampleUser",
+  "password": "examplePass",
+  "name": "Example Name",
+  "email": "example@example.com",
+  "role": "admin",
+  "activated": 01,
+  "external_uid": "1"
+}
+
+### Test Login
+POST http://localhost:4201/auth/login
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "testpassword"
+}
+
+### Test Protected Profile Route (replace `AUTH_TOKEN` with the actual token after login)
+GET http://localhost:4201/profile/testuser
+Authorization: Bearer AUTH_TOKEN
+Content-Type: application/json
