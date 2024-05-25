@@ -85,28 +85,21 @@ router
 
 //Auth routes
 authRouter
-  .post('/login', async (req: Request, res: Response) => {
-    const {username, password} = req.body;
-    if (!username || !password) {
-      res.status(400).send({message: 'Missing username or password'});
-      return;
-    }
-
+  .get('/login', async (req: Request, res: Response) => {
     try {
-      const result = await db.query('SELECT password FROM Users WHERE username = ?', [username]);
+      const result = await db.query('SELECT password FROM User WHERE username = ?', [req.body.username]);
       if (result.length === 0) {
         res.status(401).send({ message: 'Invalid username or password' });
         return;
       }
 
       const hashedPassword = result[0].password;
-      const match = await bcrypt.compare(password, hashedPassword);
+      const match = await bcrypt.compare(req.body.password, hashedPassword);
       if (!match) {
         res.status(401).send({ message: 'Invalid username or password' });
         return;
       }
 
-      // Bei erfolgreicher Anmeldung
       res.status(200).send({ message: 'Login successful' });
     } catch (err) {
       res.status(500).send({ message: 'Error logging in' });
@@ -115,25 +108,23 @@ authRouter
 
 
   .post('/register', async (req: Request, res: Response) => {
-    const {username, password, name, email, role, activated, external_uid} = req.body;
-    if (!username || !password || !name || !email || !role || activated === undefined || !external_uid) {
-      res.status(400).send({message: 'Missing required fields'});
-      return;
-    }
-    //TODO DB STUFF
 
-    try {
-      const uid = generateId(idType.User);
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
-      await db.query(
-        'INSERT INTO Users (uid, username, password, name, email, role, activated, external_uid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [uid, username, hashedPassword, name, email, role, activated, external_uid]
-      );
-      res.status(201).send({message: 'User registered'});
-    } catch (err) {
-      res.status(500).send({message: 'Error registering user'});
-    }
+    const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
+    const id = generateId(idType.User)
+    db.query('INSERT INTO User (uid, username, password, email, role, activated) VALUES (?, ?, ?, ?, ?, ?)',
+      [id, req.body.username, hashedPassword, req.body.email, req.body.role, req.body.activated]).then((result) => {
+      if (result.affectedRows === 0) {
+        res.status(500).send({message: 'Error creating user'});
+        return;
+      }
+      res.status(201).send({message: 'User created'});
+    }).catch((err) => {
+      res.status(500).send({message: 'Error creating user'});
+    })
   })
+
+
+
 
   .get("/test", (req: Request, res: Response) => {
     res.send({message: "Auth Router works"})
@@ -158,19 +149,6 @@ profileRouter
       res.send(result[0]);
     }).catch((err) => {
       res.status(500).send({message: 'Error fetching user'});
-    })
-  })
-  .post('/', (req: Request, res: Response) => {
-    const id = generateId(idType.User)
-    db.query('INSERT INTO User (uid, username, password, email, role, activated) VALUES (?, ?, ?, ?, ?, ?)',
-      [id, req.body.username, req.body.password, req.body.email, req.body.role, req.body.activated]).then((result) => {
-      if (result.affectedRows === 0) {
-        res.status(500).send({message: 'Error creating user'});
-        return;
-      }
-      res.status(201).send({message: 'User created'});
-    }).catch((err) => {
-      res.status(500).send({message: 'Error creating user'});
     })
   })
   .put('/:username', (req: Request, res: Response) => {
