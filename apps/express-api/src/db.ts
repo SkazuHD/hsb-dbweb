@@ -1,4 +1,4 @@
-import mariadb, {Pool, PoolConfig} from 'mariadb';
+import mariadb, {Pool, PoolConfig, PoolConnection} from 'mariadb';
 import * as process from 'process';
 
 class Database {
@@ -30,7 +30,7 @@ class Database {
   }
 
   public async query(sql: string, params?: any[]): Promise<any> {
-    let conn;
+    let conn: PoolConnection;
     try {
       conn = await this.pool.getConnection();
       return await conn.query(sql, params);
