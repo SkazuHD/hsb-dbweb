@@ -6,13 +6,32 @@ import {MatSlideToggleModule} from "@angular/material/slide-toggle";
 import {MatIconModule} from "@angular/material/icon";
 import {MatButtonModule} from "@angular/material/button";
 import {MatDividerModule} from "@angular/material/divider";
+import {MatCardModule} from "@angular/material/card";
+import {MatDatepickerModule} from "@angular/material/datepicker";
+import {CalendarComponent} from "../components/calendar/calendar.component";
+import {Event} from "@hsb-dbweb/shared";
 
 @Component({
   selector: 'app-demo',
   standalone: true,
-  imports: [CommonModule, MarkdownPlaygroundComponent, LikeCounterComponent, MatSlideToggleModule, MatIconModule, MatButtonModule, MatDividerModule],
+  imports: [CommonModule, MarkdownPlaygroundComponent, LikeCounterComponent, MatSlideToggleModule, MatIconModule, MatButtonModule, MatDividerModule, MatCardModule, MatDatepickerModule, CalendarComponent],
   templateUrl: './demo.component.html',
   styleUrl: './demo.component.css',
 })
 export class DemoComponent {
+  events: Event[] = [
+    {
+      uid: "E-1234",
+      title: "Event 1",
+      dateTime: new Date("2024-10-10T14:48:00"),
+      location: "Location 1",
+      description: "Description 1",
+      type: "Event"
+    }
+  ]
+  selectedEvent: Event | undefined;
+
+  newSelectedEvent(event: Event | undefined) {
+    this.selectedEvent = event;
+  }
 }

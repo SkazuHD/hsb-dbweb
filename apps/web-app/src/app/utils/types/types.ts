@@ -41,3 +41,11 @@ export type Contact = {
   mobile: string;
   name: string;
 };
+
+export type Event = {
+  title: string;
+  dateTime: Date;
+  location: string;
+  description: string;
+  type: "Training" | "Tournament" | "Event";
+};
