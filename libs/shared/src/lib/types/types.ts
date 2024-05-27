@@ -43,6 +43,7 @@ export type Contact = {
 };
 
 export type Event = {
+  uid: string;
   title: string;
   dateTime: Date;
   location: string;
