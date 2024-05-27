@@ -1,7 +1,7 @@
 import {Component, inject, Input, model} from '@angular/core';
 import {CommonModule, NgFor} from '@angular/common';
 import {MarkdownPipe} from "../../utils/pipes/markdown.pipe";
-import {InfoText} from "../../utils/types/types";
+import {InfoText} from "../../../../../../libs/shared/src/lib/types/types";
 import {ApiService} from "../../services/api.service";
 
 @Component({

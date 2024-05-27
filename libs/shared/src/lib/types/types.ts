@@ -47,5 +47,6 @@ export type Event = {
   dateTime: Date;
   location: string;
   description: string;
+  userUid?: string;
   type: "Training" | "Tournament" | "Event";
 };

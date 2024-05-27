@@ -1,6 +1,6 @@
 import {Component, inject, Input, model} from '@angular/core';
 import {CommonModule, NgOptimizedImage} from '@angular/common';
-import {Article} from '../../utils/types/types';
+import {Article} from '../../../../../../libs/shared/src/lib/types/types';
 import {MetatagService} from '../../services/metatag.service';
 import {MarkdownPipe} from "../../utils/pipes/markdown.pipe";
 import {ApiService} from "../../services/api.service";
