@@ -2,6 +2,7 @@ import express, {NextFunction, Request, Response, Router} from "express";
 import Database from "../db";
 import * as crypto from "node:crypto";
 import {Event} from "@hsb-dbweb/shared"
+import {SqlQueryBuilder} from "./SqlQueryBuilder";
 
 const router: Router = express.Router();
 const authRouter = express.Router()
@@ -225,10 +226,10 @@ articleRouter
 //Event routes
 eventRouter
   .get('/', (req: Request, res: Response) => {
-    let whereClause = "1=1 "
-    if (req.query.type) whereClause += " AND type = '" + req.query.type + "'"
-    if (req.query.date) whereClause += " AND date = '" + req.query.date + "'"
-    if (req.query.location) whereClause += " AND location ='" + req.query.location + "'"
+    let qb = new SqlQueryBuilder().select('*').from('Event').where('1', 1)
+    if (req.query.type) qb = qb.and('type', req.query.type.toString(),)
+    if (req.query.date) qb = qb.and('date', req.query.date.toString())
+    if (req.query.location) qb = qb.and('location', req.query.location.toString(),)
 
     if (req.query.upcoming) {
       const range = parseInt(req.query.upcoming[0]);
@@ -237,10 +238,9 @@ eventRouter
       desiredDate.setDate(nowDate.getDate() + range)
       const nowDateStr = nowDate.toISOString().split('T')[0]
       const desiredDateStr = desiredDate.toISOString().split('T')[0]
-      whereClause += " AND date > '" + nowDateStr + "' AND date < '" + desiredDateStr + "'"
+      qb = qb.and('date', nowDateStr, ">").and('date', desiredDateStr, "<")
     }
-
-    db.query('SELECT * FROM Event WHERE ' + whereClause).then((result) => {
+    db.query(qb.build()).then((result) => {
       if (
         result?.length === 0) {
         res.status(404).send({message: 'Event not found'});
@@ -251,7 +251,12 @@ eventRouter
     })
   })
   .get('/:id', (req: Request, res: Response) => {
-    db.query("SELECT * FROM Event WHERE uid = ?", [req.params.id]).then((result) => {
+    const qb = new SqlQueryBuilder()
+      .select('*')
+      .from('Event')
+      .where('uid', '?')
+
+    db.query(qb.build(), [req.params.id]).then((result) => {
       if (result.length === 0) {
         res.status(404).send({message: 'Event not found'});
         return;
@@ -261,11 +266,17 @@ eventRouter
     res.send({message: 'Event works!'});
   })
   .post('/', requireAuthorization, (req: Request, res: Response) => {
-    const id = generateId(idType.Event)
 
     const event: Partial<Event> = req.body;
+
     if (!event.dateTime || !event.title || !event.location || !event.description) return res.status(400).send({message: 'Missing required fields'});
-    db.query('INSERT INTO Event (uid, title, description, location, date, userUid) VALUES (?, ?, ?, ?, ?, ?) ',
+
+    const id = generateId(idType.Event)
+    const qb = new SqlQueryBuilder()
+      .insertInto('Event', ["uid", "title", "description", "location", "date", "userUid"])
+      .values(6)
+
+    db.query(qb.build(),
       [id, event.title, event.description, event.location, event.dateTime, event?.userUid ?? 0]).then((result) => {
       if (result.affectedRows === 0) {
         res.status(500).send({message: 'Error creating event'});
@@ -279,9 +290,37 @@ eventRouter
   })
   .put('/:id', requireAuthorization, (req: Request, res: Response) => {
     const event: Partial<Event> = req.body;
-    if (!event.dateTime || !event.title || !event.location || !event.description) return res.status(400).send({message: 'Missing required fields'});
-    db.query('UPDATE Event SET title = ?, description = ?, location = ?, date = ?, userUid = ? WHERE uid = ?',
-      [event.title, event.description, event.location, event.dateTime, event?.userUid ?? 0, req.params.id]).then((result) => {
+    const params = []
+    const qb = new SqlQueryBuilder()
+      .update("Event")
+    if (event.dateTime) {
+      qb.set("date")
+      params.push(event.dateTime)
+    }
+    if (event.location) {
+      qb.set("location")
+      params.push(event.location)
+    }
+    if (event.type) {
+      qb.set("type")
+      params.push(event.type)
+    }
+    if (event.title) {
+      qb.set("title")
+      params.push(event.title)
+    }
+    if (event.description) {
+      qb.set("description")
+      params.push(event.description)
+    }
+    if (event.userUid) {
+      qb.set("userUid")
+      params.push(event.userUid)
+    }
+    qb.where("uid")
+    params.push(req.params.id)
+
+    db.query(qb.build(), params).then((result) => {
       if (result.affectedRows === 0) {
         res.status(404).send({message: 'Event not found'});
         return;
@@ -292,7 +331,11 @@ eventRouter
     })
   })
   .delete('/:id', requireAuthorization, (req: Request, res: Response) => {
-    db.query('DELETE FROM Event WHERE uid = ?', [req.params.id]).then((result) => {
+    const qb = new SqlQueryBuilder()
+      .deleteFrom("Event")
+      .where("uid")
+
+    db.query(qb.build(), [req.params.id]).then((result) => {
       if (result.affectedRows === 0) {
         res.status(404).send({message: 'Event not found'});
         return;
