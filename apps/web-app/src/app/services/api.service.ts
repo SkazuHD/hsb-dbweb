@@ -2,7 +2,7 @@ import {inject, Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {map, Observable, of, retry, RetryConfig} from 'rxjs';
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
-import {Article, Contact, InfoText} from '../../../../../libs/shared/src/lib/types/types';
+import {Article, Contact, Event, InfoText} from '@hsb-dbweb/shared';
 
 @Injectable({
   providedIn: 'root',
@@ -81,6 +81,42 @@ export class ApiService {
   getArticleById(id: string): Observable<Article> {
     return this.http.get(this.apiURL + '/article/' + id).pipe() as Observable<Article>;
 
+  }
+
+  getAllEvents() {
+    return this.http.get(this.apiURL + '/events');
+  }
+
+  getEventById(id: string) {
+    return this.http.get(this.apiURL + '/events/' + id);
+  }
+
+  getEventsByType(type: string) {
+    return this.http.get(this.apiURL + '/events?type=' + type);
+  }
+
+  getEventsByDate(date: Date) {
+    return this.http.get(this.apiURL + '/events?date=' + date.toISOString());
+  }
+
+  getEventsByLocation(location: string) {
+    return this.http.get(this.apiURL + '/events?location=' + location);
+  }
+
+  getUpcomingEvents(range: number) {
+    return this.http.get(this.apiURL + '/events?upcoming=' + range);
+  }
+
+  createEvent(event: Event) {
+    return this.http.post(this.apiURL + '/events', event);
+  }
+
+  updateEvent(event: Event) {
+    return this.http.put(this.apiURL + '/events/' + event.uid, event);
+  }
+
+  deleteEvent(id: string) {
+    return this.http.delete(this.apiURL + '/events/' + id);
   }
 
   private constructSSERequest(url: string) {
