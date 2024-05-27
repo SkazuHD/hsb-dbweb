@@ -1,5 +1,5 @@
 import {inject, Injectable} from '@angular/core';
-import {HttpErrorResponse, HttpHandler, HttpInterceptor, HttpRequest,} from '@angular/common/http';
+import { HttpErrorResponse, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import {NotificationService} from '../../services/notification.service';
 import {catchError} from 'rxjs';
 import {Router} from "@angular/router";

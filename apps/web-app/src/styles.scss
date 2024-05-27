@@ -1,26 +1,25 @@
 @use "@angular/material" as mat;
-@use "@angular/material-experimental" as matx;
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-$light-theme: matx.define-theme(
+$light-theme: mat.define-theme(
     (
       color: (
         theme-type: light,
-        primary: matx.$m3-cyan-palette,
-        tertiary: matx.$m3-orange-palette,
+        primary: mat.$cyan-palette,
+        tertiary: mat.$orange-palette,
       ),
     )
 );
 
-$dark-theme: matx.define-theme(
+$dark-theme: mat.define-theme(
     (
       color: (
         theme-type: dark,
-        primary: matx.$m3-cyan-palette,
-        tertiary: matx.$m3-orange-palette,
+        primary: mat.$cyan-palette,
+        tertiary: mat.$orange-palette,
       ),
     )
 );
@@ -74,8 +73,6 @@ mat-sidenav {
 }
 
 mat-slide-toggle {
-  --mdc-switch-handle-width: 60px !important;
-
   label.mdc-label {
     color: var(--mat-app-text-color);
   }
