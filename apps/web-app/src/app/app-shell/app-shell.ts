@@ -10,7 +10,7 @@ import {MatIcon} from '@angular/material/icon';
 import {MatToolbar} from '@angular/material/toolbar';
 import {MatSlideToggle} from '@angular/material/slide-toggle';
 import {AuthService} from '../services/auth.service';
-import {AppLink} from '../utils/types/types';
+import {AppLink} from '../../../../../libs/shared/src/lib/types/types';
 import {ToolbarComponent} from "./toolbar.component";
 import {BreakpointObserver, Breakpoints} from "@angular/cdk/layout";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";

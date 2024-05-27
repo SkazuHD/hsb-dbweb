@@ -5,7 +5,7 @@ import {MatIconButton} from "@angular/material/button";
 import {MatListItem, MatNavList} from "@angular/material/list";
 import {MatToolbar} from "@angular/material/toolbar";
 import {RouterLink} from "@angular/router";
-import {AppLink} from "../utils/types/types";
+import {AppLink} from "../../../../../libs/shared/src/lib/types/types";
 import {MatSidenav} from "@angular/material/sidenav";
 
 @Component({

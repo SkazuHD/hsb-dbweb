@@ -1,8 +1,8 @@
 import {inject, Injectable} from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import {HttpClient} from '@angular/common/http';
 import {map, Observable, of, retry, RetryConfig} from 'rxjs';
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
-import {Article, Contact, InfoText} from '../utils/types/types';
+import {Article, Contact, InfoText} from '../../../../../libs/shared/src/lib/types/types';
 
 @Injectable({
   providedIn: 'root',

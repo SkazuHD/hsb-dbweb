@@ -3,7 +3,7 @@ import {CommonModule} from '@angular/common';
 import {DateRange, MatCalendar, MatCalendarCellCssClasses, MatDatepickerModule} from "@angular/material/datepicker";
 import {MatCard} from "@angular/material/card";
 import {MatNativeDateModule} from "@angular/material/core";
-import {Event} from "../../utils/types/types";
+import {Event} from "../../../../../../libs/shared/src/lib/types/types";
 import {ReactiveFormsModule} from "@angular/forms";
 
 @Component({
