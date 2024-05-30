@@ -1,0 +1,7 @@
+### GET request to example server
+GET http://localhost:4201/api/article/A-19871716047693297/likes
+
+###
+POST http://localhost:4201/api/article/A-19871716047693297/likes
+Authorization: Bearer <token>
+

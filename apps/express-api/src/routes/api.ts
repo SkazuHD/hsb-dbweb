@@ -46,13 +46,17 @@ const limiter = rateLimit({
   // store: ... , // Redis, Memcached, etc. See below.
 })
 
+const requestContainsToken = (req: Request) => {
+  return req.header("Authorization") !== undefined;
+}
+
 const requireAuthentication = async (req: Request, res: Response, next: NextFunction) => {
   //Auth middleware | Checks if user is authenticated and provides valid token
   console.debug(req.header("Authorization"))
 
   const authHeader = req.header("Authorization");
 
-  if (req.header("Authorization") === undefined) {
+  if (!requestContainsToken(req)) {
     res.status(401).send({message: "Unauthorized"})
     return;
   }
@@ -87,10 +91,16 @@ const requireAuthorization = (requiredRole: string) => {
   };
 };
 
+const requestLogger = (req: Request, res: Response, next: NextFunction) => {
+  console.debug(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
+  next();
+}
+
 
 router
   .use(limiter)
   .use(express.json())
+  .use(requestLogger)
   .use((req: Request, res: Response, next: NextFunction) => {
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200'); // replace with your Angular app's URL
     res.setHeader(
@@ -252,6 +262,45 @@ profileRouter
   });
 //Article routes
 articleRouter
+  .get('/:articleId/likes', (req: Request, res: Response) => {
+
+    const qb = new SqlQueryBuilder()
+    qb.select(['*']).from('User_article')
+      .where('articleUid')
+      .and('liked')
+
+    //TODO REPLACE 0 (UserID) WITH USER ID FROM TOKEN
+    db.query(qb.build(), [req.params.articleId, 1, "0"]).then((result) => {
+      const likes = result.length;
+      const liked = result.find((like) => like.userUid === "0") !== undefined;
+      res.send({likes, liked});
+
+    }).catch((err) => {
+      console.log(err)
+      res.status(500).send({message: 'Error fetching likes'});
+    })
+  })
+  .post('/:articleId/likes', requireAuthentication, (req: Request, res: Response) => {
+    const qb = new SqlQueryBuilder()
+      .insertInto('User_article', ['articleUid', 'userUid', 'liked'])
+      .values(3)
+      .onDuplicateKey(['liked'], ['NOT liked'])
+
+    //TODO REPLACE 0 (UserID) WITH USER ID FROM TOKEN
+    db.query(qb.build(), [req.params.articleId, "0", 1]).then((result) => {
+      if (result.affectedRows === 0) {
+        res.status(500).send({message: 'Error updating article likes'});
+        return;
+      }
+      res.send({message: 'Article likes updated'});
+    }).catch((err) => {
+      res.status(500).send({message: 'Error updating article likes'});
+    })
+  })
+  .delete('/:articleId/likes', requireAuthorization, (req: Request, res: Response) => {
+  })
+
+
   .get('/', (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder()
       .select('*')

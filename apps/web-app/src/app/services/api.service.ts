@@ -1,8 +1,9 @@
 import {inject, Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {map, Observable, of, retry, RetryConfig} from 'rxjs';
+import { forkJoin, map, Observable, of, retry, RetryConfig } from 'rxjs';
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {Article, Contact, Event, InfoText} from '@hsb-dbweb/shared';
+import { response } from 'express';
 
 @Injectable({
   providedIn: 'root',
@@ -79,8 +80,22 @@ export class ApiService {
   }
 
   getArticleById(id: string): Observable<Article> {
-    return this.http.get(this.apiURL + '/article/' + id).pipe() as Observable<Article>;
+    return forkJoin([
+      this.http.get(this.apiURL + '/article/' + id),
+      //this.http.get(this.apiURL + '/article/' + id + '/comments'),
+      this.http.get(this.apiURL + '/article/' + id + '/likes'),
+    ]).pipe(
+      map(([article, likes]) => {
+        return {
+          ...article,
+          ... likes,
+        };
+      }),
+    ) as Observable<Article>;
+  }
 
+  updateArticleLike(id: string) {
+    return this.http.post(this.apiURL + '/article/' + id + '/likes', {})
   }
 
   getAllEvents() {

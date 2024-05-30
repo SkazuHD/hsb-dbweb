@@ -13,15 +13,4 @@ import {MatButtonModule} from '@angular/material/button'
 export class LikeCounterComponent {
   likes = model(0);
   isLiked = model(false);
-
-  constructor() {
-    setInterval(() => {
-      this.likes.set(Math.round(Math.random() * 100));
-    }, 3000);
-  }
-
-  onClick() {
-    this.isLiked.set(!this.isLiked());
-    this.likes.set(this.likes() + (this.isLiked() ? 1 : -1));
-  }
 }

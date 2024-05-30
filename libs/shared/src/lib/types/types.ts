@@ -8,10 +8,12 @@ export type Article = {
   author?: string;
   image?: Image;
   date?: string;
-  id: string;
+  uid: string;
   content: string;
   media?: Image[];
   userUid?: string;
+  likes?: number;
+  liked: boolean;
 };
 export type AppLink = {
   label: string;
