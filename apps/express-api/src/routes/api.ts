@@ -81,38 +81,42 @@ router
       .send({message: err.message ? err.message : 'Something broke!'});
   })
 
-  const saltRounds = 10;
 
 //Auth routes
 authRouter
   .get('/login', async (req: Request, res: Response) => {
+    const qb = new SqlQueryBuilder()
+    qb.select('password').from('User').where('username')
     try {
-      const result = await db.query('SELECT password FROM User WHERE username = ?', [req.body.username]);
+      const result = await db.query(qb.build(), [req.body.username]);
       if (result.length === 0) {
-        res.status(401).send({ message: 'Invalid username or password' });
+        res.status(401).send({message: 'Invalid username or password'});
         return;
       }
 
       const hashedPassword = result[0].password;
-      const match = await bcrypt.compare(req.body.password, hashedPassword);
+      const match = bcrypt.compare(req.body.password, hashedPassword);
       if (!match) {
-        res.status(401).send({ message: 'Invalid username or password' });
+        res.status(401).send({message: 'Invalid username or password'});
         return;
       }
 
-      res.status(200).send({ message: 'Login successful' });
+      res.status(200).send({message: 'Login successful'});
     } catch (err) {
-      res.status(500).send({ message: 'Error logging in' });
+      res.status(500).send({message: 'Error logging in'});
     }
   })
 
 
   .post('/register', async (req: Request, res: Response) => {
-
+    const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
     const id = generateId(idType.User)
-    db.query('INSERT INTO User (uid, username, password, email, role, activated) VALUES (?, ?, ?, ?, ?, ?)',
-      [id, req.body.username, hashedPassword, req.body.email, req.body.role, req.body.activated]).then((result) => {
+    const qb = new SqlQueryBuilder()
+    qb.insertInto('User', ['uid', 'username', 'password', 'email', 'role', 'activated']).values(6)
+    // Todo add role table as FK constraint
+    db.query(qb.build(),
+      [id, req.body.username, hashedPassword, req.body.email, "User", req.body.activated]).then((result) => {
       if (result.affectedRows === 0) {
         res.status(500).send({message: 'Error creating user'});
         return;
@@ -122,8 +126,6 @@ authRouter
       res.status(500).send({message: 'Error creating user'});
     })
   })
-
-
 
 
   .get("/test", (req: Request, res: Response) => {
