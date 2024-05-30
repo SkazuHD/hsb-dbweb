@@ -10,6 +10,8 @@ export type Article = {
   date?: string;
   id: string;
   content: string;
+  media?: Image[];
+  userUid?: string;
 };
 export type AppLink = {
   label: string;
@@ -51,3 +53,12 @@ export type Event = {
   userUid?: string;
   type: "Training" | "Tournament" | "Event";
 };
+
+export type User = {
+  username: string;
+  password: string; // hashed
+  email: string;
+  role: "admin" | "user";
+  activated: boolean;
+  uid: string;
+}
