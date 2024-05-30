@@ -27,7 +27,7 @@ export class SqlQueryBuilder {
 
   //Insert Query
   insertInto(table: string, columns: string[] | undefined = undefined) {
-    this.query = `INSERT INTO ${table} `;
+    this.query += `INSERT INTO ${table} `;
     if (columns)
       this.query += `(${columns.join(', ')}) `;
     return this;
@@ -40,7 +40,7 @@ export class SqlQueryBuilder {
 
   // Update Query
   update(table: string) {
-    this.query = `UPDATE ${table}`;
+    this.query += `UPDATE ${table}`;
     return this;
   }
 
@@ -99,6 +99,16 @@ export class SqlQueryBuilder {
     return this;
   }
 
+  onDuplicateKey(columns: string[], values: string[]) {
+    this.query += ` ON DUPLICATE KEY UPDATE `;
+    for (let i = 0; i < columns.length; i++) {
+      this.query += `${columns[i]} = ${values[i]}`;
+      if (i < columns.length - 1) {
+        this.query += ', ';
+      }
+    }
+    return this;
+  }
 
   build() {
     return this.query.trim() + ';';

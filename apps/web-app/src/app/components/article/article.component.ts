@@ -1,14 +1,15 @@
 import {Component, inject, Input, model} from '@angular/core';
 import {CommonModule, NgOptimizedImage} from '@angular/common';
-import {Article} from '../../../../../../libs/shared/src/lib/types/types';
+import {Article} from '@hsb-dbweb/shared';
 import {MetatagService} from '../../services/metatag.service';
 import {MarkdownPipe} from "../../utils/pipes/markdown.pipe";
 import {ApiService} from "../../services/api.service";
+import { LikeCounterComponent } from '../like-counter/like-counter.component';
 
 @Component({
   selector: 'app-article',
   standalone: true,
-  imports: [CommonModule, NgOptimizedImage, MarkdownPipe],
+  imports: [CommonModule, NgOptimizedImage, MarkdownPipe, LikeCounterComponent],
   templateUrl: './article.component.html',
   styleUrl: './article.component.css',
 })
@@ -24,6 +25,15 @@ export class ArticleComponent {
 
     });
   }
+
+  onLike() {
+    this.api.updateArticleLike(this.article().uid).subscribe(()=>{
+      this.api.getArticleById(this.article().uid).subscribe((article) => {
+        this.article.set(article);
+      });
+    })
+
+    }
 
 
   /* TODO GET ARTICLE FROM API BY ID
@@ -43,4 +53,5 @@ export class ArticleComponent {
   getIdFromSlugId(slugId: string): string {
     return slugId.split('-').pop() ?? '';
   }
+
 }

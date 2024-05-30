@@ -55,6 +55,9 @@
           }
         </div>
       </div>
+      <app-like-counter [(isLiked)]="article().liked" [likes]="article().likes ?? 0" (click)="onLike()">
+      </app-like-counter>
+
       <div class="mt-8" [innerHTML]="article().content | markdown"></div>
     </div>
   </article>
