@@ -1,7 +1,7 @@
 import express, {NextFunction, Request, Response, Router} from "express";
 import Database from "../db";
 import * as crypto from "node:crypto";
-import {Event} from "@hsb-dbweb/shared"
+import {Article, Event, User} from "@hsb-dbweb/shared"
 import {SqlQueryBuilder} from "./SqlQueryBuilder";
 
 const router: Router = express.Router();
@@ -112,14 +112,23 @@ authRouter
 profileRouter.use(requireAuthentication)
 profileRouter
   .get('/', (req: Request, res: Response) => {
-    db.query('SELECT * FROM User').then((result) => {
+    const qb = new SqlQueryBuilder()
+    .select(['uid', 'username', 'email','name', 'role', 'activated'])
+    .from('User')
+
+    db.query(qb.build()).then((result) => {
       res.send(result);
     }).catch((err) => {
       res.status(500).send({message: 'Error fetching users'});
     })
   })
-  .get('/:username', (req: Request, res: Response) => {
-    db.query('SELECT * FROM User WHERE uid = ?', [req.params.username]).then((result) => {
+  .get('/:id', (req: Request, res: Response) => {
+    const qb = new SqlQueryBuilder()
+    .select(['uid', 'username', 'email','name', 'role', 'activated'])
+    .from('User')
+    .where('uid')
+
+    db.query(qb.build(), [req.params.id]).then((result) => {
       if (result.length === 0) {
         res.status(404).send({message: 'User not found'});
         return;
@@ -132,8 +141,12 @@ profileRouter
   })
   .post('/', (req: Request, res: Response) => {
     const id = generateId(idType.User)
-    db.query('INSERT INTO User (uid, username, password, email, role, activated) VALUES (?, ?, ?, ?, ?, ?)',
-      [id, req.body.username, req.body.password, req.body.email, req.body.role, req.body.activated]).then((result) => {
+    const user: Partial<User> = req.body;
+    const qb = new SqlQueryBuilder()
+    .insertInto('User', ["uid", "username", "password", "email", "role", "activated"])
+    .values(6)
+    db.query(qb.build(),
+      [id, user.username, user.password, user.email, user.role, user.activated]).then((result) => {
       if (result.affectedRows === 0) {
         res.status(500).send({message: 'Error creating user'});
         return;
@@ -143,9 +156,35 @@ profileRouter
       res.status(500).send({message: 'Error creating user'});
     })
   })
-  .put('/:username', (req: Request, res: Response) => {
-    db.query('UPDATE User SET username = ?, password = ?, email = ?, role = ?, activated = ? WHERE uid = ?',
-      [req.body.username, req.body.password, req.body.email, req.body.role, req.body.activated, req.params.username]).then((result) => {
+  .put('/:id', (req: Request, res: Response) => {
+    const user: Partial<User> = req.body;
+    const params = []
+    const qb = new SqlQueryBuilder()
+    .update("User")
+    if (user.username){
+      qb.set("username")
+      params.push(user.username)
+    }
+    if (user.password){
+      // TODO HASH PASSWORD HERE
+      qb.set("password")
+      params.push(user.password)
+    }
+    if (user.email){
+      qb.set("email")
+      params.push(user.email)
+    }
+    if (user.role){
+      qb.set("role")
+      params.push(user.role)
+    }
+    if (user.activated){
+      qb.set("activated")
+      params.push(user.activated)
+    }
+    qb.where("uid")
+    params.push(req.params.username)
+    db.query(qb.build(), params).then((result) => {
       if (result.affectedRows === 0) {
         res.status(404).send({message: 'User not found'});
         return;
@@ -156,8 +195,12 @@ profileRouter
       }
     )
   })
-  .delete('/:username', (req: Request, res: Response) => {
-    db.query('DELETE FROM User WHERE uid = ?', [req.params.username]).then((result) => {
+  .delete('/:id', (req: Request, res: Response) => {
+    const qb = new SqlQueryBuilder()
+    .deleteFrom("User")
+    .where("uid")
+
+    db.query(qb.build(), [req.params.username]).then((result) => {
       if (result.affectedRows === 0) {
         res.status(404).send({message: 'User not found'});
         return;
@@ -170,14 +213,23 @@ profileRouter
 //Article routes
 articleRouter
   .get('/', (req: Request, res: Response) => {
-    db.query('SELECT * FROM Article').then((result) => {
+    const qb = new SqlQueryBuilder()
+    .select('*')
+    .from('Article')
+
+    db.query(qb.build()).then((result) => {
       res.send(result);
     }).catch((err) => {
       res.status(500).send({message: 'Error fetching articles'});
     })
   })
   .get('/:id', (req: Request, res: Response) => {
-    db.query('SELECT * FROM Article WHERE uid = ?', [req.params.id]).then((result) => {
+    const qb = new SqlQueryBuilder()
+    .select('*')
+    .from('Article')
+    .where('uid')
+
+    db.query(qb.build(), [req.params.id]).then((result) => {
       if (result.length === 0) {
         res.status(404).send({message: 'Article not found'});
         return;
@@ -189,8 +241,13 @@ articleRouter
   })
   .post('/', (req: Request, res: Response) => {
     const id = generateId(idType.Article)
-    db.query('INSERT INTO Article (uid, title, content, subtitle, author, media, userUid) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [id, req.body.title, req.body.content, req.body.subtitle, req.body.author, req.body.media, req.body.userUid]).then((result) => {
+    const article: Partial<Article> = req.body;
+    const qb = new SqlQueryBuilder()
+    .insertInto('Article', ["uid", "title", "content", "subtitle", "author", "media", "userUid"])
+    .values(7)
+
+    db.query(qb.build(),
+      [id, article.title, article.content, article.subtitle, article.author, article.media, article.userUid]).then((result) => {
       if (result.affectedRows === 0) {
         res.status(500).send({message: 'Error creating article'});
         return;
@@ -201,8 +258,37 @@ articleRouter
     })
   })
   .put('/:id', (req: Request, res: Response) => {
-    db.query('UPDATE Article SET title = ?, content = ?, subtitle = ?, author = ?, media = ?, userUid = ? WHERE uid = ?',
-      [req.body.title, req.body.content, req.body.subtitle, req.body.author, req.body.media, req.body.userUid, req.params.id]).then((result) => {
+    const params = []
+    const article: Partial<Article> = req.body;
+    const qb = new SqlQueryBuilder()
+    .update("Article")
+    if (article.title){
+      qb.set("title")
+      params.push(article.title)
+    }
+    if (article.content){
+      qb.set("content")
+      params.push(article.content)
+    }
+    if (article.subtitle){
+      qb.set("subtitle")
+      params.push(article.subtitle)
+    }
+    if (article.author){
+      qb.set("author")
+      params.push(article.author)
+    }
+    if (article.media){
+      qb.set("media")
+      params.push(article.media)
+    }
+    if (article.userUid){
+      qb.set("userUid")
+      params.push(article.userUid)
+    }
+    qb.where("uid")
+    params.push(req.params.id)
+    db.query(qb.build(), params).then((result) => {
       if (result.affectedRows === 0) {
         res.status(404).send({message: 'Article not found'});
         return;
@@ -213,7 +299,11 @@ articleRouter
     })
   })
   .delete('/:id', (req: Request, res: Response) => {
-    db.query('DELETE FROM Article WHERE uid = ?', [req.params.id]).then((result) => {
+    const qb = new SqlQueryBuilder()
+    .deleteFrom("Article")
+    .where("uid")
+
+    db.query(qb.build(), [req.params.id]).then((result) => {
       if (result.affectedRows === 0) {
         res.status(404).send({message: 'Article not found'});
         return;
@@ -254,7 +344,7 @@ eventRouter
     const qb = new SqlQueryBuilder()
       .select('*')
       .from('Event')
-      .where('uid', '?')
+      .where('uid')
 
     db.query(qb.build(), [req.params.id]).then((result) => {
       if (result.length === 0) {
