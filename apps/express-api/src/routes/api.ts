@@ -4,6 +4,8 @@ import * as crypto from "node:crypto";
 import {Event} from "@hsb-dbweb/shared"
 import {SqlQueryBuilder} from "./SqlQueryBuilder";
 import bcrypt from 'bcrypt';
+import { SignJWT, jwtVerify } from 'jose';
+
 
 
 const router: Router = express.Router();
@@ -12,7 +14,6 @@ const profileRouter = express.Router()
 const articleRouter = express.Router()
 const eventRouter = express.Router()
 const db = Database.getInstance();
-
 
 /* TODO
  *   Add DB logic to routes
@@ -37,27 +38,47 @@ function generateId(type: idType) {
 
 }
 
-const requireAuthentication = (req: Request, res: Response, next: NextFunction) => {
+const requireAuthentication = async (req: Request, res: Response, next: NextFunction) => {
   //Auth middleware | Checks if user is authenticated and provides valid token
   console.debug(req.header("Authorization"))
+
+  const authHeader = req.header("Authorization");
+
   if (req.header("Authorization") === undefined) {
     res.status(401).send({message: "Unauthorized"})
     return;
   }
+
+  const token = authHeader.split(' ')[1];
+  if (!token) {
+    res.status(401).send({ message: "Unauthorized" });
+    return;
+  }
+
+  try {
+    const secret = new TextEncoder().encode('your-secret-key'); // Use the same secret key
+    const { payload } = await jwtVerify(token, secret);
+    req.body.username = payload; 
+    next();
+  } catch (err) {
+    res.status(401).send({ message: "Invalid token" });
+  }
+  
   //TODO check if token is valid
   next();
 }
-const requireAuthorization = (req: Request, res: Response, next: NextFunction) => {
-  // Authorization middleware | Will check if user is authorized to access the resource
-  console.debug(req.header("Authorization"))
-  if (req.header("Authorization") === undefined) {
-    res.status(401).send({message: "Unauthorized"})
-    return;
 
-  }
-  // TODO Decode JWT and check if user has the required role
-  next();
-}
+const requireAuthorization = (requiredRole: string) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (req.body.role !== requiredRole) {
+      res.status(403).send({ message: "Forbidden" });
+      return;
+    }
+      // TODO Decode JWT and check if user has the required role
+    next();
+  };
+};
+
 
 router
   .use(express.json())
@@ -101,14 +122,26 @@ authRouter
         return;
       }
 
-      res.status(200).send({message: 'Login successful'});
-    } catch (err) {
-      res.status(500).send({message: 'Error logging in'});
-    }
+      const secret = new TextEncoder().encode('your-secret-key'); // Use a strong secret key
+      const token = await new SignJWT({ username: req.body.username })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt()
+        .setExpirationTime('2h')
+        .sign(secret);
+  
+
+    res.status(200).send({ message: 'Login successful', token });
+  } catch (err) {
+    res.status(500).send({ message: 'Error logging in' });
+  }
   })
 
 
   .post('/register', async (req: Request, res: Response) => {
+    if(!req.body.password || !req.body.username || !req.body.email){
+      return res.status(400).json({error: 'missing Parameters'});
+    }
+
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
     const id = generateId(idType.User)
