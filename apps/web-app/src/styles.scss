@@ -61,6 +61,14 @@ mat-sidenav {
   background: mat.get-theme-color($light-theme, surface-container-high) !important;
 }
 
+mat-card {
+  background: mat.get-theme-color($light-theme, surface-container-low) !important;
+
+  mat-card {
+    background: mat.get-theme-color($light-theme, surface-container) !important;
+  }
+}
+
 
 .dark {
   mat-toolbar {
@@ -70,6 +78,15 @@ mat-sidenav {
   mat-sidenav {
     background: mat.get-theme-color($dark-theme, surface-container-high) !important;
   }
+
+  mat-card {
+    background: mat.get-theme-color($dark-theme, surface-container-low) !important;
+
+    mat-card {
+      background: mat.get-theme-color($dark-theme, surface-container) !important;
+    }
+  }
+
 }
 
 mat-slide-toggle {

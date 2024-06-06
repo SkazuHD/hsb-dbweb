@@ -1,0 +1,4 @@
+<h3 class="flex m-auto">Neuigkeiten</h3>
+@for (article of articles(); track article) {
+  <app-newsfeed [article]="article"></app-newsfeed>
+}
