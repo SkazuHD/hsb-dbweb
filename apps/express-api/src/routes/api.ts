@@ -149,6 +149,8 @@ authRouter
         .sign(secret);
 
       res.setHeader('Authorization', `Bearer ${token}`)
+      // TODO REFRESH TOKEN UNS SO
+      res.append('Set-Cookie', 'foo=bar; Path=/; HttpOnly; SameSite=None;')
       res.status(200).send({message: 'Login successful', token, user});
     } catch (err) {
       res.status(500).send({message: 'Error logging in'});
@@ -191,6 +193,8 @@ authRouter
         .sign(secret);
 
       res.setHeader('Authorization', `Bearer ${token}`)
+      // TODO REFRESH TOKEN UNS SO
+      res.append('Set-Cookie', 'foo=bar; Path=/; HttpOnly; SameSite=None;')
       res.status(201).send({message: 'User created', token, user});
     }).catch((err) => {
       res.status(500).send({message: 'Error creating user'});

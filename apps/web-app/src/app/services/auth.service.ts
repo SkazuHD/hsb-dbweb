@@ -41,7 +41,7 @@ export class AuthService {
   idToken = computed(() => this.state().idToken);
   private apiURL = 'http://localhost:4201/api';
 
-  // TODO IMPLEMENT PERSISTENCE OF JWT TOKEN 
+  // TODO IMPLEMENT PERSISTENCE OF JWT TOKEN
 
   constructor() {
     // Side effects
@@ -105,10 +105,13 @@ export class AuthService {
   signInWithEmail$(credentials: Credentials): Observable<AuthUser | Error> {
     //TODO ERROR HANDLING
     return this.http.post<AuthState & { message: string }>(this.apiURL + '/auth' + '/login', {
-      email: credentials.email,
-      password: credentials.password,
+        email: credentials.email,
+        password: credentials.password,
 
-    }).pipe(tap((res) => {
+      }, {
+        withCredentials: true,
+      }
+    ).pipe(tap((res) => {
       this.user$.next(res.user);
       this.idToken$.next(res.idToken);
       this.notificationService.success(res.message);
@@ -127,6 +130,9 @@ export class AuthService {
         password: credentials.password,
         email: credentials.email,
       },
+      {
+        withCredentials: true,
+      }
     ).pipe(tap((res) => {
       this.user$.next(res.user);
       this.idToken$.next(res.idToken);
