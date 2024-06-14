@@ -1,11 +1,21 @@
 import express, {NextFunction, Request, Response, Router} from "express";
 import Database from "../db";
 import * as crypto from "node:crypto";
-import {Article, Event, User} from "@hsb-dbweb/shared"
+import {
+  AccessTokenPayload,
+  Article,
+  Event,
+  JWTScope,
+  RefreshTokenPayload,
+  User,
+  UserRole,
+  UserScope
+} from "@hsb-dbweb/shared"
 import {SqlQueryBuilder} from "./SqlQueryBuilder";
 import bcrypt from 'bcrypt';
-import {jwtVerify, SignJWT} from 'jose';
+import {jwtVerify} from 'jose';
 import {rateLimit} from "express-rate-limit";
+import {JwtManager} from "../jwt";
 
 
 const router: Router = express.Router();
@@ -14,6 +24,7 @@ const profileRouter = express.Router()
 const articleRouter = express.Router()
 const eventRouter = express.Router()
 const db = Database.getInstance();
+const jwt = new JwtManager('replace-me-with-a-real-secret')
 
 /* TODO
  *   Add DB logic to routes
@@ -28,6 +39,7 @@ enum idType {
   User,
 }
 
+
 function generateId(type: idType) {
   if (type === idType.Article)
     return "A-" + crypto.randomInt(10000) + Date.now()
@@ -40,7 +52,7 @@ function generateId(type: idType) {
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
+  limit: 1000, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
   standardHeaders: 'draft-7', // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
   // store: ... , // Redis, Memcached, etc. See below.
@@ -52,42 +64,59 @@ const requestContainsToken = (req: Request) => {
 
 const requireAuthentication = async (req: Request, res: Response, next: NextFunction) => {
   //Auth middleware | Checks if user is authenticated and provides valid token
-  console.debug(req.header("Authorization"))
 
   const authHeader = req.header("Authorization");
-
-  if (!requestContainsToken(req)) {
-    res.status(401).send({message: "Unauthorized"})
-    return;
-  }
 
   const token = authHeader.split(' ')[1];
   if (!token) {
     res.status(401).send({message: "Unauthorized"});
     return;
   }
-
   try {
     const secret = new TextEncoder().encode('your-secret-key'); // Use the same secret key
     const {payload} = await jwtVerify(token, secret);
     req.body.user = payload;
     next();
   } catch (err) {
+    console.error(err)
     res.status(401).send({message: "Invalid token"});
   }
-
-  //TODO check if token is valid
   next();
 }
 
-const requireAuthorization = (requiredRole: string) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    if (req.body.role !== requiredRole) {
-      res.status(403).send({message: "Forbidden"});
+const requireAuthorization = (requiredRole: UserRole) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+
+    if (!requestContainsToken(req)) {
+      res.status(401).send({message: "Unauthorized"})
       return;
     }
-    // TODO Decode JWT and check if user has the required role
-    next();
+
+    const authHeader = req.header("Authorization");
+
+    const token = authHeader.split(' ')[1];
+    if (!token) {
+      res.status(401).send({message: "Unauthorized"});
+      return;
+    }
+
+    try {
+      const {payload} = await jwt.verifyToken<AccessTokenPayload>(token);
+
+      console.debug(`User ${payload.uid} has role ${payload.role}`);
+      console.debug(`Required role is ${requiredRole}`);
+
+
+      if (payload.role !== requiredRole) {
+        res.status(403).send({message: "Forbidden"});
+        return;
+      }
+
+      next();
+    } catch (err) {
+      res.status(401).send({message: "Invalid token"});
+    }
+
   };
 };
 
@@ -108,6 +137,7 @@ router
       'Origin, X-Requested-With, Content-Type, Accept, Authorization',
     );
     res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     next();
   })
   .use("/auth/", authRouter)
@@ -141,17 +171,28 @@ authRouter
         return;
       }
       const user: Omit<User, 'password'> = {...result[0], password: null}
-      const secret = new TextEncoder().encode('your-secret-key'); // Use a strong secret key
-      const token = await new SignJWT({user})
-        .setProtectedHeader({alg: 'HS256'})
-        .setIssuedAt()
-        .setExpirationTime('2h')
-        .sign(secret);
+      const token = await jwt.createAccessToken({
+        uid: user.uid,
+        role: user.role,
+        scope: [UserScope.READ, UserScope.WRITE],
+        type: JWTScope.ACCESS,
+      })
+      const refreshToken = await jwt.createRefreshToken({
+        uid: user.uid,
+        type: JWTScope.REFRESH
+      })
+
+      const idToken = await jwt.createIdToken({
+        uid: user.uid,
+        role: user.role,
+        type: JWTScope.ID,
+        email: user.email,
+        username: user.username
+      })
 
       res.setHeader('Authorization', `Bearer ${token}`)
-      // TODO REFRESH TOKEN UNS SO
       res.append('Set-Cookie', 'foo=bar; Path=/; HttpOnly; SameSite=None;')
-      res.status(200).send({message: 'Login successful', token, user});
+      res.status(200).send({message: 'Login successful', accessToken: token, idToken, refreshToken, user});
     } catch (err) {
       res.status(500).send({message: 'Error logging in'});
     }
@@ -169,36 +210,101 @@ authRouter
     const qb = new SqlQueryBuilder()
     qb.insertInto('User', ['uid', 'username', 'password', 'email', 'role', 'activated']).values(6)
     // Todo add role table as FK constraint^
-    console.log(req.body)
     db.query(qb.build(),
       [id, req.body.username, hashedPassword, req.body.email, "user", true]).then(async (result) => {
       if (result.affectedRows === 0) {
         res.status(500).send({message: 'Error creating user'});
         return;
       }
-      const secret = new TextEncoder().encode('your-secret-key'); // Use a strong secret key
-
       const user: Omit<User, 'password'> = {
         uid: id,
         username: req.body.username,
         email: req.body.email,
-        role: "user",
+        role: UserRole.USER,
         activated: true
       }
 
-      const token = await new SignJWT({user})
-        .setProtectedHeader({alg: 'HS256'})
-        .setIssuedAt()
-        .setExpirationTime('2h')
-        .sign(secret);
+      // TODO CREATE HELPER FUNCTION FOR TOKEN CREATION
+
+      const token = await jwt.createAccessToken({
+        uid: user.uid,
+        role: user.role,
+        scope: [UserScope.READ, UserScope.WRITE],
+        type: JWTScope.ACCESS,
+      })
+      const refreshToken = await jwt.createRefreshToken({
+        uid: user.uid,
+        type: JWTScope.REFRESH
+      })
+
+      const idToken = await jwt.createIdToken({
+        uid: user.uid,
+        role: user.role,
+        type: JWTScope.ID,
+        email: user.email,
+        username: user.username
+      })
 
       res.setHeader('Authorization', `Bearer ${token}`)
-      // TODO REFRESH TOKEN UNS SO
       res.append('Set-Cookie', 'foo=bar; Path=/; HttpOnly; SameSite=None;')
-      res.status(201).send({message: 'User created', token, user});
+      res.status(201).send({message: 'User created', accessToken: token, idToken, refreshToken, user});
     }).catch((err) => {
       res.status(500).send({message: 'Error creating user'});
     })
+  })
+  .post('/refresh', async (req: Request, res: Response) => {
+    const refreshToken = req.body.refreshToken;
+    if (!refreshToken) {
+      res.status(400).send({message: 'Missing parameters'});
+      return;
+    }
+    const {payload} = await jwt.verifyToken<RefreshTokenPayload>(refreshToken);
+    if (payload.type !== JWTScope.REFRESH) {
+      res.status(400).send({message: 'Invalid token'});
+      return;
+    }
+    const qb = new SqlQueryBuilder()
+    qb.select('*').from('User').where('uid')
+    try {
+      const result = await db.query(qb.build(), [payload.uid]);
+      if (result.length === 0) {
+        res.status(401).send({message: 'Invalid username or password'});
+        return;
+      }
+      const user: Omit<User, 'password'> = {...result[0], password: null}
+      const token = await jwt.createAccessToken({
+        uid: user.uid,
+        role: user.role,
+        scope: [UserScope.READ, UserScope.WRITE],
+        type: JWTScope.ACCESS,
+      })
+      const idToken = await jwt.createIdToken({
+        uid: user.uid,
+        role: user.role,
+        type: JWTScope.ID,
+        email: user.email,
+        username: user.username
+      })
+      const newRefreshToken = await jwt.createRefreshToken({
+        uid: user.uid,
+        type: JWTScope.REFRESH
+      })
+
+
+      res.setHeader('Authorization', `Bearer ${token}`)
+      res.append('Set-Cookie', 'foo=bar; Path=/; HttpOnly; SameSite=None;')
+      res.status(200).send({
+        message: 'Refresh successful',
+        accessToken: token,
+        idToken,
+        refreshToken: newRefreshToken,
+        user
+      });
+    } catch (err) {
+      res.status(500).send({message: 'Error refreshing Token'});
+    }
+
+
   })
 
 
@@ -280,7 +386,6 @@ articleRouter
       res.send({likes, liked});
 
     }).catch((err) => {
-      console.log(err)
       res.status(500).send({message: 'Error fetching likes'});
     })
   })
@@ -301,9 +406,6 @@ articleRouter
       res.status(500).send({message: 'Error updating article likes'});
     })
   })
-  .delete('/:articleId/likes', requireAuthorization, (req: Request, res: Response) => {
-  })
-
 
   .get('/', (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder()
@@ -448,11 +550,11 @@ eventRouter
     })
     res.send({message: 'Event works!'});
   })
-  .post('/', requireAuthorization, (req: Request, res: Response) => {
+  .post('/', requireAuthorization(UserRole.ADMIN), (req: Request, res: Response) => {
 
     const event: Partial<Event> = req.body;
 
-    if (!event.dateTime || !event.title || !event.location || !event.description) return res.status(400).send({message: 'Missing required fields'});
+    if (!event.date || !event.title || !event.location || !event.description) return res.status(400).send({message: 'Missing required fields'});
 
     const id = generateId(idType.Event)
     const qb = new SqlQueryBuilder()
@@ -460,7 +562,7 @@ eventRouter
       .values(6)
 
     db.query(qb.build(),
-      [id, event.title, event.description, event.location, event.dateTime, event?.userUid ?? 0]).then((result) => {
+      [id, event.title, event.description, event.location, event.date, event?.userUid ?? 0]).then((result) => {
       if (result.affectedRows === 0) {
         res.status(500).send({message: 'Error creating event'});
         return;
@@ -471,14 +573,14 @@ eventRouter
 
     })
   })
-  .put('/:id', requireAuthorization, (req: Request, res: Response) => {
+  .put('/:id', requireAuthorization(UserRole.ADMIN), (req: Request, res: Response) => {
     const event: Partial<Event> = req.body;
     const params = []
     const qb = new SqlQueryBuilder()
       .update("Event")
-    if (event.dateTime) {
+    if (event.date) {
       qb.set("date")
-      params.push(event.dateTime)
+      params.push(event.date)
     }
     if (event.location) {
       qb.set("location")
@@ -513,7 +615,7 @@ eventRouter
       res.status(500).send({message: 'Error updating event'});
     })
   })
-  .delete('/:id', requireAuthorization, (req: Request, res: Response) => {
+  .delete('/:id', requireAuthorization(UserRole.ADMIN), (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder()
       .deleteFrom("Event")
       .where("uid")

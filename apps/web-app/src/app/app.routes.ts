@@ -30,9 +30,13 @@ export const appRoutes: Route[] = [
   },
   {
     path: 'admin',
-    loadComponent: () => import('./admin/admin.component').then(m => m.AdminComponent),
+    loadComponent: () => import('./admin-shell/admin-shell.component').then(m => m.AdminShellComponent),
     canActivate: [adminGuard],
-    children: []
+    children: [
+      {
+        path: '', loadComponent: () => import('./admin/admin.component').then(m => m.AdminComponent),
+      }
+    ]
   },
   {
     path: '**',

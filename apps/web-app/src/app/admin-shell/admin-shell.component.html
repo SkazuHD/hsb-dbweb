@@ -1,0 +1,69 @@
+<div class="@container flex flex-col absolute top-0 bottom-0 left-0 right-0">
+
+
+  <app-toolbar [links]="links" [sideNav]="sidenav"></app-toolbar>
+
+  <mat-sidenav-container class="h-full">
+    <mat-sidenav #sidenav autoFocus="false" mode="side" position="end">
+      <mat-nav-list>
+        @if (authService.user()) {
+          <button
+            mat-list-item
+            (click)="authService.logout()"
+          >
+        <span class="flex gap-3 align-middle">
+          <mat-icon>logout</mat-icon>Sign Out</span>
+          </button>
+        } @else {
+          <button
+            mat-list-item
+            (click)="authService.requestLoginDialog()"
+          >
+        <span class="flex gap-3 align-middle">
+          <mat-icon>login</mat-icon>Sign In
+        </span>
+          </button>
+        }
+        @for (link of links; track link) {
+          @if (!link.requiresAuth || authService.user()) {
+            <a
+              mat-list-item
+              routerLink="{{link.route}}"
+              [class]="link.isInToolbar? '@lg:!hidden':''"
+            ><span class="flex gap-3 align-middle"
+            ><mat-icon>{{ link.icon }}</mat-icon>
+              {{ link.label }}</span
+            ></a>
+          } @else {
+            <button
+              mat-list-item
+              (click)="authService.requestLoginDialog()"
+              [class]="link.isInToolbar? '@lg:!hidden':''"
+            ><span class="flex gap-3 align-middle"
+            ><mat-icon>{{ link.icon }}</mat-icon>
+              {{ link.label }}</span
+            ></button>
+          }
+        }
+      </mat-nav-list>
+      <mat-list>
+        <mat-list-item>
+          <mat-slide-toggle
+            #darkModeSwitch
+            (change)="onToggleTheme()"
+            [formControl]="themeToggle">
+            {{
+              themeToggle.value === true ? 'Dark Mode' :
+                'LightMode'
+            }}
+          </mat-slide-toggle>
+        </mat-list-item>
+      </mat-list>
+    </mat-sidenav>
+    <mat-sidenav-content>
+      <div class="min-h-fit max-w-screen-2xl mx-auto my-8">
+        <router-outlet></router-outlet>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

@@ -1,0 +1,86 @@
+<div class="!flex !items-center" mat-dialog-title>
+  <h2>Add a new Event</h2>
+
+  <button
+    aria-label="close dialog"
+    class="ml-auto"
+    mat-dialog-close
+    mat-icon-button
+    role="button"
+  >
+    <mat-icon>close</mat-icon>
+  </button>
+</div>
+
+<mat-dialog-content>
+  <form [formGroup]="editEventForm" class="grid">
+    <mat-form-field>
+      <input
+        autocomplete="off"
+        formControlName="title"
+        matInput
+        placeholder="Title"
+        type="text"
+      />
+      <mat-error *ngIf="editEventForm.get('title')?.hasError('required')">
+        Please enter a title
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <input
+        autocomplete="off"
+        formControlName="location"
+        matInput
+        placeholder="Location"
+        type="text"
+      />
+      <mat-error *ngIf="editEventForm.get('location')?.hasError('required')">
+        Please enter a location
+      </mat-error>
+    </mat-form-field>
+
+
+    <mat-form-field>
+      <textarea
+        autocomplete="off"
+        formControlName="description"
+        matInput
+        placeholder="Description"
+      ></textarea>
+      <mat-error *ngIf="editEventForm.get('description')?.hasError('required')">
+        Please enter a description
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <input
+        autocomplete="off"
+        formControlName="date"
+        matInput
+        placeholder="Date"
+        type="datetime-local"
+      />
+      <mat-error *ngIf="editEventForm.get('date')?.hasError('required')">
+        Please enter a date
+      </mat-error>
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Type</mat-label>
+      <mat-select formControlName="type">
+        @for (eventType of Object.values(EventType); track eventType) {
+          <mat-option [value]="eventType">{{ eventType }}</mat-option>
+        }
+
+      </mat-select>
+    </mat-form-field>
+    <button
+      (click)="onSaveEvent()"
+      class="mt-2"
+      color="primary"
+      mat-flat-button
+    >
+      Save
+    </button>
+  </form>
+</mat-dialog-content>
