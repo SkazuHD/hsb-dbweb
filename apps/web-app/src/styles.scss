@@ -62,11 +62,7 @@ mat-sidenav {
 }
 
 mat-card {
-  background: mat.get-theme-color($light-theme, surface-container-low) !important;
-
-  mat-card {
-    background: mat.get-theme-color($light-theme, surface-container) !important;
-  }
+  background: mat.get-theme-color($light-theme, surface-container-high) !important;
 }
 
 
@@ -78,15 +74,9 @@ mat-card {
   mat-sidenav {
     background: mat.get-theme-color($dark-theme, surface-container-high) !important;
   }
-
   mat-card {
-    background: mat.get-theme-color($dark-theme, surface-container-low) !important;
-
-    mat-card {
-      background: mat.get-theme-color($dark-theme, surface-container) !important;
-    }
+    background: mat.get-theme-color($dark-theme, surface-container-high) !important;
   }
-
 }
 
 mat-slide-toggle {
@@ -96,70 +86,70 @@ mat-slide-toggle {
 }
 
 .mat-mdc-snack-bar-container.error > * {
-  background: #a30800 #{!important};
+  background: #a30800 !important;
 
   .mat-mdc-snack-bar-label {
-    color: white #{!important};
+    color: white !important;
   }
 
   .mat-mdc-snack-bar-action {
-    color: white #{!important};
+    color: white !important;
   }
 
-  color: white #{!important};
+  color: white !important;
 }
 
 .mat-mdc-snack-bar-container.success > * {
-  background: forestgreen #{!important};
+  background: forestgreen !important;
 
   .mat-mdc-snack-bar-label {
-    color: white #{!important};
+    color: white !important;
   }
 
   .mat-mdc-snack-bar-action {
-    color: white #{!important};
+    color: white !important;
   }
 
-  color: white #{!important};
+  color: white !important;
 }
 
 .mat-mdc-snack-bar-container.warn > * {
-  background: #f07224 #{!important};
+  background: #f07224 !important;
 
   .mat-mdc-snack-bar-label {
-    color: white #{!important};
+    color: white !important;
   }
 
   .mat-mdc-snack-bar-action {
-    color: white #{!important};
+    color: white !important;
   }
 
-  color: white #{!important};
+  color: white !important;
 }
 
 .mat-mdc-snack-bar-container.info > * {
   .mat-mdc-snack-bar-label {
-    color: white #{!important};
+    color: white !important;
   }
 
   .mat-mdc-snack-bar-action {
-    color: white #{!important};
+    color: white !important;
   }
 
-  color: white #{!important};
+  color: white !important;
 }
 
 .dark {
   .mat-mdc-snack-bar-container.info > * {
     .mat-mdc-snack-bar-label {
-      color: black #{!important};
+      color: black !important;
     }
 
     .mat-mdc-snack-bar-action {
-      color: black #{!important};
+      color: black !important;
     }
 
-    color: black #{!important};
+    color: black !important;
   }
 }
 

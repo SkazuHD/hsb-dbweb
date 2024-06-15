@@ -15,6 +15,9 @@ import {SqlQueryBuilder} from './SqlQueryBuilder';
 import bcrypt from 'bcrypt';
 import {rateLimit} from 'express-rate-limit';
 import {JwtManager} from '../jwt';
+import multer from "multer";
+
+const upload = multer();
 
 
 const router: Router = express.Router();
@@ -67,9 +70,10 @@ const requestContainsToken = (req: Request) => {
 const requireAuthentication = async (req: Request, res: Response, next: NextFunction) => {
   //Auth middleware | Checks if user is authenticated and provides valid token
 
-  const authHeader = req.header('Authorization');
-  if (!authHeader) {
-    return res.status(401).send({message: 'Unauthorized'});
+  const authHeader = req.header("Authorization");
+  if (authHeader === undefined) {
+    res.status(401).send({message: "Unauthorized"});
+    return;
   }
   const token = authHeader.split(' ')[1];
   if (!token) {
@@ -117,12 +121,12 @@ const requestLogger = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
 
-
 router
   .use(limiter)
   .use(express.json())
   .use(requestLogger)
   .use((req: Request, res: Response, next: NextFunction) => {
+    console.log(req.ip);
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200'); // replace with your Angular app's URL
     res.setHeader(
       'Access-Control-Allow-Headers',
@@ -151,44 +155,40 @@ galleryRouter
     db.query(qb.build()).then((result) => {
       res.send(result);
     }).catch((err) => {
-      res.status(500).send({ message: 'Error fetching gallery items' });
+      res.status(500).send({message: 'Error fetching gallery items'});
     });
   })
 
-  .post('/',requireAuthorization(UserRole.ADMIN), async (req: Request, res: Response) => {
-    if (!req.body.url || ! req.body.alt) {
+  .post('/', requireAuthorization(UserRole.ADMIN), async (req: Request, res: Response) => {
+    if (!req.body.url || !req.body.alt) {
       return res.status(400).json({error: 'missing Parameters'});
     }
     const qb = new SqlQueryBuilder()
-      .insertInto('Gallery', ['Url','Alt']).values(2)
+      .insertInto('Gallery', ['Url', 'Alt']).values(2)
     db.query(qb.build(), [req.body.url, req.body.alt]).then((result) => {
       if (result.affectedRows === 0) {
-        res.status(500).send({ message: 'Error creating gallery item' });
+        res.status(500).send({message: 'Error creating gallery item'});
         return;
       }
-      res.status(201).send({ message: 'Gallery item created' });
+      res.status(201).send({message: 'Gallery item created'});
     }).catch((err) => {
-      res.status(500).send({ message: 'Error creating gallery item' });
+      res.status(500).send({message: 'Error creating gallery item'});
     });
   })
-  .delete('/',requireAuthorization(UserRole.ADMIN), (req: Request, res: Response) => {
+  .delete('/', requireAuthorization(UserRole.ADMIN), (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder()
       .deleteFrom('Gallery')
       .where('url')
     db.query(qb.build(), [req.body.url]).then((result) => {
-      console.log(req.body.url)
-      console.log(qb.build())
-      console.log(result)
       if (result.affectedRows === 0) {
-        res.status(404).send({ message: 'Gallery item not found' });
+        res.status(404).send({message: 'Gallery item not found'});
         return;
       }
-      res.send({ message: 'Gallery item deleted' });
+      res.send({message: 'Gallery item deleted'});
     }).catch((err) => {
-      res.status(500).send({ message: 'Error deleting gallery item' });
+      res.status(500).send({message: 'Error deleting gallery item'});
     });
   });
-
 
 
 //Auth routes
@@ -245,9 +245,9 @@ authRouter
 
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
-    const id = generateId(idType.User);
-    const qb = new SqlQueryBuilder();
-    qb.insertInto('User', ['uid', 'username', 'password', 'email', 'role', 'activated']).values(6);
+    const id = generateId(idType.User)
+    const qb = new SqlQueryBuilder()
+    qb.insertInto('User', ['uid', 'username', 'password', 'email', 'role', 'activated', 'picture']).values(6)
     // Todo add role table as FK constraint^
     db.query(qb.build(),
       [id, req.body.username, hashedPassword, req.body.email, 'user', true]).then(async (result) => {
@@ -257,11 +257,13 @@ authRouter
       }
       const user: Omit<User, 'password'> = {
         uid: id,
+        name: req.body.name,
         username: req.body.username,
         email: req.body.email,
         role: UserRole.USER,
-        activated: true
-      };
+        activated: true,
+        picture: null
+      }
 
       // TODO CREATE HELPER FUNCTION FOR TOKEN CREATION
 
@@ -351,12 +353,12 @@ authRouter
     res.send({message: 'Auth Router works'});
   });
 //Profile routes
-profileRouter.use(requireAuthentication);
+
 profileRouter
   .get('/', (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder()
-      .select(['uid', 'username', 'email', 'name', 'role', 'activated'])
-      .from('User');
+      .select(['uid', 'username', 'email', 'name', 'role', 'activated', 'picture'])
+      .from('User')
 
     db.query(qb.build()).then((result) => {
       res.send(result);
@@ -366,7 +368,7 @@ profileRouter
   })
   .get('/:id', (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder()
-      .select(['uid', 'username', 'email', 'name', 'role', 'activated'])
+      .select(['uid', 'username', 'email', 'name', 'role', 'activated', 'picture'])
       .from('User')
       .where('uid');
 
@@ -375,13 +377,76 @@ profileRouter
         res.status(404).send({message: 'User not found'});
         return;
       }
-      res.send({message: 'User found!'});
-      res.send(result[0]);
+      return res.send(result[0]);
     }).catch((err) => {
       res.status(500).send({message: 'Error fetching user'});
     });
   })
-  .put('/:username', (req: Request, res: Response) => {
+profileRouter.put('/:uid', upload.single('picture'), requireAuthentication, async (req: Request, res: Response) => {
+  const user: Partial<User> = JSON.parse(req.body.user);
+  const picture = req.file; // This is the uploaded file
+  await jwt.getUserIdFromToken(req.header('Authorization').split(' ')[1]).then((userId) => {
+    if (req.params.uid !== userId) {
+      return res.status(403).send({message: 'Forbidden'});
+
+    }
+    const params = [];
+
+    const qb = new SqlQueryBuilder()
+      .update("User");
+    if (user.username) {
+      qb.set("username");
+      params.push(user.username);
+    }
+    if (user.password) {
+      qb.set("password");
+      params.push(user.password);
+    }
+    if (user.name) {
+      qb.set("name");
+      params.push(user.name);
+    }
+    if (user.email) {
+      qb.set("email");
+      params.push(user.email);
+    }
+    if (user.role) {
+      qb.set("role");
+      params.push(user.role);
+    }
+    if (user.activated) {
+      qb.set("activated");
+      params.push(user.activated);
+    }
+    if (picture) {
+      qb.set("picture");
+      params.push(picture.buffer);
+    }
+    if (params.length === 0) {
+      res.status(400).send({message: 'No fields to update'});
+      return;
+    }
+
+    qb.where("uid");
+    params.push(req.params.uid);
+
+    db.query(qb.build(), params).then((result) => {
+      if (result.affectedRows === 0) {
+        res.status(404).send({message: 'User not found'});
+        return;
+      }
+      res.send({message: 'User updated'});
+    }).catch((err) => {
+      res.status(500).send({message: 'Error updating user'});
+    })
+  }).catch((err) => {
+    res.status(500).send({message: 'Error updating user'});
+  })
+
+})
+
+
+  .put('/:username', requireAuthentication, (req: Request, res: Response) => {
     db.query('UPDATE User SET username = ?, password = ?, email = ?, role = ?, activated = ? WHERE uid = ?',
       [req.body.username, req.body.password, req.body.email, req.body.role, req.body.activated, req.params.username]).then((result) => {
       if (result.affectedRows === 0) {
@@ -394,7 +459,7 @@ profileRouter
       }
     );
   })
-  .delete('/:id', (req: Request, res: Response) => {
+  .delete('/:id', requireAuthentication, (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder()
       .deleteFrom('User')
       .where('uid');

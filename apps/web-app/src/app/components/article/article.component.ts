@@ -36,7 +36,6 @@ export class ArticleComponent {
     this.api.getArticleById(id).subscribe((article) => {
       this.article.set(article);
       this.meta.addTagsForArticle(article);
-
     });
   }
 
