@@ -1,0 +1,72 @@
+<div class="@container grid mx-auto max-h-full max-w-2xl">
+  <mat-card class="p-4">
+
+    <div class=" grid grid-cols-2">
+      <div class="grid place-content-center rounded-full">
+        <img mat-card-xl-image src="{{imageUrl}}">
+      </div>
+      <div class="">
+
+        <h3 class="mt-7 text-3xl">Profile</h3>
+        <form [formGroup]="profileForm" class="grid mt-6">
+          <mat-form-field>
+            @if (user().name === '' || user().name === null || user().name === undefined) {
+              <input
+                matInput
+                placeholder="Name"
+                type="text"
+                formControlName="name"
+                autocomplete="name"
+              />
+            } @else {
+              <input
+                matInput
+                placeholder="Name"
+                type="text"
+                formControlName="name"
+                autocomplete="name"
+              />
+            }
+
+            @if (profileForm.get('name')?.hasError('required')) {
+              <mat-error>Please enter a name</mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field>
+            <input
+              autocomplete="username"
+              formControlName="username"
+              matInput
+              placeholder="Username"
+              type="text"
+            />
+            @if (profileForm.get('username')?.hasError('required')) {
+              <mat-error>Please enter a username</mat-error>
+            }
+          </mat-form-field>
+        </form>
+        <input (change)="onFileSelected($event)" accept="image/png, image/gif, image/jpeg" name="image" type="file">
+      </div>
+    </div>
+    <mat-card-content>
+      <hr class="my-4">
+      <div class="grid grid-cols-2">
+        <button
+          color="primary"
+          mat-flat-button
+          routerLink="/profile/{{user().uid}}"
+        >
+          Cancel
+        </button>
+        <button
+          (click)="onSave()"
+          class="float-end bg-custom_yellow text-white"
+          mat-flat-button
+        >
+          Save
+        </button>
+
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

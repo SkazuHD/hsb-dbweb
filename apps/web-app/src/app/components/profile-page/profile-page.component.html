@@ -1,0 +1,46 @@
+<div class="@container grid mx-auto max-h-full max-w-2xl">
+  <mat-card class="p-4">
+    @if (user()) {
+      <div class=" grid grid-cols-2">
+
+        <div class="grid place-content-center rounded-full">
+          <img mat-card-xl-image src="{{imageUrl()}}">
+        </div>
+        <div class="">
+          @if (isOwnProfile) {
+            <button mat-icon-button class="float-end" routerLink="/profile/edit/{{user().uid}}">
+              <mat-icon>edit_square</mat-icon>
+            </button>
+          }
+
+          <h3 class="mt-7 text-3xl">Profile</h3>
+          <br>
+          <p class="mt-3 text-2xl">Name: </p>
+          <p class="mt-3 text-2xl">{{ user().name }}</p>
+          <br>
+          <p class="mt-3 text-2xl">Username: </p>
+          <p class="mt-2 text-xl italic">{{ user().username }}</p>
+        </div>
+      </div>
+      <mat-card-content>
+        <hr class="my-4">
+        <div class="grid grid-cols-2 ">
+          <div class="">
+            <p class="text-xl">Email:</p>
+            <p class="text-lg">{{ user().email }}</p>
+          </div>
+          <div class="">
+            <p class="text-xl">Role:</p>
+            <p class="text-lg">{{ user().role }}</p>
+          </div>
+        </div>
+      </mat-card-content>
+    } @else {
+      <div class="grid place-content-center">
+        <h3 class="text-3xl">Profile</h3>
+        <p class="mt-3 text-2xl">No user found</p>
+      </div>
+    }
+
+  </mat-card>
+</div>

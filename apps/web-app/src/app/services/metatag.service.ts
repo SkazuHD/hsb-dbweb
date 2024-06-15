@@ -1,6 +1,6 @@
 import {inject, Injectable} from "@angular/core";
 import {Meta} from "@angular/platform-browser";
-import {Article, Contact} from "../../../../../libs/shared/src/lib/types/types";
+import {Article, Contact} from '@hsb-dbweb/shared';
 
 @Injectable({
   providedIn: "root",

@@ -1,19 +1,19 @@
-import { AfterViewInit, Component, ElementRef, inject, Signal, viewChild } from '@angular/core';
-import { CommonModule, NgOptimizedImage } from '@angular/common';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
-import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
-import { MatList, MatListItem, MatNavList } from '@angular/material/list';
-import { MatCheckbox } from '@angular/material/checkbox';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatButton, MatIconButton } from '@angular/material/button';
-import { MatIcon } from '@angular/material/icon';
-import { MatToolbar } from '@angular/material/toolbar';
-import { MatSlideToggle } from '@angular/material/slide-toggle';
-import { AuthService } from '../services/auth.service';
-import { AppLink, UserRole } from '@hsb-dbweb/shared';
-import { ToolbarComponent } from './toolbar.component';
-import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {AfterViewInit, Component, effect, ElementRef, inject, Signal, viewChild} from '@angular/core';
+import {CommonModule, NgOptimizedImage} from '@angular/common';
+import {Router, RouterLink, RouterOutlet} from '@angular/router';
+import {MatSidenav, MatSidenavModule} from '@angular/material/sidenav';
+import {MatList, MatListItem, MatNavList} from '@angular/material/list';
+import {MatCheckbox} from '@angular/material/checkbox';
+import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {MatButton, MatIconButton} from '@angular/material/button';
+import {MatIcon} from '@angular/material/icon';
+import {MatToolbar} from '@angular/material/toolbar';
+import {MatSlideToggle} from '@angular/material/slide-toggle';
+import {AuthService} from '../services/auth.service';
+import {AppLink, UserRole} from '@hsb-dbweb/shared';
+import {ToolbarComponent} from "./toolbar.component";
+import {BreakpointObserver, Breakpoints} from "@angular/cdk/layout";
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 
 @Component({
   selector: 'app-shell',
@@ -48,6 +48,7 @@ export class AppShellComponent implements AfterViewInit {
   authService: AuthService = inject(AuthService);
   breakpointObserver = inject(BreakpointObserver);
   router = inject(Router);
+  userUid = this.authService.user()?.uid;
 
   links: AppLink[] = [
     {
@@ -87,7 +88,7 @@ export class AppShellComponent implements AfterViewInit {
     },
     {
       label: 'Profile',
-      route: '/profiles/:username',
+      route: '/profile/' + this.userUid,
       icon: 'person',
       isInToolbar: false,
       requiresAuth: true,
@@ -131,6 +132,16 @@ export class AppShellComponent implements AfterViewInit {
         this.sidenav().close();
       }
     });
+
+    effect(() => {
+      this.userUid = this.authService.user()?.uid;
+      const profileLink = this.links.find(link => link.label === 'Profile');
+      if (profileLink) {
+        profileLink.route = '/profile/' + this.userUid;
+      }
+    })
+
+
   }
 
   ngAfterViewInit() {
@@ -153,6 +164,7 @@ export class AppShellComponent implements AfterViewInit {
     })
 
   }
+
 
   onToggleTheme() {
     document.body.classList.toggle('dark');

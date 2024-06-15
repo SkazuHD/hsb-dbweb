@@ -5,7 +5,6 @@ import * as process from 'process';
 import router from "./routes/api";
 import serverLess from 'serverless-http';
 import {sseConnections, sseMiddleware, SSEResponse} from './sse';
-
 import {initializeApp} from 'firebase-admin/app';
 
 const firebaseConfig = {
@@ -25,7 +24,11 @@ const server = app.listen(port, () => {
 
 export const handler = serverLess(app);
 
+
+// app.options('*', cors())
+
 app
+  // .use(cors())
   .use('/api/', router)
   .use('/assets', express.static(path.join(__dirname, 'assets')))
 

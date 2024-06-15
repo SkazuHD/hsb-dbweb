@@ -2,7 +2,7 @@ import {inject, Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {forkJoin, map, Observable, of, retry, RetryConfig} from 'rxjs';
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
-import {Article, CommentCreate, Contact, Event, Image, InfoText} from '@hsb-dbweb/shared';
+import {Article, CommentCreate, Contact, Event, Image, InfoText, User, UserRole} from '@hsb-dbweb/shared';
 import {MatDialog} from '@angular/material/dialog';
 import {AddPictureComponent} from '../components/dialog/add-picture/add-picture.component';
 
@@ -108,8 +108,11 @@ export class ApiService {
   }
 
   getArticles(): Observable<Article[]> {
-    return this.http.get<Article[]>(this.apiURL + '/article').pipe(
-    );
+    return this.http.get(this.apiURL + '/article').pipe() as Observable<Article[]>;
+  }
+
+  getUserById(id: string): Observable<User> {
+    return this.http.get(this.apiURL + "/profile/" + id).pipe() as Observable<User>;
   }
 
   getArticleById(id: string): Observable<Article> {
@@ -126,6 +129,17 @@ export class ApiService {
         } as Article;
       })
     );
+  }
+
+  updateUser(id: string, user: Partial<User>, file?: File) {
+    const formData = new FormData();
+    formData.append('user', JSON.stringify(user));
+    if (file) {
+      formData.append('picture', file);
+
+    }
+
+    return this.http.put(this.apiURL + '/profile/' + id, formData);
   }
 
   updateArticleLike(id: string) {

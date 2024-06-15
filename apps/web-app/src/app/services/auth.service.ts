@@ -78,7 +78,6 @@ export class AuthService {
           this.refreshTokens().subscribe();
         }
       }, this.getTokenExpirationTime(accessToken).getTime() - new Date().getTime() - 60000)
-      console.log(accessToken)
       return this.state.update((state) => ({
         ...state,
         accessToken,

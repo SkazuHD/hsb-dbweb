@@ -72,10 +72,12 @@ export enum EventType {
 export type User = {
   username: string;
   password: string; // hashed
+  name: string;
   email: string;
   role: UserRole;
   activated: boolean;
   uid: string;
+  picture : any;
 }
 
 export type Comment = {
