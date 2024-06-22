@@ -1,9 +1,8 @@
 import {inject, Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import { forkJoin, map, Observable, of, retry, RetryConfig } from 'rxjs';
+import {exhaustMap, forkJoin, map, Observable, of, retry, RetryConfig} from 'rxjs';
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {Article, Contact, Event, InfoText} from '@hsb-dbweb/shared';
-import { response } from 'express';
 
 @Injectable({
   providedIn: 'root',
@@ -76,7 +75,8 @@ export class ApiService {
   }
 
   getArticles(): Observable<Article[]> {
-    return this.http.get(this.apiURL + '/article').pipe() as Observable<Article[]>;
+    return this.http.get<Article[]>(this.apiURL + '/article').pipe(
+    );
   }
 
   getArticleById(id: string): Observable<Article> {
@@ -85,11 +85,11 @@ export class ApiService {
       //this.http.get(this.apiURL + '/article/' + id + '/comments'),
       this.http.get(this.apiURL + '/article/' + id + '/likes'),
     ]).pipe(
-      map(([article, likes]) => {
-        return {
+      exhaustMap(([article, likes]) => {
+        return of({
           ...article,
-          ... likes,
-        };
+          ...likes,
+        });
       }),
     ) as Observable<Article>;
   }
@@ -99,7 +99,7 @@ export class ApiService {
   }
 
   getAllEvents() {
-    return this.http.get(this.apiURL + '/events');
+    return this.http.get(this.apiURL + '/events') as Observable<Event[]>;
   }
 
   getEventById(id: string) {
@@ -126,7 +126,7 @@ export class ApiService {
     return this.http.post(this.apiURL + '/events', event);
   }
 
-  updateEvent(event: Event) {
+  updateEvent(event: Partial<Event>) {
     return this.http.put(this.apiURL + '/events/' + event.uid, event);
   }
 

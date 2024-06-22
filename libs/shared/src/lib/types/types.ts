@@ -1,3 +1,5 @@
+import {JWTPayload} from "jose";
+
 export type Image = {
   url: string;
   alt?: string;
@@ -49,18 +51,24 @@ export type Contact = {
 export type Event = {
   uid: string;
   title: string;
-  dateTime: Date;
+  date: Date;
   location: string;
   description: string;
   userUid?: string;
-  type: "Training" | "Tournament" | "Event";
+  type: EventType;
 };
+
+export enum EventType {
+  Training = 'Training',
+  Tournament = 'Tournament',
+  Event = 'Event'
+}
 
 export type User = {
   username: string;
   password: string; // hashed
   email: string;
-  role: "admin" | "user";
+  role: UserRole;
   activated: boolean;
   uid: string;
 }
@@ -70,3 +78,44 @@ export type registerCredential = {
   email: string;
   password: string;
 }
+
+
+export enum UserRole {
+  USER = 'user',
+  ADMIN = 'admin',
+}
+
+export enum UserScope {
+  READ = 'read',
+  WRITE = 'write',
+  DELETE = 'delete',
+}
+
+export enum JWTScope {
+  REFRESH = 'refresh',
+  ACCESS = 'access',
+  ID = 'id',
+}
+
+export interface RefreshTokenPayload extends JWTPayload {
+  uid: string;
+  type: JWTScope.REFRESH;
+}
+
+
+export interface AccessTokenPayload extends JWTPayload {
+  uid: string; // User ID
+  role: UserRole; // User role
+  scope: UserScope[]; // Scopes that the user has access to
+  type: JWTScope.ACCESS;
+}
+
+export interface IDTokenPayload extends JWTPayload {
+  type: JWTScope.ID;
+  uid: string; // User ID
+  email: string; // User email
+  role: UserRole; // User role
+  // Add more information about the user as neeeded
+}
+
+export type JWTPayloadType = RefreshTokenPayload | AccessTokenPayload | IDTokenPayload;

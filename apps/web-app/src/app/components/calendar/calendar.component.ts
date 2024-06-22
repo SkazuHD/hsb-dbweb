@@ -3,7 +3,7 @@ import {CommonModule} from '@angular/common';
 import {DateRange, MatCalendar, MatCalendarCellCssClasses, MatDatepickerModule} from "@angular/material/datepicker";
 import {MatCard} from "@angular/material/card";
 import {MatNativeDateModule} from "@angular/material/core";
-import {Event} from "../../../../../../libs/shared/src/lib/types/types";
+import { Event } from '@hsb-dbweb/shared';
 import {ReactiveFormsModule} from "@angular/forms";
 
 @Component({
@@ -21,14 +21,14 @@ export class CalendarComponent {
 
   onSelectionChange(date: Date | null) {
     if (!date) return;
-    const event = this.events().find(event => this.compareDates(event.dateTime, date))
+    const event = this.events().find(event => this.compareDates(event.date, date))
     this.selectedDate.emit(event);
   }
 
   dateClass() {
     return (date: Date): MatCalendarCellCssClasses => {
 
-      const event = this.events().find(event => this.compareDates(event.dateTime, date))
+      const event = this.events().find(event => this.compareDates(event.date, date))
       if (event) {
         return ['date-highlight', event.type.toLowerCase()];
       } else {

@@ -1,47 +1,26 @@
-import {AfterViewInit, Component, ElementRef, inject, Signal, viewChild,} from '@angular/core';
-import {CommonModule, NgOptimizedImage} from '@angular/common';
-import {Router, RouterLink, RouterOutlet} from '@angular/router';
-import {MatSidenav, MatSidenavModule} from '@angular/material/sidenav';
-import {MatList, MatListItem, MatNavList} from '@angular/material/list';
-import {MatCheckbox} from '@angular/material/checkbox';
-import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {MatButton, MatIconButton} from '@angular/material/button';
-import {MatIcon} from '@angular/material/icon';
-import {MatToolbar} from '@angular/material/toolbar';
-import {MatSlideToggle} from '@angular/material/slide-toggle';
-import {AuthService} from '../services/auth.service';
-import {AppLink} from '@hsb-dbweb/shared';
-import {ToolbarComponent} from "./toolbar.component";
+import {AfterViewInit, Component, ElementRef, inject, Signal, viewChild} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {MatIcon} from "@angular/material/icon";
+import {MatList, MatListItem, MatNavList} from "@angular/material/list";
+import {MatSidenav, MatSidenavContainer, MatSidenavContent} from "@angular/material/sidenav";
+import {MatSlideToggle} from "@angular/material/slide-toggle";
+import {Router, RouterLink, RouterOutlet} from "@angular/router";
+import {ToolbarComponent} from "../app-shell/toolbar.component";
+import {AuthService} from "../services/auth.service";
 import {BreakpointObserver, Breakpoints} from "@angular/cdk/layout";
+import {AppLink} from "@hsb-dbweb/shared";
+import {FormControl, ReactiveFormsModule} from "@angular/forms";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 
 @Component({
-  selector: 'app-shell',
+  selector: 'app-admin-shell',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterLink,
-    NgOptimizedImage,
-    MatSidenavModule,
-    MatListItem,
-    MatNavList,
-    MatSidenav,
-    MatCheckbox,
-    FormsModule,
-    MatButton,
-    RouterOutlet,
-    MatIcon,
-    MatIconButton,
-    MatToolbar,
-    MatList,
-    MatSlideToggle,
-    ReactiveFormsModule,
-    ToolbarComponent,
-  ],
-  templateUrl: './app-shell.html',
-  styleUrl: './app-shell.css',
+  imports: [CommonModule, MatIcon, MatList, MatListItem, MatNavList, MatSidenav, MatSidenavContainer, MatSidenavContent, MatSlideToggle, RouterLink, RouterOutlet, ToolbarComponent, ReactiveFormsModule],
+  templateUrl: './admin-shell.component.html',
+  styleUrl: './admin-shell.component.css',
 })
-export class AppShellComponent implements AfterViewInit {
+export class AdminShellComponent implements AfterViewInit {
+
   sidenav: Signal<MatSidenav> = viewChild.required('sidenav', {read: MatSidenav});
   themeToggleRef: Signal<ElementRef> = viewChild.required('darkModeSwitch', {read: ElementRef});
 
@@ -58,31 +37,10 @@ export class AppShellComponent implements AfterViewInit {
       requiresAuth: false,
     },
     {
-      label: 'About',
-      route: '/about',
-      icon: 'info_outline',
-      isInToolbar: true,
-      requiresAuth: false,
-    },
-    {
-      label: 'Contact',
-      route: '/contact',
-      icon: 'contact_mail',
-      isInToolbar: true,
-      requiresAuth: false,
-    },
-    {
-      label: 'Profile',
-      route: '/profiles/:username',
-      icon: 'person',
-      isInToolbar: false,
-      requiresAuth: true,
-    },
-    {
       label: 'Testing',
       route: '/demo',
       icon: 'code',
-      isInToolbar: false,
+      isInToolbar: true,
       requiresAuth: false,
     },
   ];
@@ -148,3 +106,4 @@ export class AppShellComponent implements AfterViewInit {
     }
   }
 }
+

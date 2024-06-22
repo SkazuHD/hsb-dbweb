@@ -9,7 +9,7 @@ import {MatDividerModule} from "@angular/material/divider";
 import {MatCardModule} from "@angular/material/card";
 import {MatDatepickerModule} from "@angular/material/datepicker";
 import {CalendarComponent} from "../components/calendar/calendar.component";
-import {Event} from "@hsb-dbweb/shared";
+import {Event, EventType} from "@hsb-dbweb/shared";
 
 @Component({
   selector: 'app-demo',
@@ -23,10 +23,10 @@ export class DemoComponent {
     {
       uid: "E-1234",
       title: "Event 1",
-      dateTime: new Date("2024-10-10T14:48:00"),
+      date: new Date("2024-10-10T14:48:00"),
       location: "Location 1",
       description: "Description 1",
-      type: "Event"
+      type: EventType.Event
     }
   ]
   selectedEvent: Event | undefined;

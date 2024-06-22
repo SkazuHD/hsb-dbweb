@@ -45,6 +45,10 @@ export class SqlQueryBuilder {
   }
 
   set(column: string, value: string | number | Date = "?") {
+    if (this.query.includes('SET')) {
+      this.query += `, ${column} = ${value}`;
+      return this;
+    }
     this.query += ` SET ${column} = ${value}`;
     return this;
   }
