@@ -1,5 +1,5 @@
-import {createGlobPatternsForDependencies} from '@nx/angular/tailwind';
-import {join} from 'path';
+import { createGlobPatternsForDependencies } from '@nx/angular/tailwind';
+import { join } from 'path';
 
 const config: import('tailwindcss').Config = {
   content: [
@@ -11,16 +11,23 @@ const config: import('tailwindcss').Config = {
     extend: {
       colors: {
         custom_dark: '#17191C',
+        custom_white: '#fafdfc',
         custom_jet: '#313036',
         custom_red: '#A30800',
         custom_yellow: '#F6AE2D',
       },
       animation: {
         'ping-once': 'ping 300ms ease-out 1 reverse',
-      }
+      },
+      screens: {
+        xs: '540px',
+      },
     },
   },
-  plugins: [require('@tailwindcss/container-queries'), require('@tailwindcss/typography')],
+  plugins: [
+    require('@tailwindcss/container-queries'),
+    require('@tailwindcss/typography'),
+  ],
 };
 
 export default config;

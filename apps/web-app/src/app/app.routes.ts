@@ -43,3 +43,4 @@ export const appRoutes: Route[] = [
     redirectTo: '404',
   },
 ];
+

@@ -1,0 +1,51 @@
+<div class="@container/landingpage">
+  <div class="@lg/landingpage">
+    <div class="flex justify-center relative">
+      <img
+        class="w-full h-64 lg:h-96 object-cover"
+        [src]="landingpageimage.url"
+        [alt]="landingpageimage.alt"
+      />
+      <div
+        class="absolute bg-gradient-to-t from-custom_white dark:from-custom_dark object-center bottom-0 w-full h-56"
+      ></div>
+    </div>
+    <div
+      class="grid md:grid-rows-1 md:grid-cols-3 grid-cols-1 gap-8 p-16 pt-5 pb-0"
+    >
+      <div
+        class="col-span-1 justify-self-center align-middle md:order-last order-first"
+      >
+        <img
+          alt="Description of the image"
+          class="md:w-48 w-96 align-middle"
+          src="https://s-media-cache-ak0.pinimg.com/236x/ff/a4/11/ffa4116b4db241296e9afc20c1c5131c.jpg"
+        />
+      </div>
+      <div class="col-span-2">
+        <h1 class="text-xl font-bold">Über uns</h1>
+        <p class="pt-5">
+          {{ landingpagetext }}
+        </p>
+        <div class="pt-5">
+          <button mat-flat-button color="accent" routerLink="/contact">
+            Kontakt
+          </button>
+        </div>
+      </div>
+    </div>
+    <!--TODO for-loop-->
+    <mat-card class="m-5 !rounded-lg p-6 gap-6">
+      <h3 class="text-2xl font-bold text-center">Neuigkeiten</h3>
+      @for (article of articles(); track article) {
+        <app-newsfeed [article]="article"></app-newsfeed>
+      }
+
+      <div class="flex justify-center p-5">
+        <button mat-flat-button color="accent" routerLink="/articles">
+          Weitere Artikel
+        </button>
+      </div>
+    </mat-card>
+  </div>
+</div>
