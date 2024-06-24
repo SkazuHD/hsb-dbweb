@@ -1,11 +1,11 @@
-import {inject, Injectable} from '@angular/core';
-import {HttpClient} from '@angular/common/http';
-import {exhaustMap, forkJoin, map, Observable, of, retry, RetryConfig} from 'rxjs';
-import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
-import {Article, Contact, Event, InfoText} from '@hsb-dbweb/shared';
+import { inject, Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { exhaustMap, forkJoin, map, Observable, of, retry, RetryConfig } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Article, Comment, CommentCreate, Contact, Event, InfoText } from '@hsb-dbweb/shared';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class ApiService {
   private http: HttpClient = inject(HttpClient);
@@ -38,8 +38,8 @@ export class ApiService {
       name: 'Peter Griepentrog',
       telephone: '02065679631',
       fax: '0206563841',
-      mobile: '01709042408',
-    })
+      mobile: '01709042408'
+    });
   }
 
   getInfo(id: string): Observable<InfoText> {
@@ -50,27 +50,27 @@ export class ApiService {
       schedule: [
         {
           time: '16:00 - 17:00 Uhr',
-          age: '4 - 6 Jahre',
+          age: '4 - 6 Jahre'
         },
         {
           time: '17:00 - 18:00 Uhr',
-          age: '7 - 8 Jahre',
+          age: '7 - 8 Jahre'
         },
         {
           time: '18:00 - 19:00 Uhr',
-          age: '9 - 11 Jahre',
+          age: '9 - 11 Jahre'
         },
         {
           time: '19:00 - 20:00 Uhr',
-          age: '12 - 14 Jahre',
+          age: '12 - 14 Jahre'
         },
         {
           time: '20:00 - 21:30 Uhr',
-          age: '15 - 80 Jahre',
-        },
+          age: '15 - 80 Jahre'
+        }
       ],
       schedule_title: 'Trainingszeiten',
-      schedule_days: 'Montag und Freitag',
+      schedule_days: 'Montag und Freitag'
     });
   }
 
@@ -82,20 +82,29 @@ export class ApiService {
   getArticleById(id: string): Observable<Article> {
     return forkJoin([
       this.http.get(this.apiURL + '/article/' + id),
-      //this.http.get(this.apiURL + '/article/' + id + '/comments'),
-      this.http.get(this.apiURL + '/article/' + id + '/likes'),
+      this.http.get(this.apiURL + '/article/' + id + '/comments'),
+      this.http.get(this.apiURL + '/article/' + id + '/likes')
     ]).pipe(
-      exhaustMap(([article, likes]) => {
-        return of({
+      map(([article, comments, likes]) => {
+        return {
           ...article,
           ...likes,
-        });
-      }),
-    ) as Observable<Article>;
+          comments
+        } as Article;
+      })
+    );
   }
 
   updateArticleLike(id: string) {
-    return this.http.post(this.apiURL + '/article/' + id + '/likes', {})
+    return this.http.post(this.apiURL + '/article/' + id + '/likes', {});
+  }
+
+  addArticleComment(id: string, comment: CommentCreate) {
+    return this.http.post(this.apiURL + '/article/' + id + '/comments', { comment });
+  }
+
+  deleteComment(articleUid: string, commentUid: string) {
+    return this.http.delete(this.apiURL + '/article/' + articleUid + '/comments/' + commentUid);
   }
 
   getAllEvents() {
@@ -137,7 +146,7 @@ export class ApiService {
   private constructSSERequest(url: string) {
     const retryConfig: RetryConfig = {
       delay: 1000,
-      resetOnSuccess: true,
+      resetOnSuccess: true
     };
     return new Observable<MessageEvent>((observer) => {
       const eventSource = new EventSource(url);
@@ -147,8 +156,9 @@ export class ApiService {
       retry(retryConfig),
       map((event: MessageEvent) => {
         return event;
-      }),
+      })
     );
   }
+
 
 }

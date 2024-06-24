@@ -59,6 +59,41 @@
       </app-like-counter>
 
       <div class="mt-8" [innerHTML]="article().content | markdown"></div>
+      <div>
+        <h3>Comments</h3>
+        <form [formGroup]="commentForm">
+          <mat-form-field class="w-full pb-3">
+            <textarea formControlName="comment" matInput placeholder="Add a comment" #comment></textarea>
+            <mat-hint align="end">
+              <span>{{ comment.textLength }}/255</span>
+            </mat-hint>
+            @if (commentForm.touched && comment.value !== '') {
+              @if (commentForm.get('comment')?.hasError('required')) {
+                <mat-error>Comment is required</mat-error>
+              } @else if (commentForm.get('comment')?.hasError('minlength')) {
+                <mat-error>Comment must be at least 3 characters</mat-error>
+              } @else if (commentForm.get('comment')?.hasError('maxlength')) {
+                <mat-error>Comment must be at most 500 characters</mat-error>
+              }
+            }
+          </mat-form-field>
+
+
+          @if (comment.value !== '') {
+            <div class="flex gap-3 justify-end pb-3">
+              <button mat-button color="warn" type="button" (click)="commentForm.reset()">Clear</button>
+              <button mat-raised-button color="primary" type="submit" (click)="onAddComment()">Submit</button>
+            </div>
+          }
+
+        </form>
+
+        <div class="flex flex-col space-y-6">
+          @for (comment of article().comments; track comment) {
+            <app-single-comment [comment]="comment" (commentChange)="onCommentChange($event)"></app-single-comment>
+          }
+        </div>
+      </div>
     </div>
   </article>
 }

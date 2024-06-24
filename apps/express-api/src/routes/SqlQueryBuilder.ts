@@ -24,7 +24,11 @@ export class SqlQueryBuilder {
     this.query += ` FROM ${table}`;
     return this;
   }
-
+  //Join Query
+  join(table: string, on: string, type: 'INNER' | 'LEFT' | 'RIGHT' | 'FULL' = 'INNER') {
+    this.query += ` ${type} JOIN ${table} ON ${on}`;
+    return this;
+  }
   //Insert Query
   insertInto(table: string, columns: string[] | undefined = undefined) {
     this.query += `INSERT INTO ${table} `;
