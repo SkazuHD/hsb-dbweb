@@ -25,7 +25,7 @@
           </button>
         }
         @for (link of links; track link) {
-          @if (!link.requiresAuth || authService.user()) {
+          @if ((!link.requiresAuth || authService.user()) && (!link.requiresRole || authService.user()?.role === link.requiresRole)) {
             <a
               mat-list-item
               routerLink="{{link.route}}"
@@ -34,7 +34,7 @@
             ><mat-icon>{{ link.icon }}</mat-icon>
               {{ link.label }}</span
             ></a>
-          } @else {
+          } @else if (link.requiresAuth && !authService.user() && !link.requiresRole) {
             <button
               mat-list-item
               (click)="authService.requestLoginDialog()"
