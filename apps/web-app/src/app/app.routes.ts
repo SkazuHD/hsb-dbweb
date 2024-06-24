@@ -9,8 +9,8 @@ import {EventpageComponent} from "./components/event-page/eventpage.component";
 import {LandingPageComponent} from './components/landingpage/landingPage.component';
 import {ArticlelistComponent} from './components/articlelist/articlelist.component';
 import {GalleryComponent} from './components/gallery/gallery.component';
-import { ProfilePageComponent } from './components/profile-page/profile-page.component';
-import { ProfileEditComponent } from './components/profile-edit/profile-edit.component';
+import {ProfilePageComponent} from './components/profile-page/profile-page.component';
+import {ProfileEditComponent} from './components/profile-edit/profile-edit.component';
 
 
 export const appRoutes: Route[] = [
@@ -21,7 +21,7 @@ export const appRoutes: Route[] = [
       {path: '', component: LandingPageComponent},
       {path: 'gallery', component: GalleryComponent},
       {path: 'articles', component: ArticlelistComponent, data: {limit: 0, title: 'Articles'}},
-      {path: 'articles/:slugId', component: ArticleComponent},
+      {path: 'articles/:slugId', component: ArticleComponent, data: {showComments: true}},
       {path: 'profile/:uid', component: ProfilePageComponent},
       {path: 'profile/edit/:uid', component: ProfileEditComponent},
       {path: 'info', component: InfoPageComponent},

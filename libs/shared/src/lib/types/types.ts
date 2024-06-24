@@ -1,11 +1,9 @@
-import {JWTPayload} from "jose";
+import { JWTPayload } from 'jose';
 
 export type Image = {
   url: string;
   alt?: string;
 };
-
-
 
 export type Article = {
   title: string;
@@ -15,7 +13,7 @@ export type Article = {
   date?: string;
   uid: string;
   content: string;
-  media?: Image[];
+  media?: any;
   userUid?: string;
   likes?: number;
   liked: boolean;
@@ -33,7 +31,7 @@ export type AppLink = {
 export type InfoText = {
   title: string;
   content: string;
-  schedule?: { time: string, age: string }[];
+  schedule?: { time: string; age: string }[];
   schedule_title?: string;
   schedule_days?: string;
 };
@@ -66,7 +64,7 @@ export type Event = {
 export enum EventType {
   Training = 'Training',
   Tournament = 'Tournament',
-  Event = 'Event'
+  Event = 'Event',
 }
 
 export type User = {
@@ -77,8 +75,8 @@ export type User = {
   role: UserRole;
   activated: boolean;
   uid: string;
-  picture : any;
-}
+  picture: any;
+};
 
 export type Comment = {
   content: string;
@@ -87,20 +85,19 @@ export type Comment = {
   uid: string;
   username: string;
   timestamp: Date;
-}
+};
 
 export type CommentCreate = {
   content: string;
   articleUid: string;
   userUid: string;
-}
+};
 
 export type registerCredential = {
   username: string;
   email: string;
   password: string;
-}
-
+};
 
 export enum UserRole {
   USER = 'user',
@@ -124,7 +121,6 @@ export interface RefreshTokenPayload extends JWTPayload {
   type: JWTScope.REFRESH;
 }
 
-
 export interface AccessTokenPayload extends JWTPayload {
   uid: string; // User ID
   role: UserRole; // User role
@@ -140,4 +136,7 @@ export interface IDTokenPayload extends JWTPayload {
   // Add more information about the user as neeeded
 }
 
-export type JWTPayloadType = RefreshTokenPayload | AccessTokenPayload | IDTokenPayload;
+export type JWTPayloadType =
+  | RefreshTokenPayload
+  | AccessTokenPayload
+  | IDTokenPayload;
