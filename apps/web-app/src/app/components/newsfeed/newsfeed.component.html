@@ -8,6 +8,12 @@
           [alt]="article().image?.alt"
         />
       }
+      @if (imageUrl()) {
+        <img
+          class="w-full xs:w-52 rounded-[10px] xs:ml-auto"
+          [src]="imageUrl()"
+          [alt]="article().image?.alt"/>
+      }
 
     </div>
     <div class="row-span-2 col-span-2">
@@ -20,7 +26,7 @@
         }
       </mat-card-header>
       <mat-card-content>
-        <p class="line-clamp-4">{{ article().content }}</p>
+        <p class="line-clamp-4" [innerHTML]="article().content | markdown"></p>
       </mat-card-content>
     </div>
     <div class="col-span-2 justify-self-left">

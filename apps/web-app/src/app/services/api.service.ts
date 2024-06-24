@@ -1,15 +1,14 @@
 import {inject, Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {forkJoin, map, Observable, of, retry, RetryConfig, switchMap} from 'rxjs';
-import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
-import {Article, CommentCreate, Contact, Event, Image, InfoText, User, UserRole} from '@hsb-dbweb/shared';
+import {forkJoin, map, Observable, of, retry, RetryConfig, switchMap,} from 'rxjs';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {Article, CommentCreate, Contact, Event, Image, InfoText, User,} from '@hsb-dbweb/shared';
 import {MatDialog} from '@angular/material/dialog';
 import {AddPictureComponent} from '../components/dialog/add-picture/add-picture.component';
-import {ConfirmationDialogComponent} from "../components/dialog/confirmation/confirmationDialog.component";
-
+import {ConfirmationDialogComponent} from '../components/dialog/confirmation/confirmationDialog.component';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ApiService {
   private http: HttpClient = inject(HttpClient);
@@ -51,45 +50,49 @@ export class ApiService {
     });
   }
 
-
   requestAddPictureDialog(): Observable<any> {
-    return this.dialog.open(AddPictureComponent, {
-      autoFocus: 'input',
-    }).afterClosed();
+    return this.dialog
+      .open(AddPictureComponent, {
+        autoFocus: 'input',
+      })
+      .afterClosed();
   }
 
-
   getGallery(): Observable<Image[]> {
-    return this.http.get(this.apiURL + '/gallery/').pipe() as Observable<Image[]>;
+    return this.http.get(this.apiURL + '/gallery/').pipe() as Observable<
+      Image[]
+    >;
   }
 
   deleteImage(image: string): Observable<NonNullable<unknown>> {
-    return this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        title: 'Bild löschen',
-        message: 'Möchten Sie das Bild wirklich löschen?',
-        confirmText: 'Löschen',
-        cancelText: 'Abbrechen'
-      }
-    }).afterClosed().pipe(
-      switchMap((result) => {
-        if (result) {
-          return this.http.delete(this.apiURL + '/gallery', {
-            body: {
-              url: image
-            }
-          });
-        } else {
-          return of();
-        }
+    return this.dialog
+      .open(ConfirmationDialogComponent, {
+        data: {
+          title: 'Bild löschen',
+          message: 'Möchten Sie das Bild wirklich löschen?',
+          confirmText: 'Löschen',
+          cancelText: 'Abbrechen',
+        },
       })
-    );
+      .afterClosed()
+      .pipe(
+        switchMap((result) => {
+          if (result) {
+            return this.http.delete(this.apiURL + '/gallery', {
+              body: {
+                url: image,
+              },
+            });
+          } else {
+            return of();
+          }
+        }),
+      );
   }
 
   addPicture(image: Image) {
     return this.http.post(this.apiURL + '/gallery', image);
   }
-
 
   getInfo(id: string): Observable<InfoText> {
     return of({
@@ -99,51 +102,55 @@ export class ApiService {
       schedule: [
         {
           time: '16:00 - 17:00 Uhr',
-          age: '4 - 6 Jahre'
+          age: '4 - 6 Jahre',
         },
         {
           time: '17:00 - 18:00 Uhr',
-          age: '7 - 8 Jahre'
+          age: '7 - 8 Jahre',
         },
         {
           time: '18:00 - 19:00 Uhr',
-          age: '9 - 11 Jahre'
+          age: '9 - 11 Jahre',
         },
         {
           time: '19:00 - 20:00 Uhr',
-          age: '12 - 14 Jahre'
+          age: '12 - 14 Jahre',
         },
         {
           time: '20:00 - 21:30 Uhr',
-          age: '15 - 80 Jahre'
-        }
+          age: '15 - 80 Jahre',
+        },
       ],
       schedule_title: 'Trainingszeiten',
-      schedule_days: 'Montag und Freitag'
+      schedule_days: 'Montag und Freitag',
     });
   }
 
   getArticles(): Observable<Article[]> {
-    return this.http.get(this.apiURL + '/article').pipe() as Observable<Article[]>;
+    return this.http.get(this.apiURL + '/article').pipe() as Observable<
+      Article[]
+    >;
   }
 
   getUserById(id: string): Observable<User> {
-    return this.http.get(this.apiURL + "/profile/" + id).pipe() as Observable<User>;
+    return this.http
+      .get(this.apiURL + '/profile/' + id)
+      .pipe() as Observable<User>;
   }
 
   getArticleById(id: string): Observable<Article> {
     return forkJoin([
       this.http.get(this.apiURL + '/article/' + id),
       this.http.get(this.apiURL + '/article/' + id + '/comments'),
-      this.http.get(this.apiURL + '/article/' + id + '/likes')
+      this.http.get(this.apiURL + '/article/' + id + '/likes'),
     ]).pipe(
       map(([article, comments, likes]) => {
         return {
           ...article,
           ...likes,
-          comments
+          comments,
         } as Article;
-      })
+      }),
     );
   }
 
@@ -152,10 +159,26 @@ export class ApiService {
     formData.append('user', JSON.stringify(user));
     if (file) {
       formData.append('picture', file);
-
     }
 
     return this.http.put(this.apiURL + '/profile/' + id, formData);
+  }
+
+  createArticle(article: Article) {
+    return this.http.post(this.apiURL + '/article/', article);
+  }
+
+  updateArticle(article: Partial<Article>) {
+    const formData = new FormData();
+    formData.append('article', JSON.stringify(article));
+    if (article.media) {
+      formData.append('media', article.media);
+    }
+    return this.http.put(this.apiURL + '/article/' + article.uid, formData);
+  }
+
+  deleteArticle(id: string) {
+    return this.http.delete(this.apiURL + '/article/' + id);
   }
 
   updateArticleLike(id: string) {
@@ -163,26 +186,37 @@ export class ApiService {
   }
 
   addArticleComment(id: string, comment: CommentCreate) {
-    return this.http.post(this.apiURL + '/article/' + id + '/comments', {comment});
+    return this.http.post(this.apiURL + '/article/' + id + '/comments', {
+      comment,
+    });
   }
 
   deleteComment(articleUid: string, commentUid: string) {
-    return this.dialog.open(ConfirmationDialogComponent, {
-      data: {
-        title: 'Kommentar löschen',
-        message: 'Möchten Sie den Kommentar wirklich löschen?',
-        confirmText: 'Löschen',
-        cancelText: 'Abbrechen'
-      }
-    }).afterClosed().pipe(
-      switchMap((result) => {
-        if (result) {
-          return this.http.delete(this.apiURL + '/article/' + articleUid + '/comments/' + commentUid);
-        } else {
-          return of();
-        }
+    return this.dialog
+      .open(ConfirmationDialogComponent, {
+        data: {
+          title: 'Kommentar löschen',
+          message: 'Möchten Sie den Kommentar wirklich löschen?',
+          confirmText: 'Löschen',
+          cancelText: 'Abbrechen',
+        },
       })
-    );
+      .afterClosed()
+      .pipe(
+        switchMap((result) => {
+          if (result) {
+            return this.http.delete(
+              this.apiURL +
+              '/article/' +
+              articleUid +
+              '/comments/' +
+              commentUid,
+            );
+          } else {
+            return of();
+          }
+        }),
+      );
   }
 
   getAllEvents() {
@@ -221,11 +255,10 @@ export class ApiService {
     return this.http.delete(this.apiURL + '/events/' + id);
   }
 
-
   private constructSSERequest(url: string) {
     const retryConfig: RetryConfig = {
       delay: 1000,
-      resetOnSuccess: true
+      resetOnSuccess: true,
     };
     return new Observable<MessageEvent>((observer) => {
       const eventSource = new EventSource(url);
@@ -235,9 +268,7 @@ export class ApiService {
       retry(retryConfig),
       map((event: MessageEvent) => {
         return event;
-      })
+      }),
     );
   }
-
-
 }

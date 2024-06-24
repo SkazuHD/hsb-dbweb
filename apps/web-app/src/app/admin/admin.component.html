@@ -1,28 +1,43 @@
 <mat-tab-group>
-
   <mat-tab>
-    <ng-template mat-tab-label>
-      Articles
-    </ng-template>
+    <ng-template mat-tab-label> Articles </ng-template>
     <ng-template matTabContent>
       <div class="grid gap-3 p-3">
+        <div class="flex p-3 items-center">
+          <h3 class="font-light">Articles</h3>
+          <button
+            (click)="onAddArticle()"
+            class="ml-auto"
+            color="primary"
+            mat-button
+          >
+            Add Article
+          </button>
+        </div>
 
         @for (article of articles$ | async; track article) {
           <mat-card>
             <mat-card-content>
-              {{
-                article.title
-              }}
-              {{
-                article.content
-              }}
+              <div class="text-lg">{{ article.title }}</div>
+              <div>{{ article.subtitle }}</div>
+              <div>{{ 'von ' + article.author }}</div>
+              <br />
+              {{ article.content }}
             </mat-card-content>
             <mat-card-actions>
-              <button mat-icon-button color="primary">
+              <button
+                mat-icon-button
+                color="primary"
+                (click)="onEditArticle(article)"
+              >
                 <mat-icon>edit</mat-icon>
               </button>
-              <button mat-icon-button color="warn">
-                <mat-icon> delete</mat-icon>
+              <button
+                mat-icon-button
+                color="warn"
+                (click)="onDeleteArticle(article)"
+              >
+                <mat-icon>delete</mat-icon>
               </button>
             </mat-card-actions>
           </mat-card>
@@ -32,16 +47,17 @@
   </mat-tab>
 
   <mat-tab>
-    <ng-template mat-tab-label>
-      Events
-    </ng-template>
+    <ng-template mat-tab-label> Events </ng-template>
     <ng-template matTabContent>
-
-
       <div class="grid gap-3 p-3">
-        <div class="flex p-3 items-center ">
-          <h3 class="font-light ">Events</h3>
-          <button (click)="onAddEvent()" class="ml-auto" color="primary" mat-button>
+        <div class="flex p-3 items-center">
+          <h3 class="font-light">Events</h3>
+          <button
+            (click)="onAddEvent()"
+            class="ml-auto"
+            color="primary"
+            mat-button
+          >
             Add Event
           </button>
         </div>
@@ -53,8 +69,9 @@
                   {{ event.title }}
                 </mat-card-title>
                 <mat-card-subtitle>
-                  {{ event.type }} | {{ event.date | date:'dd.MM.YYYY HH:mm' }}
-                  | {{ event.location }}
+                  {{ event.type }} |
+                  {{ event.date | date: 'dd.MM.YYYY HH:mm' }} |
+                  {{ event.location }}
                 </mat-card-subtitle>
               </mat-card-title-group>
             </mat-card-header>
@@ -64,10 +81,18 @@
               </p>
             </mat-card-content>
             <mat-card-actions>
-              <button mat-icon-button color="primary" (click)="onEditEvent(event)">
+              <button
+                mat-icon-button
+                color="primary"
+                (click)="onEditEvent(event)"
+              >
                 <mat-icon>edit</mat-icon>
               </button>
-              <button mat-icon-button color="warn" (click)="onDeleteEvent(event)">
+              <button
+                mat-icon-button
+                color="warn"
+                (click)="onDeleteEvent(event)"
+              >
                 <mat-icon> delete</mat-icon>
               </button>
             </mat-card-actions>
@@ -78,20 +103,14 @@
   </mat-tab>
 
   <mat-tab>
-    <ng-template mat-tab-label>
-      Users
-    </ng-template>
+    <ng-template mat-tab-label> Users </ng-template>
     <ng-template matTabContent>
       <div class="grid gap-3 p-3">
         @for (user of users$ | async; track user) {
           <mat-card>
             <mat-card-content>
-              {{
-                user.username
-              }}
-              {{
-                user.email
-              }}
+              {{ user.username }}
+              {{ user.email }}
             </mat-card-content>
             <mat-card-actions>
               <button mat-icon-button color="primary">
@@ -106,5 +125,4 @@
       </div>
     </ng-template>
   </mat-tab>
-
 </mat-tab-group>

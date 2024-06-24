@@ -1,4 +1,4 @@
-import {Component, inject, Input, model} from '@angular/core';
+import {Component, computed, inject, input, Input, model} from '@angular/core';
 import {CommonModule, NgOptimizedImage} from '@angular/common';
 import {Article, CommentCreate} from '@hsb-dbweb/shared';
 import {MetatagService} from '../../services/metatag.service';
@@ -12,6 +12,7 @@ import {MatInput} from '@angular/material/input';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {AuthService} from '../../services/auth.service';
 import {CdkTextareaAutosize} from "@angular/cdk/text-field";
+import {ImageLoad} from "../../utils/image-load";
 
 @Component({
   selector: 'app-article',
@@ -22,6 +23,7 @@ import {CdkTextareaAutosize} from "@angular/cdk/text-field";
 })
 export class ArticleComponent {
   article = model.required<Article>();
+  showComments = input(true);
   private meta: MetatagService = inject(MetatagService);
   private api: ApiService = inject(ApiService);
   private auth: AuthService = inject(AuthService);
@@ -41,6 +43,14 @@ export class ArticleComponent {
       this.meta.addTagsForArticle(article);
     });
   }
+
+  private imageLoad = new ImageLoad();
+  imageUrl = computed(() => {
+    if (this.article().media === null || this.article().media === undefined)
+      return undefined
+    else
+      return this.imageLoad.imageFromBuffer(this.article().media.data)
+  })
 
   constructor() {
     this.commentForm.valueChanges.subscribe((value) => {

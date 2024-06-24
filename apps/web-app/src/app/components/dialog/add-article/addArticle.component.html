@@ -1,5 +1,15 @@
 <div class="!flex !items-center" mat-dialog-title>
-  <h2>Edit | {{ event.title }}</h2>
+  <h2>Add a new Article</h2>
+
+  <!-- 
+  <input
+    (change)="onFileSelected($event)"
+    accept="image/png, image/gif, image/jpeg"
+    name="image"
+    type="file"
+    class="ml-4"
+  />
+  -->
 
   <button
     aria-label="close dialog"
@@ -13,7 +23,7 @@
 </div>
 
 <mat-dialog-content>
-  <form [formGroup]="editEventForm" class="grid">
+  <form [formGroup]="editArticleForm" class="grid">
     <mat-form-field>
       <input
         autocomplete="off"
@@ -22,7 +32,7 @@
         placeholder="Title"
         type="text"
       />
-      <mat-error *ngIf="editEventForm.get('title')?.hasError('required')">
+      <mat-error *ngIf="editArticleForm.get('title')?.hasError('required')">
         Please enter a title
       </mat-error>
     </mat-form-field>
@@ -30,25 +40,38 @@
     <mat-form-field>
       <input
         autocomplete="off"
-        formControlName="location"
+        formControlName="subtitle"
         matInput
-        placeholder="Location"
+        placeholder="Subtitle"
         type="text"
       />
-      <mat-error *ngIf="editEventForm.get('location')?.hasError('required')">
-        Please enter a location
+      <mat-error *ngIf="editArticleForm.get('subtitle')?.hasError('required')">
+        Enter a subtitle here
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <input
+        autocomplete="off"
+        formControlName="author"
+        matInput
+        placeholder="Author"
+        type="text"
+      />
+      <mat-error *ngIf="editArticleForm.get('author')?.hasError('required')">
+        Please enter your/author's name
       </mat-error>
     </mat-form-field>
 
     <mat-form-field>
       <textarea
         autocomplete="off"
-        formControlName="description"
+        formControlName="content"
         matInput
-        placeholder="Description"
+        placeholder="Content"
       ></textarea>
-      <mat-error *ngIf="editEventForm.get('description')?.hasError('required')">
-        Please enter a description
+      <mat-error *ngIf="editArticleForm.get('content')?.hasError('required')">
+        Add content here
       </mat-error>
     </mat-form-field>
 
@@ -60,20 +83,12 @@
         placeholder="Date"
         type="datetime-local"
       />
-      <mat-error *ngIf="editEventForm.get('date')?.hasError('required')">
+      <mat-error *ngIf="editArticleForm.get('date')?.hasError('required')">
         Please enter a date
       </mat-error>
     </mat-form-field>
-    <mat-form-field>
-      <mat-label>Type</mat-label>
-      <mat-select formControlName="type">
-        @for (eventType of Object.values(EventType); track eventType) {
-          <mat-option [value]="eventType">{{ eventType }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
     <button
-      (click)="onSaveEvent()"
+      (click)="onSaveArticle()"
       class="mt-2"
       color="primary"
       mat-flat-button
