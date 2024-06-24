@@ -1,19 +1,19 @@
-import {AfterViewInit, Component, ElementRef, inject, Signal, viewChild,} from '@angular/core';
-import {CommonModule, NgOptimizedImage} from '@angular/common';
-import {Router, RouterLink, RouterOutlet} from '@angular/router';
-import {MatSidenav, MatSidenavModule} from '@angular/material/sidenav';
-import {MatList, MatListItem, MatNavList} from '@angular/material/list';
-import {MatCheckbox} from '@angular/material/checkbox';
-import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
-import {MatButton, MatIconButton} from '@angular/material/button';
-import {MatIcon} from '@angular/material/icon';
-import {MatToolbar} from '@angular/material/toolbar';
-import {MatSlideToggle} from '@angular/material/slide-toggle';
-import {AuthService} from '../services/auth.service';
-import {AppLink} from '@hsb-dbweb/shared';
-import {ToolbarComponent} from "./toolbar.component";
-import {BreakpointObserver, Breakpoints} from "@angular/cdk/layout";
-import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
+import { AfterViewInit, Component, ElementRef, inject, Signal, viewChild } from '@angular/core';
+import { CommonModule, NgOptimizedImage } from '@angular/common';
+import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
+import { MatList, MatListItem, MatNavList } from '@angular/material/list';
+import { MatCheckbox } from '@angular/material/checkbox';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatButton, MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
+import { MatToolbar } from '@angular/material/toolbar';
+import { MatSlideToggle } from '@angular/material/slide-toggle';
+import { AuthService } from '../services/auth.service';
+import { AppLink, UserRole } from '@hsb-dbweb/shared';
+import { ToolbarComponent } from './toolbar.component';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-shell',
@@ -52,15 +52,29 @@ export class AppShellComponent implements AfterViewInit {
   links: AppLink[] = [
     {
       label: 'Home',
-      route: '/home',
+      route: '/',
       icon: 'home',
       isInToolbar: true,
       requiresAuth: false,
     },
     {
-      label: 'About',
-      route: '/about',
-      icon: 'info_outline',
+      label: 'Articles',
+      route: '/articles',
+      icon: 'article',
+      isInToolbar: true,
+      requiresAuth: false,
+    },
+    {
+      label: 'Info',
+      route: '/info',
+      icon: 'info',
+      isInToolbar: true,
+      requiresAuth: false,
+    },
+    {
+      label: 'Events',
+      route: '/events',
+      icon: 'event',
       isInToolbar: true,
       requiresAuth: false,
     },
@@ -79,11 +93,12 @@ export class AppShellComponent implements AfterViewInit {
       requiresAuth: true,
     },
     {
-      label: 'Testing',
-      route: '/demo',
-      icon: 'code',
+      label: 'Admin',
+      route: '/admin',
+      icon: 'admin_panel_settings',
       isInToolbar: false,
-      requiresAuth: false,
+      requiresAuth: true,
+      requiresRole: UserRole.ADMIN,
     },
   ];
 

@@ -23,6 +23,7 @@ export type AppLink = {
   icon?: string;
   isInToolbar?: boolean;
   requiresAuth: boolean;
+  requiresRole?: UserRole;
 };
 
 export type InfoText = {

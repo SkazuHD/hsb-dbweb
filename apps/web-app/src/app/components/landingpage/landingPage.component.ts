@@ -6,7 +6,6 @@ import { NewsfeedComponent } from '../newsfeed/newsfeed.component';
 import { ApiService } from '../../services/api.service';
 import { Article, Image } from '@hsb-dbweb/shared';
 import { RouterModule } from '@angular/router';
-import { url } from 'inspector';
 
 @Component({
   selector: 'app-landing-page',

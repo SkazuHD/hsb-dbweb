@@ -1,6 +1,6 @@
 import {computed, inject, Injectable, signal} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
-import {BehaviorSubject, map, Observable, tap} from 'rxjs';
+import { BehaviorSubject, exhaustMap, map, Observable, of, tap } from 'rxjs';
 import {NotificationService} from './notification.service';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {HttpClient} from '@angular/common/http';
@@ -205,17 +205,23 @@ export class AuthService {
 
   refreshTokens(): Observable<AuthUser | Error> {
     if (!this.refreshToken()) return new Observable();
-    return this.http.post<AuthState & { message: string }>(
-      this.apiURL + '/auth' + '/refresh',
-      {
-        refreshToken: this.refreshToken(),
-      },
-      {
-        withCredentials: true,
-      }
-    ).pipe(tap((res) => {
-      this.handleAuthStateChange(res)
-    }), map((res) => res.user));
+    return of(this.refreshToken()).pipe(
+      exhaustMap((refreshToken) => {
+        return this.http.post<AuthState & { message: string }>(
+          this.apiURL + '/auth' + '/refresh',
+          {
+            refreshToken: refreshToken,
+          },
+          {
+            withCredentials: true,
+          }
+        )
+      }),
+      tap((res) => {
+        this.handleAuthStateChange(res)
+      }),
+      map((res) => res.user)
+    );
   }
 
   getRoleClaims(token: AuthAccessToken): string {

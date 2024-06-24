@@ -31,7 +31,7 @@ export class AdminShellComponent implements AfterViewInit {
   links: AppLink[] = [
     {
       label: 'Home',
-      route: '/home',
+      route: '/',
       icon: 'home',
       isInToolbar: true,
       requiresAuth: false,
