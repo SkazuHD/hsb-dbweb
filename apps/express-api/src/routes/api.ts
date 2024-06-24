@@ -406,7 +406,16 @@ articleRouter
       res.status(500).send({message: 'Error updating article likes'});
     })
   })
+  .get('/:articleId/comments', (req: Request, res: Response) => {
+     const qb = new SqlQueryBuilder()
+      .select(['*'])
+      .from('Comment')
+      .where('articleUid')
 
+  })
+  .post('/:articleId/comments', requireAuthentication, (req: Request, res: Response) => {
+
+  })
   .get('/', (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder()
       .select('*')
@@ -548,7 +557,7 @@ eventRouter
       }
       res.send(result[0]);
     })
-    res.send({message: 'Event works!'});
+    res.status(500).send({message: 'Error fetching event'});
   })
   .post('/', requireAuthorization(UserRole.ADMIN), (req: Request, res: Response) => {
 
