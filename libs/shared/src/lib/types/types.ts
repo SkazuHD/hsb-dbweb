@@ -16,6 +16,7 @@ export type Article = {
   userUid?: string;
   likes?: number;
   liked: boolean;
+  comments?: Comment[];
 };
 export type AppLink = {
   label: string;
@@ -72,6 +73,21 @@ export type User = {
   role: UserRole;
   activated: boolean;
   uid: string;
+}
+
+export type Comment = {
+  content: string;
+  userUid: string;
+  articleUid: string;
+  uid: string;
+  username: string;
+  timestamp: Date;
+}
+
+export type CommentCreate = {
+  content: string;
+  articleUid: string;
+  userUid: string;
 }
 
 export type registerCredential = {

@@ -13,7 +13,7 @@ export class JwtManager {
     this.issuer = 'hsb-dbweb-api'
     this.audience = 'hsb-dbweb-app'
   }
-  
+
   async createRefreshToken(payload: RefreshTokenPayload): Promise<string> {
     const jwt = new SignJWT(payload)
     return jwt.setProtectedHeader({alg: 'HS256'})
@@ -48,6 +48,11 @@ export class JwtManager {
     payload: T
   }> {
     return jwtVerify(token, this.secret) as Promise<JWTVerifyResult & { payload: T }>;
+  }
+
+  async getUserIdFromToken(token: string): Promise<string> {
+    const {payload} = await this.verifyToken<AccessTokenPayload>(token)
+    return payload.uid
   }
 
 }

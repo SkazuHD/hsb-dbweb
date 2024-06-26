@@ -1,1 +1,17 @@
-<p>single-comment works!</p>
+@if (comment()) {
+  <mat-card>
+    <mat-card-header>
+      <mat-card-subtitle>{{ comment()?.username }}| {{ comment()?.timestamp | date:'MMMM d, y, h:mm:ss a' }}
+      </mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <p class="text-pretty break-words">{{ comment()?.content }}</p>
+    </mat-card-content>
+    @if (canDelete()) {
+      <mat-card-actions>
+        <button mat-button (click)="onDelete()">Delete</button>
+      </mat-card-actions>
+    }
+  </mat-card>
+
+}
