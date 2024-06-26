@@ -1,4 +1,4 @@
-import express, { NextFunction, Request, Response, Router } from 'express';
+import express, {NextFunction, Request, Response, Router} from 'express';
 import Database from '../db';
 import * as crypto from 'node:crypto';
 import {
@@ -11,11 +11,10 @@ import {
   UserRole,
   UserScope
 } from '@hsb-dbweb/shared';
-import { SqlQueryBuilder } from './SqlQueryBuilder';
+import {SqlQueryBuilder} from './SqlQueryBuilder';
 import bcrypt from 'bcrypt';
-import { jwtVerify } from 'jose';
-import { rateLimit } from 'express-rate-limit';
-import { JwtManager } from '../jwt';
+import {rateLimit} from 'express-rate-limit';
+import {JwtManager} from '../jwt';
 
 
 const router: Router = express.Router();
@@ -69,44 +68,44 @@ const requireAuthentication = async (req: Request, res: Response, next: NextFunc
 
   const authHeader = req.header('Authorization');
   if (!authHeader) {
-    return res.status(401).send({ message: 'Unauthorized' });
+    return res.status(401).send({message: 'Unauthorized'});
   }
   const token = authHeader.split(' ')[1];
   if (!token) {
-    return res.status(401).send({ message: 'Unauthorized' });
+    return res.status(401).send({message: 'Unauthorized'});
   }
   try {
-    const { payload } = await jwt.verifyToken<AccessTokenPayload>(token);
+    const {payload} = await jwt.verifyToken<AccessTokenPayload>(token);
     next();
   } catch (err) {
     console.error(err);
-    return res.status(401).send({ message: 'Invalid token' });
+    return res.status(401).send({message: 'Invalid token'});
   }
 };
 
 const requireAuthorization = (requiredRole: UserRole) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     if (!requestContainsToken(req)) {
-      res.status(401).send({ message: 'Unauthorized' });
+      res.status(401).send({message: 'Unauthorized'});
       return;
     }
     const authHeader = req.header('Authorization');
 
     const token = authHeader.split(' ')[1];
     if (!token) {
-      res.status(401).send({ message: 'Unauthorized' });
+      res.status(401).send({message: 'Unauthorized'});
       return;
     }
     try {
-      const { payload } = await jwt.verifyToken<AccessTokenPayload>(token);
+      const {payload} = await jwt.verifyToken<AccessTokenPayload>(token);
 
       if (payload.role !== requiredRole) {
-        res.status(403).send({ message: 'Forbidden' });
+        res.status(403).send({message: 'Forbidden'});
         return;
       }
       next();
     } catch (err) {
-      res.status(401).send({ message: 'Invalid token' });
+      res.status(401).send({message: 'Invalid token'});
     }
 
   };
@@ -140,7 +139,7 @@ router
     console.error(err.stack);
     res
       .status(500)
-      .send({ message: err.message ? err.message : 'Something broke!' });
+      .send({message: err.message ? err.message : 'Something broke!'});
   });
 
 
@@ -152,17 +151,17 @@ authRouter
     try {
       const result = await db.query(qb.build(), [req.body.email]);
       if (result.length === 0) {
-        res.status(401).send({ message: 'Invalid username or password' });
+        res.status(401).send({message: 'Invalid username or password'});
         return;
       }
 
       const hashedPassword = result[0].password;
       const match = bcrypt.compare(req.body.password, hashedPassword);
       if (!match) {
-        res.status(401).send({ message: 'Invalid username or password' });
+        res.status(401).send({message: 'Invalid username or password'});
         return;
       }
-      const user: Omit<User, 'password'> = { ...result[0], password: null };
+      const user: Omit<User, 'password'> = {...result[0], password: null};
       const token = await jwt.createAccessToken({
         uid: user.uid,
         role: user.role,
@@ -184,16 +183,16 @@ authRouter
 
       res.setHeader('Authorization', `Bearer ${token}`);
       res.append('Set-Cookie', 'foo=bar; Path=/; HttpOnly; SameSite=None;');
-      res.status(200).send({ message: 'Login successful', accessToken: token, idToken, refreshToken, user });
+      res.status(200).send({message: 'Login successful', accessToken: token, idToken, refreshToken, user});
     } catch (err) {
-      res.status(500).send({ message: 'Error logging in' });
+      res.status(500).send({message: 'Error logging in'});
     }
   })
 
 
   .post('/register', async (req: Request, res: Response) => {
     if (!req.body.password || !req.body.username || !req.body.email) {
-      return res.status(400).json({ error: 'missing Parameters' });
+      return res.status(400).json({error: 'missing Parameters'});
     }
 
     const saltRounds = 10;
@@ -205,7 +204,7 @@ authRouter
     db.query(qb.build(),
       [id, req.body.username, hashedPassword, req.body.email, 'user', true]).then(async (result) => {
       if (result.affectedRows === 0) {
-        res.status(500).send({ message: 'Error creating user' });
+        res.status(500).send({message: 'Error creating user'});
         return;
       }
       const user: Omit<User, 'password'> = {
@@ -239,20 +238,20 @@ authRouter
 
       res.setHeader('Authorization', `Bearer ${token}`);
       res.append('Set-Cookie', 'foo=bar; Path=/; HttpOnly; SameSite=None;');
-      res.status(201).send({ message: 'User created', accessToken: token, idToken, refreshToken, user });
+      res.status(201).send({message: 'User created', accessToken: token, idToken, refreshToken, user});
     }).catch((err) => {
-      res.status(500).send({ message: 'Error creating user' });
+      res.status(500).send({message: 'Error creating user'});
     });
   })
   .post('/refresh', async (req: Request, res: Response) => {
     const refreshToken = req.body.refreshToken;
     if (!refreshToken) {
-      res.status(400).send({ message: 'Missing parameters' });
+      res.status(400).send({message: 'Missing parameters'});
       return;
     }
-    const { payload } = await jwt.verifyToken<RefreshTokenPayload>(refreshToken);
+    const {payload} = await jwt.verifyToken<RefreshTokenPayload>(refreshToken);
     if (payload.type !== JWTScope.REFRESH) {
-      res.status(400).send({ message: 'Invalid token' });
+      res.status(400).send({message: 'Invalid token'});
       return;
     }
     const qb = new SqlQueryBuilder();
@@ -260,10 +259,10 @@ authRouter
     try {
       const result = await db.query(qb.build(), [payload.uid]);
       if (result.length === 0) {
-        res.status(401).send({ message: 'Invalid username or password' });
+        res.status(401).send({message: 'Invalid username or password'});
         return;
       }
-      const user: Omit<User, 'password'> = { ...result[0], password: null };
+      const user: Omit<User, 'password'> = {...result[0], password: null};
       const token = await jwt.createAccessToken({
         uid: user.uid,
         role: user.role,
@@ -293,7 +292,7 @@ authRouter
         user
       });
     } catch (err) {
-      res.status(500).send({ message: 'Error refreshing Token' });
+      res.status(500).send({message: 'Error refreshing Token'});
     }
 
 
@@ -301,7 +300,7 @@ authRouter
 
 
   .get('/test', (req: Request, res: Response) => {
-    res.send({ message: 'Auth Router works' });
+    res.send({message: 'Auth Router works'});
   });
 //Profile routes
 profileRouter.use(requireAuthentication);
@@ -314,7 +313,7 @@ profileRouter
     db.query(qb.build()).then((result) => {
       res.send(result);
     }).catch((err) => {
-      res.status(500).send({ message: 'Error fetching users' });
+      res.status(500).send({message: 'Error fetching users'});
     });
   })
   .get('/:id', (req: Request, res: Response) => {
@@ -325,25 +324,25 @@ profileRouter
 
     db.query(qb.build(), [req.params.id]).then((result) => {
       if (result.length === 0) {
-        res.status(404).send({ message: 'User not found' });
+        res.status(404).send({message: 'User not found'});
         return;
       }
-      res.send({ message: 'User found!' });
+      res.send({message: 'User found!'});
       res.send(result[0]);
     }).catch((err) => {
-      res.status(500).send({ message: 'Error fetching user' });
+      res.status(500).send({message: 'Error fetching user'});
     });
   })
   .put('/:username', (req: Request, res: Response) => {
     db.query('UPDATE User SET username = ?, password = ?, email = ?, role = ?, activated = ? WHERE uid = ?',
       [req.body.username, req.body.password, req.body.email, req.body.role, req.body.activated, req.params.username]).then((result) => {
       if (result.affectedRows === 0) {
-        res.status(404).send({ message: 'User not found' });
+        res.status(404).send({message: 'User not found'});
         return;
       }
-      res.send({ message: 'User updated' });
+      res.send({message: 'User updated'});
     }).catch((err) => {
-        res.status(500).send({ message: 'Error updating user' });
+        res.status(500).send({message: 'Error updating user'});
       }
     );
   })
@@ -354,12 +353,12 @@ profileRouter
 
     db.query(qb.build(), [req.params.username]).then((result) => {
       if (result.affectedRows === 0) {
-        res.status(404).send({ message: 'User not found' });
+        res.status(404).send({message: 'User not found'});
         return;
       }
-      res.send({ message: 'User deleted' });
+      res.send({message: 'User deleted'});
     }).catch((err) => {
-      res.status(500).send({ message: 'Error deleting user' });
+      res.status(500).send({message: 'Error deleting user'});
     });
   });
 //Article routes
@@ -372,14 +371,28 @@ articleRouter
       .and('liked');
 
     //TODO REPLACE 0 (UserID) WITH USER ID FROM TOKEN
-    db.query(qb.build(), [req.params.articleId, 1, '0']).then((result) => {
-      const likes = result.length;
-      const liked = result.find((like) => like.userUid === '0') !== undefined;
-      res.send({ likes, liked });
+    if (requestContainsToken(req)) {
+      jwt.getUserIdFromToken(req.header('Authorization').split(' ')[1]).then((userId) => {
+        db.query(qb.build(), [req.params.articleId, userId, 1]).then((result) => {
+          const likes = result.length;
+          const liked = result.find((like) => like.userUid === userId) !== undefined;
+          res.send({likes, liked});
 
-    }).catch((err) => {
-      res.status(500).send({ message: 'Error fetching likes' });
-    });
+        }).catch((err) => {
+          res.status(500).send({message: 'Error fetching likes'});
+        });
+      }).catch((err) => {
+        res.status(500).send({message: 'Error fetching likes'});
+      })
+    } else {
+      db.query(qb.build(), [req.params.articleId, '0', 1]).then((result) => {
+        const likes = result.length;
+        const liked = false
+        res.send({likes, liked});
+      }).catch((err) => {
+        res.status(500).send({message: 'Error fetching likes'});
+      });
+    }
   })
   .post('/:articleId/likes', requireAuthentication, (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder()
@@ -387,16 +400,19 @@ articleRouter
       .values(3)
       .onDuplicateKey(['liked'], ['NOT liked']);
 
-    //TODO REPLACE 0 (UserID) WITH USER ID FROM TOKEN
-    db.query(qb.build(), [req.params.articleId, '0', 1]).then((result) => {
-      if (result.affectedRows === 0) {
-        res.status(500).send({ message: 'Error updating article likes' });
-        return;
-      }
-      res.send({ message: 'Article likes updated' });
+    jwt.getUserIdFromToken(req.header('Authorization').split(' ')[1]).then((userId) => {
+      db.query(qb.build(), [req.params.articleId, userId, 1]).then((result) => {
+        if (result.affectedRows === 0) {
+          res.status(500).send({message: 'Error updating article likes'});
+          return;
+        }
+        res.send({message: 'Article likes updated'});
+      }).catch((err) => {
+        res.status(500).send({message: 'Error updating article likes'});
+      });
     }).catch((err) => {
-      res.status(500).send({ message: 'Error updating article likes' });
-    });
+      res.status(500).send({message: 'Error updating article likes'});
+    })
   })
   .get('/:articleId/comments', (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder()
@@ -413,7 +429,7 @@ articleRouter
       }
       res.send(result);
     }).catch((err) => {
-      return res.status(500).send({ message: 'Error fetching comments' });
+      return res.status(500).send({message: 'Error fetching comments'});
     });
 
   })
@@ -424,9 +440,9 @@ articleRouter
     const id = generateId(idType.Comment);
     db.query(qb.build(), [id, req.params.articleId, req.body.comment.userUid, req.body.comment.content]).then((result) => {
 
-      return res.status(201).send({ message: 'Comment created' });
+      return res.status(201).send({message: 'Comment created'});
     }).catch((err) => {
-      return res.status(500).send({ message: 'Error creating comment' });
+      return res.status(500).send({message: 'Error creating comment'});
     });
 
   })
@@ -436,9 +452,9 @@ articleRouter
       .where('uid');
 
     db.query(qb.build(), [req.params.commentId]).then((result) => {
-      return res.send({ message: 'Comment deleted' });
+      return res.send({message: 'Comment deleted'});
     }).catch((err) => {
-      return res.status(500).send({ message: 'Error deleting comment' });
+      return res.status(500).send({message: 'Error deleting comment'});
     });
   })
   .get('/', (req: Request, res: Response) => {
@@ -449,7 +465,7 @@ articleRouter
     db.query(qb.build()).then((result) => {
       res.send(result);
     }).catch((err) => {
-      res.status(500).send({ message: 'Error fetching articles' });
+      res.status(500).send({message: 'Error fetching articles'});
     });
   })
   .get('/:id', (req: Request, res: Response) => {
@@ -460,12 +476,12 @@ articleRouter
 
     db.query(qb.build(), [req.params.id]).then((result) => {
       if (result.length === 0) {
-        res.status(404).send({ message: 'Article not found' });
+        res.status(404).send({message: 'Article not found'});
         return;
       }
       res.send(result[0]);
     }).catch((err) => {
-      res.status(500).send({ message: 'Error fetching article' });
+      res.status(500).send({message: 'Error fetching article'});
     });
   })
   .post('/', (req: Request, res: Response) => {
@@ -478,12 +494,12 @@ articleRouter
     db.query(qb.build(),
       [id, article.title, article.content, article.subtitle, article.author, article.media, article.userUid]).then((result) => {
       if (result.affectedRows === 0) {
-        res.status(500).send({ message: 'Error creating article' });
+        res.status(500).send({message: 'Error creating article'});
         return;
       }
-      res.status(201).send({ message: 'Article created' });
+      res.status(201).send({message: 'Article created'});
     }).catch((err) => {
-      res.status(500).send({ message: 'Error creating article' });
+      res.status(500).send({message: 'Error creating article'});
     });
   })
   .put('/:id', (req: Request, res: Response) => {
@@ -519,12 +535,12 @@ articleRouter
     params.push(req.params.id);
     db.query(qb.build(), params).then((result) => {
       if (result.affectedRows === 0) {
-        res.status(404).send({ message: 'Article not found' });
+        res.status(404).send({message: 'Article not found'});
         return;
       }
-      res.send({ message: 'Article updated' });
+      res.send({message: 'Article updated'});
     }).catch((err) => {
-      res.status(500).send({ message: 'Error updating article' });
+      res.status(500).send({message: 'Error updating article'});
     });
   })
   .delete('/:id', (req: Request, res: Response) => {
@@ -534,12 +550,12 @@ articleRouter
 
     db.query(qb.build(), [req.params.id]).then((result) => {
       if (result.affectedRows === 0) {
-        res.status(404).send({ message: 'Article not found' });
+        res.status(404).send({message: 'Article not found'});
         return;
       }
-      res.send({ message: 'Article deleted' });
+      res.send({message: 'Article deleted'});
     }).catch((err) => {
-      res.status(500).send({ message: 'Error deleting article' });
+      res.status(500).send({message: 'Error deleting article'});
     });
   });
 //Event routes
@@ -562,7 +578,7 @@ eventRouter
     db.query(qb.build()).then((result) => {
       if (
         result?.length === 0) {
-        res.status(404).send({ message: 'Event not found' });
+        res.status(404).send({message: 'Event not found'});
         return;
       }
 
@@ -577,18 +593,18 @@ eventRouter
 
     db.query(qb.build(), [req.params.id]).then((result) => {
       if (result.length === 0) {
-        res.status(404).send({ message: 'Event not found' });
+        res.status(404).send({message: 'Event not found'});
         return;
       }
       res.send(result[0]);
     });
-    res.status(500).send({ message: 'Error fetching event' });
+    res.status(500).send({message: 'Error fetching event'});
   })
   .post('/', requireAuthorization(UserRole.ADMIN), (req: Request, res: Response) => {
 
     const event: Partial<Event> = req.body;
 
-    if (!event.date || !event.title || !event.location || !event.description) return res.status(400).send({ message: 'Missing required fields' });
+    if (!event.date || !event.title || !event.location || !event.description) return res.status(400).send({message: 'Missing required fields'});
 
     const id = generateId(idType.Event);
     const qb = new SqlQueryBuilder()
@@ -598,12 +614,12 @@ eventRouter
     db.query(qb.build(),
       [id, event.title, event.description, event.location, event.date, event?.userUid ?? 0]).then((result) => {
       if (result.affectedRows === 0) {
-        res.status(500).send({ message: 'Error creating event' });
+        res.status(500).send({message: 'Error creating event'});
         return;
       }
-      res.status(201).send({ message: 'Event created' });
+      res.status(201).send({message: 'Event created'});
     }).catch((err) => {
-      res.status(500).send({ message: 'Error creating event' });
+      res.status(500).send({message: 'Error creating event'});
 
     });
   })
@@ -641,12 +657,12 @@ eventRouter
 
     db.query(qb.build(), params).then((result) => {
       if (result.affectedRows === 0) {
-        res.status(404).send({ message: 'Event not found' });
+        res.status(404).send({message: 'Event not found'});
         return;
       }
-      res.send({ message: 'Event updated' });
+      res.send({message: 'Event updated'});
     }).catch((err) => {
-      res.status(500).send({ message: 'Error updating event' });
+      res.status(500).send({message: 'Error updating event'});
     });
   })
   .delete('/:id', requireAuthorization(UserRole.ADMIN), (req: Request, res: Response) => {
@@ -656,24 +672,24 @@ eventRouter
 
     db.query(qb.build(), [req.params.id]).then((result) => {
       if (result.affectedRows === 0) {
-        res.status(404).send({ message: 'Event not found' });
+        res.status(404).send({message: 'Event not found'});
         return;
       }
-      res.send({ message: 'Event deleted' });
+      res.send({message: 'Event deleted'});
     }).catch((err) => {
-      res.status(500).send({ message: 'Error deleting event' });
+      res.status(500).send({message: 'Error deleting event'});
     });
   });
 //General Api routes
 router
   .get('/', (req: Request, res: Response) => {
-    res.send({ message: 'Express API Works!' });
+    res.send({message: 'Express API Works!'});
   })
   .get('/hello', (req: Request, res: Response) => {
-    res.send({ message: 'Hello World!' });
+    res.send({message: 'Hello World!'});
   })
   .get('/*', (req: Request, res: Response) => {
-    res.status(404).send({ message: 'Not Found' });
+    res.status(404).send({message: 'Not Found'});
   });
 
 
