@@ -1,0 +1,72 @@
+@if (eventSReady) {
+  <div class="flex gap-3 flex-wrap">
+    <div>
+      <h3 class="text-2xl font-bold "> Events </h3>
+      <app-calendar (selectedDate)="newSelectedEvent($event)" [events]="events"></app-calendar>
+    </div>
+    <div class="max-w-full flex flex-col space-y-6">
+      @if (selectedEvent) {
+        <h3 class="text-2xl font-bold ">Selected Event</h3>
+        <mat-card class="min-w-[54rem]">
+          <mat-card-header>
+            <mat-card-title-group>
+              <mat-card-title>
+                {{ selectedEvent.title }}
+              </mat-card-title>
+              <mat-card-subtitle>
+                {{ selectedEvent.type }} | {{ selectedEvent.date | date:'dd.MM.YYYY HH:mm' }}
+                | {{ selectedEvent.location }}
+              </mat-card-subtitle>
+            </mat-card-title-group>
+          </mat-card-header>
+          <mat-card-content>
+            <p>
+              {{ selectedEvent.description }}
+            </p>
+          </mat-card-content>
+        </mat-card>
+      } @else {
+        <h3 class="text-2xl font-bold ">Selected Event</h3>
+        <mat-card class="min-w-[54rem] min-h-24 max-h-full">
+          <mat-card-header>
+            <mat-card-title-group>
+              <mat-card-title>
+                Please select an event from the calendar
+              </mat-card-title>
+              <mat-card-subtitle>
+              </mat-card-subtitle>
+            </mat-card-title-group>
+          </mat-card-header>
+          <mat-card-content>
+            <p>
+
+            </p>
+          </mat-card-content>
+        </mat-card>
+      }
+      <h3 class="text-2xl font-bold"> Upcoming Events </h3>
+      @for (event of getUpcomingEvents(3); track event.uid) {
+        <mat-card class="min-w-[54rem]">
+          <mat-card-header>
+            <mat-card-title-group>
+              <mat-card-title>
+                {{ event.title }}
+              </mat-card-title>
+              <mat-card-subtitle>
+                {{ event.type }} | {{ event.date | date:'dd.MM.YYYY HH:mm' }}
+                | {{ event.location }}
+              </mat-card-subtitle>
+            </mat-card-title-group>
+          </mat-card-header>
+          <mat-card-content>
+            <p>
+              {{ event.description }}
+            </p>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  </div>
+} @else {
+  <div> Loading...</div>
+}

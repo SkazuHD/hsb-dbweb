@@ -656,11 +656,11 @@ eventRouter
 
     const id = generateId(idType.Event);
     const qb = new SqlQueryBuilder()
-      .insertInto('Event', ['uid', 'title', 'description', 'location', 'date', 'userUid'])
-      .values(6);
+      .insertInto('Event', ['uid', 'title', 'description', 'location', 'date', 'userUid', 'type'])
+      .values(7);
 
     db.query(qb.build(),
-      [id, event.title, event.description, event.location, event.date, event?.userUid ?? 0]).then((result) => {
+      [id, event.title, event.description, event.location, event.date, event?.userUid ?? 0, event.type]).then((result) => {
       if (result.affectedRows === 0) {
         res.status(500).send({message: 'Error creating event'});
         return;

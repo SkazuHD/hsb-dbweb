@@ -1,15 +1,11 @@
 import {inject, Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {exhaustMap, forkJoin, map, Observable, of, retry, RetryConfig} from 'rxjs';
+import {forkJoin, map, Observable, of, retry, RetryConfig} from 'rxjs';
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
-import { Article, Contact, Event, Image, InfoText } from '@hsb-dbweb/shared';
-import { MatDialog } from '@angular/material/dialog';
-import { AddPictureComponent } from '../components/dialog/add-picture/add-picture.component';
-import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { exhaustMap, forkJoin, map, Observable, of, retry, RetryConfig } from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Article, Comment, CommentCreate, Image, Contact, Event, InfoText } from '@hsb-dbweb/shared';
+import {Article, CommentCreate, Contact, Event, Image, InfoText} from '@hsb-dbweb/shared';
+import {MatDialog} from '@angular/material/dialog';
+import {AddPictureComponent} from '../components/dialog/add-picture/add-picture.component';
+
 
 @Injectable({
   providedIn: 'root'
@@ -55,7 +51,7 @@ export class ApiService {
   }
 
 
-   requestAddPictureDialog():Observable<any> {
+  requestAddPictureDialog(): Observable<any> {
     return this.dialog.open(AddPictureComponent, {
       autoFocus: 'input',
     }).afterClosed();
@@ -66,7 +62,7 @@ export class ApiService {
     return this.http.get(this.apiURL + '/gallery/').pipe() as Observable<Image[]>;
   }
 
-  deleteImage(image: string){
+  deleteImage(image: string) {
     return this.http.delete(this.apiURL + '/gallery', {
       body: {
         url: image
@@ -77,8 +73,6 @@ export class ApiService {
   addPicture(image: Image) {
     return this.http.post(this.apiURL + '/gallery', image);
   }
-
-
 
 
   getInfo(id: string): Observable<InfoText> {
@@ -139,7 +133,7 @@ export class ApiService {
   }
 
   addArticleComment(id: string, comment: CommentCreate) {
-    return this.http.post(this.apiURL + '/article/' + id + '/comments', { comment });
+    return this.http.post(this.apiURL + '/article/' + id + '/comments', {comment});
   }
 
   deleteComment(articleUid: string, commentUid: string) {

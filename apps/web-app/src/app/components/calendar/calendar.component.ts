@@ -3,7 +3,7 @@ import {CommonModule} from '@angular/common';
 import {DateRange, MatCalendar, MatCalendarCellCssClasses, MatDatepickerModule} from "@angular/material/datepicker";
 import {MatCard} from "@angular/material/card";
 import {MatNativeDateModule} from "@angular/material/core";
-import { Event } from '@hsb-dbweb/shared';
+import {Event} from '@hsb-dbweb/shared';
 import {ReactiveFormsModule} from "@angular/forms";
 
 @Component({
@@ -15,7 +15,7 @@ import {ReactiveFormsModule} from "@angular/forms";
 })
 export class CalendarComponent {
   selected: Date | DateRange<Date> | null;
-  events = input<Event[]>([]);
+  events = input.required<Event[]>();
   public selectedDate = output<Event | undefined>()
 
 
@@ -27,6 +27,7 @@ export class CalendarComponent {
 
   dateClass() {
     return (date: Date): MatCalendarCellCssClasses => {
+      if (this.events()?.length === 0) return '';
 
       const event = this.events().find(event => this.compareDates(event.date, date))
       if (event) {
