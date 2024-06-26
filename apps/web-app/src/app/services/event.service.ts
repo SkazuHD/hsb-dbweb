@@ -19,7 +19,9 @@ export class EventService {
 
   requestEditEventDialog(event: Event) {
     return this.dialog.open(EditEventComponent, {
-      data: event
+      data: event,
+      width: '800px',
+      maxWidth: '100%',
     }).afterClosed().pipe(
       tap((result: Event) => {
           if (result) {
@@ -32,7 +34,10 @@ export class EventService {
   }
 
   requestAddEventDialog() {
-    return this.dialog.open(AddEventComponent).afterClosed().pipe(
+    return this.dialog.open(AddEventComponent, {
+      width: '800px',
+      maxWidth: '100%',
+    }).afterClosed().pipe(
       tap((result: Event) => {
         if (result) {
           this.createEvent(result).subscribe(() => {

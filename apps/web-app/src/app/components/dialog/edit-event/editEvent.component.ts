@@ -27,11 +27,13 @@ import {MatSelect} from "@angular/material/select";
 export class EditEventComponent {
 
   event: Event = inject(MAT_DIALOG_DATA);
-  date = this.event.date.toString().split('.')[0].substring(0, this.event.date.toString().split('.')[0].length - 3)
+  date = new Date(this.event.date);
+  dateTimeLocalValue = (new Date(this.date.getTime() - this.date.getTimezoneOffset() * 60000).toISOString()).slice(0, -1);
+
   editEventForm: FormGroup = new FormGroup({
     title: new FormControl(this.event.title, [Validators.required]),
     description: new FormControl(this.event.description, [Validators.required]),
-    date: new FormControl(this.date, [Validators.required]),
+    date: new FormControl(this.dateTimeLocalValue, [Validators.required]),
     location: new FormControl(this.event.location, [Validators.required]),
     type: new FormControl(this.event.type, [Validators.required]),
   })
@@ -40,10 +42,17 @@ export class EditEventComponent {
   private dialog = inject(MatDialogRef);
 
   onSaveEvent() {
+
+    const date = new Date(this.editEventForm.get('date')?.value ?? this.event.date);
+    date.setHours(date.getHours() + date.getTimezoneOffset() / 60)
+
     const updatedEvent: Event = {
       uid: this.event.uid,
+      date: date,
       ...this.editEventForm.value
     };
+    console.debug('Before update:', this.event)
+    console.debug('Updated event:', updatedEvent)
     this.dialog.close(updatedEvent);
   }
 }
