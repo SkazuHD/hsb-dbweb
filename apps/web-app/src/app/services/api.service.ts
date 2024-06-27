@@ -1,10 +1,11 @@
 import {inject, Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {forkJoin, map, Observable, of, retry, RetryConfig} from 'rxjs';
+import {forkJoin, map, Observable, of, retry, RetryConfig, switchMap} from 'rxjs';
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
 import {Article, CommentCreate, Contact, Event, Image, InfoText, User, UserRole} from '@hsb-dbweb/shared';
 import {MatDialog} from '@angular/material/dialog';
 import {AddPictureComponent} from '../components/dialog/add-picture/add-picture.component';
+import {ConfirmationDialogComponent} from "../components/dialog/confirmation/confirmationDialog.component";
 
 
 @Injectable({
@@ -62,12 +63,27 @@ export class ApiService {
     return this.http.get(this.apiURL + '/gallery/').pipe() as Observable<Image[]>;
   }
 
-  deleteImage(image: string) {
-    return this.http.delete(this.apiURL + '/gallery', {
-      body: {
-        url: image
+  deleteImage(image: string): Observable<NonNullable<unknown>> {
+    return this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: 'Bild löschen',
+        message: 'Möchten Sie das Bild wirklich löschen?',
+        confirmText: 'Löschen',
+        cancelText: 'Abbrechen'
       }
-    });
+    }).afterClosed().pipe(
+      switchMap((result) => {
+        if (result) {
+          return this.http.delete(this.apiURL + '/gallery', {
+            body: {
+              url: image
+            }
+          });
+        } else {
+          return of();
+        }
+      })
+    );
   }
 
   addPicture(image: Image) {
@@ -151,7 +167,22 @@ export class ApiService {
   }
 
   deleteComment(articleUid: string, commentUid: string) {
-    return this.http.delete(this.apiURL + '/article/' + articleUid + '/comments/' + commentUid);
+    return this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: 'Kommentar löschen',
+        message: 'Möchten Sie den Kommentar wirklich löschen?',
+        confirmText: 'Löschen',
+        cancelText: 'Abbrechen'
+      }
+    }).afterClosed().pipe(
+      switchMap((result) => {
+        if (result) {
+          return this.http.delete(this.apiURL + '/article/' + articleUid + '/comments/' + commentUid);
+        } else {
+          return of();
+        }
+      })
+    );
   }
 
   getAllEvents() {
@@ -189,6 +220,7 @@ export class ApiService {
   deleteEvent(id: string) {
     return this.http.delete(this.apiURL + '/events/' + id);
   }
+
 
   private constructSSERequest(url: string) {
     const retryConfig: RetryConfig = {

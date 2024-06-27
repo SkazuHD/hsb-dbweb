@@ -5,7 +5,8 @@ import {MatDialog} from "@angular/material/dialog";
 import {EditEventComponent} from "../components/dialog/edit-event/editEvent.component";
 import {NotificationService} from "./notification.service";
 import {AddEventComponent} from '../components/dialog/add-event/addEvent.component';
-import {tap} from "rxjs";
+import {of, switchMap, tap} from "rxjs";
+import {ConfirmationDialogComponent} from "../components/dialog/confirmation/confirmationDialog.component";
 
 @Injectable({
   providedIn: 'root'
@@ -47,8 +48,7 @@ export class EventService {
       })
     );
   }
-
-
+  
   getAllEvents() {
     return this.apiService.getAllEvents();
   }
@@ -82,6 +82,21 @@ export class EventService {
   }
 
   deleteEvent(id: string) {
-    return this.apiService.deleteEvent(id);
+    return this.dialog.open(ConfirmationDialogComponent, {
+      data: {
+        title: 'Event löschen',
+        message: 'Möchten Sie das Event wirklich löschen?',
+        confirmText: 'Löschen',
+        cancelText: 'Abbrechen'
+      }
+    }).afterClosed().pipe(
+      switchMap((result) => {
+          if (result) {
+            return this.apiService.deleteEvent(id);
+          } else {
+            return of();
+          }
+        }
+      ));
   }
 }
