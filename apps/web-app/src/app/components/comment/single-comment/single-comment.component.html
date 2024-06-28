@@ -1,11 +1,16 @@
 @if (comment()) {
   <mat-card>
-    <mat-card-header>
-      <mat-card-subtitle>{{ comment()?.username }}| {{ comment()?.timestamp | date:'MMMM d, y, h:mm:ss a' }}
+    <mat-card-header class="flex items-center">
+      <!--TODO USE PROFILE PICTURE FROM USER-->
+      <img mat-card-avatar class="!mb-0" src="https://placehold.co/150" alt="{{ comment()?.username }}">
+      <mat-card-subtitle>
+        <span class="flex items-center">{{ comment()?.username }}
+          | {{ comment()?.timestamp | date:'MMMM d, y, h:mm:ss a' }}</span>
       </mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
-      <p class="text-pretty break-words">{{ comment()?.content }}</p>
+      <div class="text-pretty break-words" [innerHTML]="comment()?.content ?? '' | markdown">
+      </div>
     </mat-card-content>
     @if (canDelete()) {
       <mat-card-actions>

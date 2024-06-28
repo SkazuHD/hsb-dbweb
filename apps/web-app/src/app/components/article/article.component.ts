@@ -1,21 +1,22 @@
-import { Component, inject, Input, model } from '@angular/core';
-import { CommonModule, NgOptimizedImage } from '@angular/common';
-import { Article, CommentCreate } from '@hsb-dbweb/shared';
-import { MetatagService } from '../../services/metatag.service';
-import { MarkdownPipe } from '../../utils/pipes/markdown.pipe';
-import { ApiService } from '../../services/api.service';
-import { LikeCounterComponent } from '../like-counter/like-counter.component';
-import { SingleCommentComponent } from '../comment/single-comment/single-comment.component';
-import { MatButton } from '@angular/material/button';
-import { MatError, MatFormField, MatHint } from '@angular/material/form-field';
-import { MatInput } from '@angular/material/input';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AuthService } from '../../services/auth.service';
+import {Component, inject, Input, model} from '@angular/core';
+import {CommonModule, NgOptimizedImage} from '@angular/common';
+import {Article, CommentCreate} from '@hsb-dbweb/shared';
+import {MetatagService} from '../../services/metatag.service';
+import {MarkdownPipe} from '../../utils/pipes/markdown.pipe';
+import {ApiService} from '../../services/api.service';
+import {LikeCounterComponent} from '../like-counter/like-counter.component';
+import {SingleCommentComponent} from '../comment/single-comment/single-comment.component';
+import {MatButton} from '@angular/material/button';
+import {MatError, MatFormFieldModule, MatHint} from '@angular/material/form-field';
+import {MatInput} from '@angular/material/input';
+import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
+import {AuthService} from '../../services/auth.service';
+import {CdkTextareaAutosize} from "@angular/cdk/text-field";
 
 @Component({
   selector: 'app-article',
   standalone: true,
-  imports: [CommonModule, NgOptimizedImage, MarkdownPipe, LikeCounterComponent, SingleCommentComponent, MatButton, MatError, MatFormField, MatInput, ReactiveFormsModule, MatHint],
+  imports: [CommonModule, NgOptimizedImage, MarkdownPipe, LikeCounterComponent, SingleCommentComponent, MatButton, MatError, MatFormFieldModule, MatInput, ReactiveFormsModule, MatHint, CdkTextareaAutosize],
   templateUrl: './article.component.html',
   styleUrl: './article.component.css'
 })
@@ -24,11 +25,13 @@ export class ArticleComponent {
   private meta: MetatagService = inject(MetatagService);
   private api: ApiService = inject(ApiService);
   private auth: AuthService = inject(AuthService);
+  commentMaxLength = 1000;
+
   commentForm: FormGroup = new FormGroup({
     comment: new FormControl('',
       [Validators.required,
         Validators.minLength(3),
-        Validators.maxLength(255)]
+        Validators.maxLength(this.commentMaxLength)]
     )
   });
 
@@ -36,6 +39,13 @@ export class ArticleComponent {
     this.api.getArticleById(id).subscribe((article) => {
       this.article.set(article);
       this.meta.addTagsForArticle(article);
+    });
+  }
+
+  constructor() {
+    this.commentForm.valueChanges.subscribe((value) => {
+      if (value.comment.length === 0)
+        this.commentForm.get('comment')?.setErrors(null);
     });
   }
 
