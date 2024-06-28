@@ -60,24 +60,29 @@
 
       <div class="mt-8" [innerHTML]="article().content | markdown"></div>
       <div>
-        <h3>Comments</h3>
+        <h3 class="font-bold text-xl pb-1">{{ article().comments?.length ?? 0 }} Comments</h3>
         <form [formGroup]="commentForm">
           <mat-form-field class="w-full pb-3">
-            <textarea formControlName="comment" matInput placeholder="Add a comment" #comment></textarea>
+            <mat-label>Comment</mat-label>
+            <textarea formControlName="comment" matInput placeholder="Add a comment" #comment
+                      cdkTextareaAutosize
+                      #autosize="cdkTextareaAutosize"
+                      cdkAutosizeMinRows="1"
+                      cdkAutosizeMaxRows="5"
+            ></textarea>
             <mat-hint align="end">
-              <span>{{ comment.textLength }}/255</span>
+              <span>{{ comment.textLength }}/{{ commentMaxLength }}</span>
             </mat-hint>
-            @if (commentForm.touched && comment.value !== '') {
-              @if (commentForm.get('comment')?.hasError('required')) {
-                <mat-error>Comment is required</mat-error>
-              } @else if (commentForm.get('comment')?.hasError('minlength')) {
-                <mat-error>Comment must be at least 3 characters</mat-error>
-              } @else if (commentForm.get('comment')?.hasError('maxlength')) {
-                <mat-error>Comment must be at most 500 characters</mat-error>
-              }
-            }
           </mat-form-field>
-
+          @if (commentForm.touched && comment.value !== '') {
+            @if (commentForm.get('comment')?.hasError('required')) {
+              <mat-error>Comment is required</mat-error>
+            } @else if (commentForm.get('comment')?.hasError('minlength')) {
+              <mat-error>Comment must be at least 3 characters</mat-error>
+            } @else if (commentForm.get('comment')?.hasError('maxlength')) {
+              <mat-error>Comment must be at most 500 characters</mat-error>
+            }
+          }
 
           @if (comment.value !== '') {
             <div class="flex gap-3 justify-end pb-3">
