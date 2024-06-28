@@ -4,8 +4,12 @@
       <!--TODO USE PROFILE PICTURE FROM USER-->
       <img mat-card-avatar class="!mb-0" src="https://placehold.co/150" alt="{{ comment()?.username }}">
       <mat-card-subtitle>
-        <span class="flex items-center">{{ comment()?.username }}
-          | {{ comment()?.timestamp | date:'MMMM d, y, h:mm:ss a' }}</span>
+        <span class="flex items-center gap-2">
+          <button class="hover:underline hover:text-blue-500"
+                  [routerLink]=[getProfileRoute()]>{{ comment()?.username }}
+          </button>
+          <span> | </span>
+          {{ comment()?.timestamp | date: 'dd.MM.YYYY HH:mm' }}</span>
       </mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>

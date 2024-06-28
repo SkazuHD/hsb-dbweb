@@ -1,6 +1,8 @@
 import {Component, inject} from '@angular/core';
 import {RouterModule} from '@angular/router';
 import {ApiService} from "./services/api.service";
+import {registerLocaleData} from "@angular/common";
+import * as de from '@angular/common/locales/de';
 
 
 @Component({
@@ -15,7 +17,9 @@ export class AppComponent {
   title = 'hsb-dbweb';
 
   constructor() {
+    registerLocaleData(de.default, 'de-DE')
     this.apiService.testApi();
+
 
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     const storedTheme = localStorage.getItem('theme');
