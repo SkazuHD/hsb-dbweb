@@ -1,26 +1,25 @@
-import {ApplicationConfig, importProvidersFrom, isDevMode,} from '@angular/core';
+import {ApplicationConfig, importProvidersFrom, isDevMode, LOCALE_ID,} from '@angular/core';
 import {provideRouter, withComponentInputBinding} from '@angular/router';
 import {appRoutes} from './app.routes';
-import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptors, withInterceptorsFromDi } from '@angular/common/http';
+import {provideHttpClient, withInterceptors} from '@angular/common/http';
 import {provideNativeDateAdapter} from '@angular/material/core';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import { authInterceptor } from './utils/http-interceptor/auth.interceptor';
-import {errorInterceptor } from './utils/http-interceptor/error.interceptor';
+import {authInterceptor} from './utils/http-interceptor/auth.interceptor';
+import {errorInterceptor} from './utils/http-interceptor/error.interceptor';
 import {initializeApp, provideFirebaseApp} from '@angular/fire/app';
 import {getAuth, provideAuth} from '@angular/fire/auth';
 import {provideServiceWorker} from '@angular/service-worker';
 import {AuthService} from "./services/auth.service";
 
-
-
 export const appConfig: ApplicationConfig = {
+
   providers: [
     provideRouter(appRoutes, withComponentInputBinding()),
     provideHttpClient(
       withInterceptors([authInterceptor, errorInterceptor])
     ),
     {provide: AuthService, useClass: AuthService},
-    provideHttpClient(),
+    {provide: LOCALE_ID, useValue: 'de-DE'},
     provideNativeDateAdapter(),
     provideFirebaseApp(() =>
       initializeApp({
@@ -40,6 +39,5 @@ export const appConfig: ApplicationConfig = {
       registrationStrategy: 'registerWhenStable:30000',
     }),
     importProvidersFrom(BrowserAnimationsModule),
-
   ],
 };

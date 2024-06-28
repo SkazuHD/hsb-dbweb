@@ -6,11 +6,12 @@ import {MarkdownPipe} from '../../../utils/pipes/markdown.pipe';
 import {AuthService} from '../../../services/auth.service';
 import {MatButton} from '@angular/material/button';
 import {ApiService} from '../../../services/api.service';
+import {RouterLink} from "@angular/router";
 
 @Component({
   selector: 'app-single-comment',
   standalone: true,
-  imports: [CommonModule, MatCard, MatCardContent, MarkdownPipe, MatCardHeader, MatCardModule, MatButton],
+  imports: [CommonModule, MatCard, MatCardContent, MarkdownPipe, MatCardHeader, MatCardModule, MatButton, RouterLink],
   templateUrl: './single-comment.component.html',
   styleUrl: './single-comment.component.css'
 })
@@ -18,6 +19,10 @@ export class SingleCommentComponent {
   comment = model.required<Comment | null>();
   protected auth: AuthService = inject(AuthService);
   protected api: ApiService = inject(ApiService);
+
+  getProfileRoute() {
+    return `/profiles/${this.comment()?.userUid}`;
+  }
 
   onDelete() {
     if (!this.canDelete()) return;

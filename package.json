@@ -46,6 +46,7 @@
     "@angular/compiler-cli": "18.0.2",
     "@angular/fire": "18.0.1",
     "@angular/language-service": "18.0.0",
+    "@angular/localize": "^18.0.5",
     "@angular/material": "18.0.2",
     "@angular/pwa": "18.0.1",
     "@firebase/auth-types": "0.12.2",
