@@ -6,8 +6,8 @@ import {InfoPageComponent} from "./components/infopage/info-page.component";
 import {ContactComponent} from './components/contacts/contact.component';
 import {adminGuard} from "./utils/guards/admin.guard";
 import {EventpageComponent} from "./components/event-page/eventpage.component";
-import { LandingPageComponent } from './components/landingpage/landingPage.component';
-import { ArticlelistComponent } from './components/articlelist/articlelist.component';
+import {LandingPageComponent} from './components/landingpage/landingPage.component';
+import {ArticlelistComponent} from './components/articlelist/articlelist.component';
 import {GalleryComponent} from './components/gallery/gallery.component';
 import { ProfilePageComponent } from './components/profile-page/profile-page.component';
 import { ProfileEditComponent } from './components/profile-edit/profile-edit.component';
@@ -19,8 +19,8 @@ export const appRoutes: Route[] = [
     component: AppShellComponent,
     children: [
       {path: '', component: LandingPageComponent},
-      {path:'gallery', component: GalleryComponent},
-      {path: 'articles', component: ArticlelistComponent},
+      {path: 'gallery', component: GalleryComponent},
+      {path: 'articles', component: ArticlelistComponent, data: {limit: 0, title: 'Articles'}},
       {path: 'articles/:slugId', component: ArticleComponent},
       {path: 'profile/:uid', component: ProfilePageComponent},
       {path: 'profile/edit/:uid', component: ProfileEditComponent},

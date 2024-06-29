@@ -1,4 +1,14 @@
-<h3 class="flex m-auto">Neuigkeiten</h3>
-@for (article of articles(); track article) {
-  <app-newsfeed [article]="article"></app-newsfeed>
-}
+<mat-card class="m-5 !rounded-lg p-6 gap-6">
+  <h3 class="text-2xl font-bold text-center">{{ title() }}</h3>
+  @for (article of articleList(); track article) {
+    <app-newsfeed [article]="article"></app-newsfeed>
+  }
+  @if (articles().length > limit() && limit() !== 0) {
+    <div class="flex justify-center p-5">
+      <button mat-flat-button color="accent" routerLink="/articles">
+        Weitere Artikel
+      </button>
+    </div>
+  }
+
+</mat-card>
