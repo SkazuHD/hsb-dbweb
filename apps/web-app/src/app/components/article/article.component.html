@@ -79,17 +79,17 @@
           <form [formGroup]="commentForm">
             <mat-form-field class="w-full pb-3">
               <mat-label>Comment</mat-label>
-              <textarea formControlName="comment" matInput placeholder="Add a comment" #comment
+              <textarea formControlName="comment" matInput placeholder="Add a comment" #commentField
                         cdkTextareaAutosize
                         #autosize="cdkTextareaAutosize"
                         cdkAutosizeMinRows="1"
                         cdkAutosizeMaxRows="5"
               ></textarea>
               <mat-hint align="end">
-                <span>{{ comment.textLength }}/{{ commentMaxLength }}</span>
+                <span>{{ commentField.textLength }}/{{ commentMaxLength }}</span>
               </mat-hint>
             </mat-form-field>
-            @if (commentForm.touched && comment.value !== '') {
+            @if (commentForm.touched && commentField.value !== '') {
               @if (commentForm.get('comment')?.hasError('required')) {
                 <mat-error>Comment is required</mat-error>
               } @else if (commentForm.get('comment')?.hasError('minlength')) {
@@ -99,7 +99,7 @@
               }
             }
 
-            @if (comment.value !== '') {
+            @if (commentField.value !== '') {
               <div class="flex gap-3 justify-end pb-3">
                 <button mat-button color="warn" type="button" (click)="commentForm.reset()">Clear</button>
                 <button mat-raised-button color="primary" type="submit" (click)="onAddComment()">Submit</button>
@@ -109,8 +109,9 @@
           </form>
 
           <div class="flex flex-col space-y-6">
-            @for (comment of article().comments; track comment) {
-              <app-single-comment [comment]="comment" (commentChange)="onCommentChange($event)"></app-single-comment>
+            @for (comment of comments(); track comment.uid) {
+              <app-single-comment [comment]="comment" [imageUrl2]="comment?.picture"
+                                  (commentChange)="onCommentChange($event)"></app-single-comment>
             }
           </div>
         </div>

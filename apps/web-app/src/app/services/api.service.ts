@@ -1,8 +1,8 @@
 import {inject, Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {forkJoin, map, Observable, of, retry, RetryConfig, switchMap,} from 'rxjs';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {Article, CommentCreate, Contact, Event, Image, InfoText, User,} from '@hsb-dbweb/shared';
+import {combineLatest, map, Observable, of, retry, RetryConfig, switchMap} from 'rxjs';
+import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
+import {Article, Comment, CommentCreate, Contact, Event, Image, InfoText, User} from '@hsb-dbweb/shared';
 import {MatDialog} from '@angular/material/dialog';
 import {AddPictureComponent} from '../components/dialog/add-picture/add-picture.component';
 import {ConfirmationDialogComponent} from '../components/dialog/confirmation/confirmationDialog.component';
@@ -139,19 +139,22 @@ export class ApiService {
   }
 
   getArticleById(id: string): Observable<Article> {
-    return forkJoin([
+    return combineLatest([
       this.http.get(this.apiURL + '/article/' + id),
-      this.http.get(this.apiURL + '/article/' + id + '/comments'),
-      this.http.get(this.apiURL + '/article/' + id + '/likes'),
+      this.http.get(this.apiURL + '/article/' + id + '/likes')
     ]).pipe(
-      map(([article, comments, likes]) => {
+      map(([article, likes]) => {
         return {
           ...article,
           ...likes,
-          comments,
         } as Article;
       }),
     );
+  }
+
+  getCommentsByArticleId(id: string): Observable<Comment[]> {
+    return this.http.get(this.apiURL + '/article/' + id + '/comments').pipe() as Observable<Comment[]>;
+
   }
 
   updateUser(id: string, user: Partial<User>, file?: File) {
