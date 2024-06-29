@@ -1,9 +1,10 @@
-import { JWTPayload } from 'jose';
+import {JWTPayload} from 'jose';
 
 export type Image = {
   url: string;
   alt?: string;
 };
+
 
 export type Article = {
   title: string;
@@ -76,7 +77,7 @@ export type User = {
   activated: boolean;
   uid: string;
   picture: any;
-};
+}
 
 export type Comment = {
   content: string;
@@ -85,7 +86,8 @@ export type Comment = {
   uid: string;
   username: string;
   timestamp: Date;
-};
+  picture: any;
+}
 
 export type CommentCreate = {
   content: string;

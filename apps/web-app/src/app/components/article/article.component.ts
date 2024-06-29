@@ -1,6 +1,6 @@
-import {Component, computed, inject, input, Input, model} from '@angular/core';
+import {Component, computed, inject, input, Input, model, signal} from '@angular/core';
 import {CommonModule, NgOptimizedImage} from '@angular/common';
-import {Article, CommentCreate} from '@hsb-dbweb/shared';
+import {Article, Comment, CommentCreate, User} from '@hsb-dbweb/shared';
 import {MetatagService} from '../../services/metatag.service';
 import {MarkdownPipe} from '../../utils/pipes/markdown.pipe';
 import {ApiService} from '../../services/api.service';
@@ -12,6 +12,7 @@ import {MatInput} from '@angular/material/input';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {AuthService} from '../../services/auth.service';
 import {CdkTextareaAutosize} from "@angular/cdk/text-field";
+import {map} from "rxjs";
 import {ImageLoad} from "../../utils/image-load";
 
 @Component({
@@ -23,11 +24,14 @@ import {ImageLoad} from "../../utils/image-load";
 })
 export class ArticleComponent {
   article = model.required<Article>();
+  comments = signal<Comment[]>([]);
   showComments = input(true);
   private meta: MetatagService = inject(MetatagService);
   private api: ApiService = inject(ApiService);
   private auth: AuthService = inject(AuthService);
   commentMaxLength = 1000;
+
+  userProfileCache = new Map<string, User>()
 
   commentForm: FormGroup = new FormGroup({
     comment: new FormControl('',
@@ -41,8 +45,10 @@ export class ArticleComponent {
     this.api.getArticleById(id).subscribe((article) => {
       this.article.set(article);
       this.meta.addTagsForArticle(article);
-    });
+      this.updateComments();
+    })
   }
+
 
   private imageLoad = new ImageLoad();
   imageUrl = computed(() => {
@@ -79,17 +85,35 @@ export class ArticleComponent {
       this.api.addArticleComment(this.article().uid, comment).subscribe(
         (comment) => {
           this.commentForm.reset();
-          this.api.getArticleById(this.article().uid).subscribe((article) => {
-            this.article.set(article);
-          });
+          this.updateComments();
         }
       );
     }
   }
 
   onCommentChange($event: any) {
-    this.api.getArticleById(this.article().uid).subscribe((article) => {
-      this.article.set(article);
+    this.updateComments();
+  }
+
+  updateComments() {
+    this.api.getCommentsByArticleId(this.article().uid).pipe(map((comment) => {
+      return comment.map((c) => {
+        const commentWithPicture = {
+          ...c,
+          picture: this.userProfileCache.get(c.userUid)?.picture
+        };
+
+        if (!this.userProfileCache.has(c.userUid)) {
+          this.api.getUserById(c.userUid).subscribe((user: User) => {
+            this.userProfileCache.set(c.userUid, user);
+            commentWithPicture.picture = user.picture;
+          })
+        }
+        return commentWithPicture;
+      })
+    })).subscribe((comments: Comment[]) => {
+      this.comments.set(comments);
+      console.log("COMMENTS", this.comments())
     });
   }
 
