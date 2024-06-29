@@ -1,18 +1,23 @@
 <mat-card class="@container/newsfeed p-2 !rounded-lg">
   <div class="@lg:grid grid-rows-3 grid-flow-col gap-2">
     <div class="row-span-3 order-last">
-      <img
-        class="w-full xs:w-52 rounded-[10px] xs:ml-auto"
-        [src]="article().image?.url"
-        [alt]="article().image?.alt"
-      />
+      @if (article().image?.url) {
+        <img
+          class="w-full xs:w-52 rounded-[10px] xs:ml-auto"
+          [src]="article().image?.url"
+          [alt]="article().image?.alt"
+        />
+      }
+
     </div>
     <div class="row-span-2 col-span-2">
       <mat-card-header>
         <h3 class="text-lg font-bold mr-4">{{ article().title }}</h3>
-        <p class="text-sm font-thin">
-          {{ 'von ' + article().author }}
-        </p>
+        @if (article().author) {
+          <p class="text-sm font-thin">
+            {{ 'von ' + article().author }}
+          </p>
+        }
       </mat-card-header>
       <mat-card-content>
         <p class="line-clamp-4">{{ article().content }}</p>
