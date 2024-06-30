@@ -168,7 +168,13 @@ export class ApiService {
   }
 
   createArticle(article: Article) {
-    return this.http.post(this.apiURL + '/article/', article);
+    const formData = new FormData();
+    formData.append('article', JSON.stringify(article));
+    if (article.media) {
+      formData.append('media', article.media);
+    }
+
+    return this.http.post(this.apiURL + '/article/', formData);
   }
 
   updateArticle(article: Partial<Article>) {
@@ -210,10 +216,10 @@ export class ApiService {
           if (result) {
             return this.http.delete(
               this.apiURL +
-              '/article/' +
-              articleUid +
-              '/comments/' +
-              commentUid,
+                '/article/' +
+                articleUid +
+                '/comments/' +
+                commentUid,
             );
           } else {
             return of();

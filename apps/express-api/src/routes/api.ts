@@ -704,50 +704,44 @@ articleRouter
         res.status(500).send({ message: 'Error fetching article' });
       });
   })
-  .post(
-    '/',
-    /*upload.single('media'),*/ (req: Request, res: Response) => {
-      const id = generateId(idType.Article);
-      const article: Partial<Article> = req.body;
-      /* const image = req.file;
-    const params = [];*/
-      const qb = new SqlQueryBuilder()
-        .insertInto('Article', [
-          'uid',
-          'title',
-          'content',
-          'subtitle',
-          'author',
-          'media',
-          'userUid',
-        ])
-        .values(7);
-      /* if (image) {
-      qb.set('media');
-      params.push(image.buffer);
-    }*/
+  .post('/', upload.single('media'), (req: Request, res: Response) => {
+    const id = generateId(idType.Article);
+    const article: Partial<Article> = JSON.parse(req.body.article);
+    const image = req.file;
 
-      db.query(qb.build(), [
-        id,
-        article.title,
-        article.content,
-        article.subtitle,
-        article.author,
-        article.media,
-        article.userUid,
+    const qb = new SqlQueryBuilder()
+      .insertInto('Article', [
+        'uid',
+        'title',
+        'content',
+        'subtitle',
+        'author',
+        'media',
+        'userUid',
       ])
-        .then((result) => {
-          if (result.affectedRows === 0) {
-            res.status(500).send({ message: 'Error creating article' });
-            return;
-          }
-          res.status(201).send({ message: 'Article created' });
-        })
-        .catch((err) => {
+      .values(7);
+
+    db.query(qb.build(), [
+      id,
+      article.title,
+      article.content,
+      article.subtitle,
+      article.author,
+      /*article.media,*/
+      image ? image.buffer : null,
+      article.userUid,
+    ])
+      .then((result) => {
+        if (result.affectedRows === 0) {
           res.status(500).send({ message: 'Error creating article' });
-        });
-    },
-  )
+          return;
+        }
+        res.status(201).send({ message: 'Article created' });
+      })
+      .catch((err) => {
+        res.status(500).send({ message: 'Error creating article' });
+      });
+  })
   .put('/:id', upload.single('media'), (req: Request, res: Response) => {
     const params = [];
     const article: Partial<Article> = JSON.parse(req.body.article);

@@ -1,7 +1,13 @@
-import {Component, inject} from '@angular/core';
-import {CommonModule} from '@angular/common';
-import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators,} from '@angular/forms';
-import {MatButton, MatIconButton} from '@angular/material/button';
+import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { MatButton, MatIconButton } from '@angular/material/button';
 import {
   MAT_DIALOG_DATA,
   MatDialogClose,
@@ -10,14 +16,19 @@ import {
   MatDialogRef,
   MatDialogTitle,
 } from '@angular/material/dialog';
-import {MatError, MatFormField, MatFormFieldModule, MatLabel,} from '@angular/material/form-field';
-import {MatIcon} from '@angular/material/icon';
-import {MatInput} from '@angular/material/input';
-import {Article} from '@hsb-dbweb/shared';
-import {ImageLoad} from '../../../utils/image-load';
-import {MatOption, MatSelect} from '@angular/material/select';
-import {ArticleComponent} from "../../article/article.component";
-import {CdkTextareaAutosize} from "@angular/cdk/text-field";
+import {
+  MatError,
+  MatFormField,
+  MatFormFieldModule,
+  MatLabel,
+} from '@angular/material/form-field';
+import { MatIcon } from '@angular/material/icon';
+import { MatInput } from '@angular/material/input';
+import { Article } from '@hsb-dbweb/shared';
+import { ImageLoad } from '../../../utils/image-load';
+import { MatOption, MatSelect } from '@angular/material/select';
+import { ArticleComponent } from '../../article/article.component';
+import { CdkTextareaAutosize } from '@angular/cdk/text-field';
 
 @Component({
   selector: 'app-edit-article',
@@ -51,9 +62,7 @@ export class EditArticleComponent {
   date = new Date();
   file = undefined;
   private imageLoad = new ImageLoad();
-  /* imageUrl = this.imageLoad.imageFromBuffer(this.article().media.data);*/
-  /* imageUrl = this.imageFromBuffer(article().picture.data);
-   */
+
   editArticleForm: FormGroup = new FormGroup({
     title: new FormControl(this.article.title, [Validators.required]),
     subtitle: new FormControl(this.article.subtitle, [Validators.required]),
@@ -65,14 +74,12 @@ export class EditArticleComponent {
   protected readonly Object = Object;
   private dialog = inject(MatDialogRef);
 
-
   constructor() {
     this.editArticleForm.valueChanges.subscribe((value) => {
       this.article = {
         ...this.article,
         ...value,
       };
-
     });
   }
 
@@ -80,10 +87,9 @@ export class EditArticleComponent {
     const updatedArticle: Article = {
       uid: this.article.uid,
       ...this.editArticleForm.value,
-      media: this.file
+      media: this.file,
     };
     this.dialog.close(updatedArticle);
-
   }
 
   onFileSelected(event: any) {

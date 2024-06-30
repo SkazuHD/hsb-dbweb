@@ -1,7 +1,7 @@
 <div class="!flex !items-center" mat-dialog-title>
   <h2>Add a new Article</h2>
 
-  <!-- 
+  <!--
   <input
     (change)="onFileSelected($event)"
     accept="image/png, image/gif, image/jpeg"
@@ -23,77 +23,102 @@
 </div>
 
 <mat-dialog-content>
-  <form [formGroup]="editArticleForm" class="grid">
-    <mat-form-field>
-      <input
-        autocomplete="off"
-        formControlName="title"
-        matInput
-        placeholder="Title"
-        type="text"
-      />
-      <mat-error *ngIf="editArticleForm.get('title')?.hasError('required')">
-        Please enter a title
-      </mat-error>
-    </mat-form-field>
+  <div class="grid grid-cols-2 gap-6">
+    <div class="mx-auto w-full">
+      <form [formGroup]="editArticleForm" class="grid">
+        <mat-form-field>
+          <input
+            autocomplete="off"
+            formControlName="title"
+            matInput
+            placeholder="Title"
+            type="text"
+          />
+          <mat-error *ngIf="editArticleForm.get('title')?.hasError('required')">
+            Please enter a title
+          </mat-error>
+        </mat-form-field>
 
-    <mat-form-field>
-      <input
-        autocomplete="off"
-        formControlName="subtitle"
-        matInput
-        placeholder="Subtitle"
-        type="text"
-      />
-      <mat-error *ngIf="editArticleForm.get('subtitle')?.hasError('required')">
-        Enter a subtitle here
-      </mat-error>
-    </mat-form-field>
+        <mat-form-field>
+          <input
+            autocomplete="off"
+            formControlName="subtitle"
+            matInput
+            placeholder="Subtitle"
+            type="text"
+          />
+          <mat-error
+            *ngIf="editArticleForm.get('subtitle')?.hasError('required')"
+          >
+            Enter a subtitle here
+          </mat-error>
+        </mat-form-field>
 
-    <mat-form-field>
-      <input
-        autocomplete="off"
-        formControlName="author"
-        matInput
-        placeholder="Author"
-        type="text"
-      />
-      <mat-error *ngIf="editArticleForm.get('author')?.hasError('required')">
-        Please enter your/author's name
-      </mat-error>
-    </mat-form-field>
+        <mat-form-field>
+          <input
+            autocomplete="off"
+            formControlName="author"
+            matInput
+            placeholder="Author"
+            type="text"
+          />
+          <mat-error
+            *ngIf="editArticleForm.get('author')?.hasError('required')"
+          >
+            Please enter your/author's name
+          </mat-error>
+        </mat-form-field>
 
-    <mat-form-field>
-      <textarea
-        autocomplete="off"
-        formControlName="content"
-        matInput
-        placeholder="Content"
-      ></textarea>
-      <mat-error *ngIf="editArticleForm.get('content')?.hasError('required')">
-        Add content here
-      </mat-error>
-    </mat-form-field>
+        <mat-form-field>
+          <textarea
+            autocomplete="off"
+            formControlName="content"
+            matInput
+            placeholder="Content"
+            cdkTextareaAutosize
+            #autosize="cdkTextareaAutosize"
+            cdkAutosizeMinRows="3"
+            cdkAutosizeMaxRows="20"
+          ></textarea>
+          <mat-error
+            *ngIf="editArticleForm.get('content')?.hasError('required')"
+          >
+            Add content here
+          </mat-error>
+        </mat-form-field>
 
-    <mat-form-field>
-      <input
-        autocomplete="off"
-        formControlName="date"
-        matInput
-        placeholder="Date"
-        type="datetime-local"
-      />
-      <mat-error *ngIf="editArticleForm.get('date')?.hasError('required')">
-        Please enter a date
-      </mat-error>
-    </mat-form-field>
-    <button
-      (click)="onSaveArticle()"
-      class="mt-2"
-      color="primary"
-      mat-flat-button
-    >
-      Save
-    </button>
-  </form>
+        <mat-form-field>
+          <input
+            autocomplete="off"
+            formControlName="date"
+            matInput
+            placeholder="Date"
+            type="datetime-local"
+          />
+          <mat-error *ngIf="editArticleForm.get('date')?.hasError('required')">
+            Please enter a date
+          </mat-error>
+        </mat-form-field>
+        <input
+          (change)="onFileSelected($event)"
+          accept="image/png, image/gif, image/jpeg"
+          name="image"
+          type="file"
+          class="ml-4"
+        />
+        <button
+          (click)="onSaveArticle()"
+          class="mt-2"
+          color="primary"
+          mat-flat-button
+        >
+          Save
+        </button>
+      </form>
+    </div>
+    <div class="w-full">
+      <h3 class="text-xl font-bold">Preview</h3>
+      <app-article [article]="article" [showComments]="false"></app-article>
+    </div>
+  </div>
 </mat-dialog-content>
