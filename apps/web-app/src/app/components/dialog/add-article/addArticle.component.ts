@@ -1,13 +1,7 @@
-import { Component, inject, Input, model } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import {
-  FormControl,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
-import { MatButton, MatIconButton } from '@angular/material/button';
+import {Component, inject} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators,} from '@angular/forms';
+import {MatButton, MatIconButton} from '@angular/material/button';
 import {
   MatDialogClose,
   MatDialogContainer,
@@ -15,19 +9,16 @@ import {
   MatDialogRef,
   MatDialogTitle,
 } from '@angular/material/dialog';
-import {
-  MatError,
-  MatFormField,
-  MatFormFieldModule,
-  MatLabel,
-} from '@angular/material/form-field';
-import { MatIcon } from '@angular/material/icon';
-import { MatInput } from '@angular/material/input';
-import { Article } from '@hsb-dbweb/shared';
-import { MatOption, MatSelect } from '@angular/material/select';
-import { Router, RouterModule } from '@angular/router';
-import { ApiService } from '../../../services/api.service';
-import { ImageLoad } from '../../../utils/image-load';
+import {MatError, MatFormField, MatFormFieldModule, MatLabel,} from '@angular/material/form-field';
+import {MatIcon} from '@angular/material/icon';
+import {MatInput} from '@angular/material/input';
+import {Article} from '@hsb-dbweb/shared';
+import {ArticleComponent} from '../../article/article.component';
+import {MatOption, MatSelect} from '@angular/material/select';
+import {Router} from '@angular/router';
+import {ApiService} from '../../../services/api.service';
+import {ImageLoad} from '../../../utils/image-load';
+import {CdkTextareaAutosize} from "@angular/cdk/text-field";
 
 @Component({
   selector: 'app-edit-article',
@@ -50,6 +41,8 @@ import { ImageLoad } from '../../../utils/image-load';
     MatFormFieldModule,
     MatLabel,
     MatDialogContainer,
+    ArticleComponent,
+    CdkTextareaAutosize,
   ],
   templateUrl: './addArticle.component.html',
   styleUrl: './addArticle.component.css',
@@ -57,7 +50,12 @@ import { ImageLoad } from '../../../utils/image-load';
 export class AddArticleComponent {
   date = new Date();
   private router = inject(Router);
-  article = model<Article>();
+  article = <Article>{
+    title: '',
+    content: '',
+    uid: '000',
+    liked: false,
+  };
   private imageLoad = new ImageLoad();
   private api: ApiService = inject(ApiService);
   file: File | undefined = undefined;
@@ -73,27 +71,24 @@ export class AddArticleComponent {
   protected readonly Object = Object;
   private dialog = inject(MatDialogRef);
 
+  constructor() {
+    this.editArticleForm.valueChanges.subscribe((value) => {
+      this.article = {
+        ...this.article,
+        ...value,
+      };
+    });
+  }
+
   onSaveArticle() {
     const updatedArticle: Article = {
       ...this.editArticleForm.value,
+      media: this.file,
     };
     this.dialog.close(updatedArticle);
   }
 
-  /*
-  ngOnInit(){
-    
-    
-    imageUrl = this.imageLoad.imageFromBuffer(article().media.data);
-  }
-    
   onFileSelected(event: any) {
     this.file = event.target.files[0];
-    if (this.file) {
-      const reader = this.imageLoad.setImageUrl(this.file);
-      reader.onload = (e) => {
-        this.imageUrl = reader.result as string;
-      };
-    }
-  }*/
+  }
 }
