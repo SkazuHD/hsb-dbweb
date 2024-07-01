@@ -1,9 +1,10 @@
-import express, { Request, Response } from 'express';
+import express, {Request, Response} from 'express';
 
 import * as path from 'path';
 import * as process from 'process';
 import router from './routes/api';
-import { sseConnections, sseMiddleware, SSEResponse } from './sse';
+import {sseConnections, sseMiddleware, SSEResponse} from './sse';
+import compression from 'compression';
 
 
 const app = express();
@@ -18,6 +19,7 @@ const server = app.listen(port, () => {
 
 app
   // .use(cors())
+  .use(compression())
   .use('/api/', router)
   .use('/assets', express.static(path.join(__dirname, 'assets')));
 
@@ -25,7 +27,7 @@ app
 
 app
   .get('/events', sseMiddleware, (req: Request, res: SSEResponse) => {
-    res.sseConnection.send({ message: 'Welcome to the SSE connection' });
+    res.sseConnection.send({message: 'Welcome to the SSE connection'});
   })
   .get('/hello', (req: Request, res: Response) => {
     sseConnections.forEach((sseRes) => {
@@ -34,7 +36,7 @@ app
         time: Date.now()
       });
     });
-    res.send({ message: 'Hello World!' });
+    res.send({message: 'Hello World!'});
   })
   .get('/ping', (req: Request, res: Response) => {
     sseConnections.forEach((sseRes) => {

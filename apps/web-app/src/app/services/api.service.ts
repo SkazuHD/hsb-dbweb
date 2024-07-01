@@ -1,18 +1,7 @@
-import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import {
-  BehaviorSubject,
-  combineLatest,
-  filter,
-  map,
-  Observable,
-  of,
-  retry,
-  RetryConfig,
-  Subject,
-  switchMap
-} from 'rxjs';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {inject, Injectable} from '@angular/core';
+import {HttpClient} from '@angular/common/http';
+import {BehaviorSubject, combineLatest, filter, map, Observable, of, retry, RetryConfig, switchMap} from 'rxjs';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {
   Article,
   Comment,
@@ -24,9 +13,9 @@ import {
   MessageEventData,
   User
 } from '@hsb-dbweb/shared';
-import { MatDialog } from '@angular/material/dialog';
-import { AddPictureComponent } from '../components/dialog/add-picture/add-picture.component';
-import { ConfirmationDialogComponent } from '../components/dialog/confirmation/confirmationDialog.component';
+import {MatDialog} from '@angular/material/dialog';
+import {AddPictureComponent} from '../components/dialog/add-picture/add-picture.component';
+import {ConfirmationDialogComponent} from '../components/dialog/confirmation/confirmationDialog.component';
 
 
 @Injectable({
@@ -54,8 +43,7 @@ export class ApiService {
 
     this.events$.pipe(takeUntilDestroyed()).subscribe((event: MessageEvent<MessageEventData>) => {
       console.debug(event);
-
-      this.eventUpdates.next(event);
+      // this.eventUpdates.next(event);
     });
   }
 
@@ -289,6 +277,24 @@ export class ApiService {
 
   deleteEvent(id: string) {
     return this.http.delete(this.apiURL + '/events/' + id);
+  }
+
+  getImageById(id: string) {
+    // Kinda does not make sense
+    // Use Id in template to get image
+    return this.http.get(this.apiURL + '/images/' + id, {
+      responseType: 'blob'
+    }).pipe();
+  }
+
+  addImage(file: File) {
+    const formData = new FormData();
+    formData.append('media', file);
+    return this.http.post<{ message: string, id: number }>(this.apiURL + '/images', formData).pipe();
+  }
+
+  deleteImageById(id: string) {
+    return this.http.delete(this.apiURL + '/images/' + id).pipe();
   }
 
   private constructSSERequest(url: string) {
