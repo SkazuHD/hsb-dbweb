@@ -1,4 +1,4 @@
-import {JWTPayload} from 'jose';
+import { JWTPayload } from 'jose';
 
 export type Image = {
   url: string;
@@ -100,6 +100,27 @@ export type registerCredential = {
   email: string;
   password: string;
 };
+
+export interface MessageEventData {
+  message: string;
+  action: MessageActionType;
+  type: MessageEventType;
+  uid: string;
+}
+
+export enum MessageActionType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+}
+
+export enum MessageEventType {
+  PING = 'ping',
+  ARTICLE = 'article',
+  COMMENT = 'comment',
+  EVENT = 'event',
+  GALLERY = 'gallery',
+}
 
 export enum UserRole {
   USER = 'user',
