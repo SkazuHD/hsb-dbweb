@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import { MessageEventData } from '@hsb-dbweb/shared';
 
 export interface SSEResponse extends Response {
   sseConnection: Response;
@@ -19,7 +20,7 @@ function SSESetup(res: SSEResponse) {
   this.res = res;
 }
 
-SSESetup.prototype.send = function (data, eventId = 'message') {
+SSESetup.prototype.send = function(data: MessageEventData, eventId = 'message') {
   this.res.write(`event: ${eventId}\n`);
   this.res.write(`id: ${Date.now()}\n`);
   this.res.write(`data: ${JSON.stringify(data)}\n\n`);
@@ -28,7 +29,7 @@ SSESetup.prototype.send = function (data, eventId = 'message') {
 export function sseMiddleware(
   req: Request,
   res: SSEResponse,
-  next: NextFunction,
+  next: NextFunction
 ) {
   res.sseConnection = new SSESetup(res);
   sseConnections.push(res);
