@@ -280,8 +280,10 @@ export class ApiService {
   }
 
   getImageById(id: string) {
-    // Kinda does not make sense
-    // Use Id in template to get image
+    /* Kinda does not make sense
+     Use Id in template instead to get image
+     But can be used when converting blob with URL.createObjectURL(blob)
+     */
     return this.http.get(this.apiURL + '/images/' + id, {
       responseType: 'blob'
     }).pipe();
