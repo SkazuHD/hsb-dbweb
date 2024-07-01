@@ -1,4 +1,4 @@
-import {Component, inject, Input, model} from '@angular/core';
+import {Component, computed, inject, Input, model} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {MatCardModule} from '@angular/material/card';
 import {MatIcon} from '@angular/material/icon';
@@ -9,7 +9,7 @@ import {MatInputModule} from '@angular/material/input';
 import {User} from '@hsb-dbweb/shared';
 import {ApiService} from '../../services/api.service';
 import {AuthService} from "../../services/auth.service";
-import { ImageLoad } from '../../utils/image-load';
+import {ImageLoad} from '../../utils/image-load';
 
 
 @Component({
@@ -39,7 +39,11 @@ export class ProfileEditComponent {
     <User>this.auth.user());
   private api: ApiService = inject(ApiService);
   file: File | undefined = undefined;
-  imageUrl = this.imageLoad.imageFromBuffer(this.user().picture.data);
+  imageUrl = computed(() => {
+    if (this.user().imageUid !== undefined && this.user().imageUid !== null)
+      return "http://localhost:4201/api/images/" + this.user().imageUid;
+    return "http://placeholder.co/150";
+  })
 
 
   @Input() set uid(uid: string) {
@@ -62,11 +66,10 @@ export class ProfileEditComponent {
     if (this.file) {
       const reader = this.imageLoad.setImageUrl(this.file);
       reader.onload = (e) => {
-        this.imageUrl = reader.result as string;
+        //this.imageUrl = reader.result as string;
       }
     }
   }
-
 
 
   onSave() {

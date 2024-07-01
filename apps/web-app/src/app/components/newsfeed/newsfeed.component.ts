@@ -19,10 +19,9 @@ export class NewsfeedComponent {
 
   private imageLoad = new ImageLoad();
   imageUrl = computed(() => {
-    if (this.article().media === null || this.article().media === undefined)
-      return undefined
-    else
-      return this.imageLoad.imageFromBuffer(this.article().media.data)
+    if (this.article()?.imageUid !== undefined)
+      return "http://localhost:4201/api/images/" + this.article()?.imageUid;
+    return undefined;
   })
 
 }
