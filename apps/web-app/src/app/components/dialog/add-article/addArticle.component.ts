@@ -1,4 +1,4 @@
-import {Component, inject} from '@angular/core';
+import {Component, computed, inject, Signal, signal, WritableSignal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators,} from '@angular/forms';
 import {MatButton, MatIconButton} from '@angular/material/button';
@@ -16,9 +16,8 @@ import {Article} from '@hsb-dbweb/shared';
 import {ArticleComponent} from '../../article/article.component';
 import {MatOption, MatSelect} from '@angular/material/select';
 import {Router} from '@angular/router';
-import {ApiService} from '../../../services/api.service';
-import {ImageLoad} from '../../../utils/image-load';
 import {CdkTextareaAutosize} from "@angular/cdk/text-field";
+import {UploadFileComponent} from "../../upload-file/upload-file.component";
 
 @Component({
   selector: 'app-edit-article',
@@ -43,6 +42,7 @@ import {CdkTextareaAutosize} from "@angular/cdk/text-field";
     MatDialogContainer,
     ArticleComponent,
     CdkTextareaAutosize,
+    UploadFileComponent,
   ],
   templateUrl: './addArticle.component.html',
   styleUrl: './addArticle.component.css',
@@ -50,15 +50,22 @@ import {CdkTextareaAutosize} from "@angular/cdk/text-field";
 export class AddArticleComponent {
   date = new Date();
   private router = inject(Router);
-  article = <Article>{
+  article = signal<Article>({
     title: '',
     content: '',
     uid: '000',
     liked: false,
-  };
-  private imageLoad = new ImageLoad();
-  private api: ApiService = inject(ApiService);
-  file: File | undefined = undefined;
+  });
+  imageId: WritableSignal<number> = signal(0);
+
+
+  articleWithImageId: Signal<Article> = computed(() => {
+    return {
+      ...this.article(),
+      imageUid: this.imageId(),
+    };
+
+  })
 
   editArticleForm: FormGroup = new FormGroup({
     title: new FormControl('', [Validators.required]),
@@ -73,22 +80,16 @@ export class AddArticleComponent {
 
   constructor() {
     this.editArticleForm.valueChanges.subscribe((value) => {
-      this.article = {
-        ...this.article,
-        ...value,
-      };
+      this.article.update((article) => ({...article, ...value}));
     });
   }
 
   onSaveArticle() {
     const updatedArticle: Article = {
       ...this.editArticleForm.value,
-      media: this.file,
+      imageUid: this.imageId(),
     };
     this.dialog.close(updatedArticle);
   }
 
-  onFileSelected(event: any) {
-    this.file = event.target.files[0];
-  }
 }

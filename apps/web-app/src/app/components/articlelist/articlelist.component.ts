@@ -1,9 +1,8 @@
-import {Component, computed, inject, input, model, OnInit} from '@angular/core';
+import {Component, computed, inject, input, OnInit} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {MatButton} from '@angular/material/button';
 import {MatCardModule} from '@angular/material/card';
 import {RouterModule} from '@angular/router';
-import {Article} from '@hsb-dbweb/shared';
 import {ApiService} from '../../services/api.service';
 import {NewsfeedComponent} from '../newsfeed/newsfeed.component';
 
@@ -22,7 +21,7 @@ import {NewsfeedComponent} from '../newsfeed/newsfeed.component';
 })
 export class ArticlelistComponent implements OnInit {
   apiService: ApiService = inject(ApiService);
-  articles = model<Article[]>([]);
+  articles = computed(() => this.apiService.articles());
   title = input<string>('Neuigkeiten');
   limit = input<number>(3);
   articleList = computed(() => {
@@ -32,8 +31,6 @@ export class ArticlelistComponent implements OnInit {
 
   ngOnInit() {
     if (this.articles()?.length > 0) return;
-    this.apiService.getArticles().subscribe((articles) => {
-      this.articles.set(articles);
-    });
+
   }
 }

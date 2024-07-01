@@ -7,7 +7,6 @@ import {User} from '@hsb-dbweb/shared';
 import {RouterModule} from '@angular/router';
 import {AuthService} from "../../services/auth.service";
 import {MatIconButton} from "@angular/material/button";
-import {ImageLoad} from '../../utils/image-load';
 
 @Component({
   selector: 'app-profile-page',
@@ -25,12 +24,10 @@ export class ProfilePageComponent {
   user = model<User>(
     <User>this.auth.user());
   private api: ApiService = inject(ApiService);
-  private imageLoad = new ImageLoad();
   imageUrl = computed(() => {
-    if (this.user().picture === null || this.user().picture === undefined)
-      return "https://placehold.co/400x400"
-    else
-      return this.imageLoad.imageFromBuffer(this.user().picture.data)
+    if (this.user().imageUid !== undefined && this.user().imageUid !== null)
+      return "http://localhost:4201/api/images/" + this.user().imageUid;
+    return "http://placeholder.co/150";
   })
 
   @Input() set uid(uid: string) {

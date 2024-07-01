@@ -14,7 +14,7 @@ export type Article = {
   date?: string;
   uid: string;
   content: string;
-  media?: any;
+  imageUid?: number;
   userUid?: string;
   likes?: number;
   liked: boolean;
@@ -76,7 +76,7 @@ export type User = {
   role: UserRole;
   activated: boolean;
   uid: string;
-  picture: any;
+  imageUid?: number;
 }
 
 export type Comment = {
@@ -100,6 +100,27 @@ export type registerCredential = {
   email: string;
   password: string;
 };
+
+export interface MessageEventData {
+  message: string;
+  action: MessageActionType;
+  type: MessageEventType;
+  uid: string;
+}
+
+export enum MessageActionType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+}
+
+export enum MessageEventType {
+  PING = 'ping',
+  ARTICLE = 'article',
+  COMMENT = 'comment',
+  EVENT = 'event',
+  GALLERY = 'gallery',
+}
 
 export enum UserRole {
   USER = 'user',

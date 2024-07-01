@@ -1,4 +1,4 @@
-import express, { NextFunction, Request, Response, Router } from 'express';
+import express, {NextFunction, Request, Response, Router} from 'express';
 import Database from '../db';
 import * as crypto from 'node:crypto';
 import {
@@ -6,18 +6,20 @@ import {
   Article,
   Event,
   JWTScope,
+  MessageActionType,
+  MessageEventData,
+  MessageEventType,
   RefreshTokenPayload,
   User,
   UserRole,
-  UserScope,
+  UserScope
 } from '@hsb-dbweb/shared';
-import { SqlQueryBuilder } from './SqlQueryBuilder';
+import {SqlQueryBuilder} from './SqlQueryBuilder';
 import bcrypt from 'bcrypt';
-import { jwtVerify } from 'jose';
-import { rateLimit } from 'express-rate-limit';
-import { JwtManager } from '../jwt';
-import { createConnection } from 'mariadb';
+import {rateLimit} from 'express-rate-limit';
+import {JwtManager} from '../jwt';
 import multer from 'multer';
+import {sseConnections} from "../sse";
 
 const upload = multer();
 
@@ -27,15 +29,9 @@ const profileRouter = express.Router();
 const articleRouter = express.Router();
 const galleryRouter = express.Router();
 const eventRouter = express.Router();
+const imageRouter = express.Router();
 const db = Database.getInstance();
 const jwt = new JwtManager('replace-me-with-a-real-secret');
-
-/* TODO
- *   Add DB logic to routes
- *   Add Auth middlewares
- *   ? Split routers in separate files
- *   Error handling
- */
 
 enum idType {
   Article,
@@ -57,10 +53,10 @@ function generateId(type: idType) {
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  limit: 1000, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
-  standardHeaders: 'draft-7', // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
-  // store: ... , // Redis, Memcached, etc. See below.
+  limit: 1000,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false
+
 });
 
 const requestContainsToken = (req: Request) => {
@@ -70,77 +66,84 @@ const requestContainsToken = (req: Request) => {
 const requireAuthentication = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   //Auth middleware | Checks if user is authenticated and provides valid token
 
   const authHeader = req.header('Authorization');
   if (authHeader === undefined) {
-    res.status(401).send({ message: 'Unauthorized' });
+    res.status(401).send({message: 'Unauthorized'});
     return;
   }
   const token = authHeader.split(' ')[1];
   if (!token) {
-    return res.status(401).send({ message: 'Unauthorized' });
+    return res.status(401).send({message: 'Unauthorized'});
   }
   try {
-    const { payload } = await jwt.verifyToken<AccessTokenPayload>(token);
+    const {payload} = await jwt.verifyToken<AccessTokenPayload>(token);
     next();
   } catch (err) {
     console.error(err);
-    return res.status(401).send({ message: 'Invalid token' });
+    return res.status(401).send({message: 'Invalid token'});
   }
 };
 
 const requireAuthorization = (requiredRole: UserRole) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     if (!requestContainsToken(req)) {
-      res.status(401).send({ message: 'Unauthorized' });
+      res.status(401).send({message: 'Unauthorized'});
       return;
     }
     const authHeader = req.header('Authorization');
 
     const token = authHeader.split(' ')[1];
     if (!token) {
-      res.status(401).send({ message: 'Unauthorized' });
+      res.status(401).send({message: 'Unauthorized'});
       return;
     }
     try {
-      const { payload } = await jwt.verifyToken<AccessTokenPayload>(token);
+      const {payload} = await jwt.verifyToken<AccessTokenPayload>(token);
 
       if (payload.role !== requiredRole) {
-        res.status(403).send({ message: 'Forbidden' });
+        res.status(403).send({message: 'Forbidden'});
         return;
       }
       next();
     } catch (err) {
-      res.status(401).send({ message: 'Invalid token' });
+      res.status(401).send({message: 'Invalid token'});
     }
   };
 };
 
 const requestLogger = (req: Request, res: Response, next: NextFunction) => {
   console.debug(
-    `[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`,
+    `[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`
   );
   next();
 };
+
+function sendSSEEvent(data: MessageEventData) {
+
+  console.debug('Sending SSE event to ' + sseConnections.length + ' connections')
+  sseConnections.forEach((sseRes) => {
+    sseRes.sseConnection.send(data);
+  });
+}
 
 router
   .use(limiter)
   .use(express.json())
   .use(requestLogger)
   .use((req: Request, res: Response, next: NextFunction) => {
-    console.log(req.ip);
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:4200'); // replace with your Angular app's URL
     res.setHeader(
       'Access-Control-Allow-Headers',
-      'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+      'Origin, X-Requested-With, Content-Type, Accept, Authorization'
     );
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader(
       'Access-Control-Allow-Methods',
-      'GET, POST, PUT, DELETE, OPTIONS',
+      'GET, POST, PUT, DELETE, OPTIONS'
     );
     next();
   })
@@ -149,11 +152,59 @@ router
   .use('/article/', articleRouter)
   .use('/gallery/', galleryRouter)
   .use('/events/', eventRouter)
+  .use('/images/', imageRouter)
   .use((err: Error, req: Request, res: Response, next: NextFunction) => {
     console.error(err.stack);
     res
       .status(500)
-      .send({ message: err.message ? err.message : 'Something broke!' });
+      .send({message: err.message ? err.message : 'Something broke!'});
+  });
+
+imageRouter.post('/', upload.single('media'), (req: Request, res: Response) => {
+  if (!req.file) {
+    return res.status(400).send({message: 'No file uploaded'});
+  }
+  const image = req.file;
+  const qb = new SqlQueryBuilder().insertInto('Images', ['originalName', 'mimeType', 'size', 'buffer'])
+    .values(4);
+  db.query(qb.build(), [image.originalname, image.mimetype, image.size, image.buffer]).then((result) => {
+    if (result.affectedRows === 0) {
+      res.status(500).send({message: 'Error uploading image'});
+      return;
+    } else {
+      res.status(201).send({message: 'Image uploaded', id: Number(result.insertId)});
+    }
+  }).catch((err) => {
+    res.status(500).send({message: 'Error uploading image'});
+  });
+
+})
+  .get('/:id', (req: Request, res: Response) => {
+    const qb = new SqlQueryBuilder().select('*')
+      .from('Images')
+      .where('uid');
+    db.query(qb.build(), [req.params.id]).then((result) => {
+      if (result.length === 0) {
+        res.status(404).send({message: 'Image not found'});
+        return;
+      }
+      res.setHeader('Content-Type', result[0].mimeType);
+      res.send(result[0].buffer);
+    }).catch((err) => {
+      res.status(500).send({message: 'Error fetching image'});
+    });
+  })
+  .delete('/:id', (req: Request, res: Response) => {
+    const qb = new SqlQueryBuilder().deleteFrom('Images').where('uid');
+    db.query(qb.build(), [req.params.id]).then((result) => {
+      if (result.affectedRows === 0) {
+        res.status(404).send({message: 'Image not found'});
+        return;
+      }
+      res.send({message: 'Image deleted'});
+    }).catch((err) => {
+      res.status(500).send({message: 'Error deleting image'});
+    });
   });
 
 galleryRouter
@@ -164,16 +215,15 @@ galleryRouter
         res.send(result);
       })
       .catch((err) => {
-        res.status(500).send({ message: 'Error fetching gallery items' });
+        res.status(500).send({message: 'Error fetching gallery items'});
       });
   })
-
   .post(
     '/',
     requireAuthorization(UserRole.ADMIN),
     async (req: Request, res: Response) => {
       if (!req.body.url || !req.body.alt) {
-        return res.status(400).json({ error: 'missing Parameters' });
+        return res.status(400).json({error: 'missing Parameters'});
       }
       const qb = new SqlQueryBuilder()
         .insertInto('Gallery', ['Url', 'Alt'])
@@ -181,15 +231,15 @@ galleryRouter
       db.query(qb.build(), [req.body.url, req.body.alt])
         .then((result) => {
           if (result.affectedRows === 0) {
-            res.status(500).send({ message: 'Error creating gallery item' });
+            res.status(500).send({message: 'Error creating gallery item'});
             return;
           }
-          res.status(201).send({ message: 'Gallery item created' });
+          res.status(201).send({message: 'Gallery item created'});
         })
         .catch((err) => {
-          res.status(500).send({ message: 'Error creating gallery item' });
+          res.status(500).send({message: 'Error creating gallery item'});
         });
-    },
+    }
   )
   .delete(
     '/',
@@ -199,15 +249,15 @@ galleryRouter
       db.query(qb.build(), [req.body.url])
         .then((result) => {
           if (result.affectedRows === 0) {
-            res.status(404).send({ message: 'Gallery item not found' });
+            res.status(404).send({message: 'Gallery item not found'});
             return;
           }
-          res.send({ message: 'Gallery item deleted' });
+          res.send({message: 'Gallery item deleted'});
         })
         .catch((err) => {
-          res.status(500).send({ message: 'Error deleting gallery item' });
+          res.status(500).send({message: 'Error deleting gallery item'});
         });
-    },
+    }
   );
 
 //Auth routes
@@ -218,26 +268,26 @@ authRouter
     try {
       const result = await db.query(qb.build(), [req.body.email]);
       if (result.length === 0) {
-        res.status(401).send({ message: 'Invalid username or password' });
+        res.status(401).send({message: 'Invalid username or password'});
         return;
       }
 
       const hashedPassword = result[0].password;
       const match = bcrypt.compare(req.body.password, hashedPassword);
       if (!match) {
-        res.status(401).send({ message: 'Invalid username or password' });
+        res.status(401).send({message: 'Invalid username or password'});
         return;
       }
-      const user: Omit<User, 'password'> = { ...result[0], password: null };
+      const user: Omit<User, 'password'> = {...result[0], password: null};
       const token = await jwt.createAccessToken({
         uid: user.uid,
         role: user.role,
         scope: [UserScope.READ, UserScope.WRITE],
-        type: JWTScope.ACCESS,
+        type: JWTScope.ACCESS
       });
       const refreshToken = await jwt.createRefreshToken({
         uid: user.uid,
-        type: JWTScope.REFRESH,
+        type: JWTScope.REFRESH
       });
 
       const idToken = await jwt.createIdToken({
@@ -245,7 +295,7 @@ authRouter
         role: user.role,
         type: JWTScope.ID,
         email: user.email,
-        username: user.username,
+        username: user.username
       });
 
       res.setHeader('Authorization', `Bearer ${token}`);
@@ -255,16 +305,15 @@ authRouter
         accessToken: token,
         idToken,
         refreshToken,
-        user,
+        user
       });
     } catch (err) {
-      res.status(500).send({ message: 'Error logging in' });
+      res.status(500).send({message: 'Error logging in'});
     }
   })
-
   .post('/register', async (req: Request, res: Response) => {
     if (!req.body.password || !req.body.username || !req.body.email) {
-      return res.status(400).json({ error: 'missing Parameters' });
+      return res.status(400).json({error: 'missing Parameters'});
     }
 
     const saltRounds = 10;
@@ -278,7 +327,6 @@ authRouter
       'email',
       'role',
       'activated',
-      'picture',
     ]).values(6);
     // Todo add role table as FK constraint^
     db.query(qb.build(), [
@@ -286,12 +334,12 @@ authRouter
       req.body.username,
       hashedPassword,
       req.body.email,
-      'user',
-      true,
+      UserRole.USER,
+      true
     ])
       .then(async (result) => {
         if (result.affectedRows === 0) {
-          res.status(500).send({ message: 'Error creating user' });
+          res.status(500).send({message: 'Error creating user'});
           return;
         }
         const user: Omit<User, 'password'> = {
@@ -301,7 +349,6 @@ authRouter
           email: req.body.email,
           role: UserRole.USER,
           activated: true,
-          picture: null,
         };
 
         // TODO CREATE HELPER FUNCTION FOR TOKEN CREATION
@@ -310,11 +357,11 @@ authRouter
           uid: user.uid,
           role: user.role,
           scope: [UserScope.READ, UserScope.WRITE],
-          type: JWTScope.ACCESS,
+          type: JWTScope.ACCESS
         });
         const refreshToken = await jwt.createRefreshToken({
           uid: user.uid,
-          type: JWTScope.REFRESH,
+          type: JWTScope.REFRESH
         });
 
         const idToken = await jwt.createIdToken({
@@ -322,7 +369,7 @@ authRouter
           role: user.role,
           type: JWTScope.ID,
           email: user.email,
-          username: user.username,
+          username: user.username
         });
 
         res.setHeader('Authorization', `Bearer ${token}`);
@@ -332,23 +379,23 @@ authRouter
           accessToken: token,
           idToken,
           refreshToken,
-          user,
+          user
         });
       })
       .catch((err) => {
-        res.status(500).send({ message: 'Error creating user' });
+        res.status(500).send({message: 'Error creating user'});
       });
   })
   .post('/refresh', async (req: Request, res: Response) => {
     const refreshToken = req.body.refreshToken;
     if (!refreshToken) {
-      res.status(400).send({ message: 'Missing parameters' });
+      res.status(400).send({message: 'Missing parameters'});
       return;
     }
-    const { payload } =
+    const {payload} =
       await jwt.verifyToken<RefreshTokenPayload>(refreshToken);
     if (payload.type !== JWTScope.REFRESH) {
-      res.status(400).send({ message: 'Invalid token' });
+      res.status(400).send({message: 'Invalid token'});
       return;
     }
     const qb = new SqlQueryBuilder();
@@ -356,26 +403,26 @@ authRouter
     try {
       const result = await db.query(qb.build(), [payload.uid]);
       if (result.length === 0) {
-        res.status(401).send({ message: 'Invalid username or password' });
+        res.status(401).send({message: 'Invalid username or password'});
         return;
       }
-      const user: Omit<User, 'password'> = { ...result[0], password: null };
+      const user: Omit<User, 'password'> = {...result[0], password: null};
       const token = await jwt.createAccessToken({
         uid: user.uid,
         role: user.role,
         scope: [UserScope.READ, UserScope.WRITE],
-        type: JWTScope.ACCESS,
+        type: JWTScope.ACCESS
       });
       const idToken = await jwt.createIdToken({
         uid: user.uid,
         role: user.role,
         type: JWTScope.ID,
         email: user.email,
-        username: user.username,
+        username: user.username
       });
       const newRefreshToken = await jwt.createRefreshToken({
         uid: user.uid,
-        type: JWTScope.REFRESH,
+        type: JWTScope.REFRESH
       });
 
       res.setHeader('Authorization', `Bearer ${token}`);
@@ -385,16 +432,12 @@ authRouter
         accessToken: token,
         idToken,
         refreshToken: newRefreshToken,
-        user,
+        user
       });
     } catch (err) {
-      res.status(500).send({ message: 'Error refreshing Token' });
+      res.status(500).send({message: 'Error refreshing Token'});
     }
   })
-
-  .get('/test', (req: Request, res: Response) => {
-    res.send({ message: 'Auth Router works' });
-  });
 //Profile routes
 
 profileRouter
@@ -407,7 +450,7 @@ profileRouter
         'name',
         'role',
         'activated',
-        'picture',
+        'picture'
       ])
       .from('User');
 
@@ -416,7 +459,7 @@ profileRouter
         res.send(result);
       })
       .catch((err) => {
-        res.status(500).send({ message: 'Error fetching users' });
+        res.status(500).send({message: 'Error fetching users'});
       });
   })
   .get('/:id', (req: Request, res: Response) => {
@@ -428,7 +471,7 @@ profileRouter
         'name',
         'role',
         'activated',
-        'picture',
+        'picture'
       ])
       .from('User')
       .where('uid');
@@ -436,13 +479,13 @@ profileRouter
     db.query(qb.build(), [req.params.id])
       .then((result) => {
         if (result.length === 0) {
-          res.status(404).send({ message: 'User not found' });
+          res.status(404).send({message: 'User not found'});
           return;
         }
         return res.send(result[0]);
       })
       .catch((err) => {
-        res.status(500).send({ message: 'Error fetching user' });
+        res.status(500).send({message: 'Error fetching user'});
       });
   });
 profileRouter
@@ -457,7 +500,7 @@ profileRouter
         .getUserIdFromToken(req.header('Authorization').split(' ')[1])
         .then((userId) => {
           if (req.params.uid !== userId) {
-            return res.status(403).send({ message: 'Forbidden' });
+            return res.status(403).send({message: 'Forbidden'});
           }
           const params = [];
 
@@ -491,7 +534,7 @@ profileRouter
             params.push(picture.buffer);
           }
           if (params.length === 0) {
-            res.status(400).send({ message: 'No fields to update' });
+            res.status(400).send({message: 'No fields to update'});
             return;
           }
 
@@ -501,57 +544,33 @@ profileRouter
           db.query(qb.build(), params)
             .then((result) => {
               if (result.affectedRows === 0) {
-                res.status(404).send({ message: 'User not found' });
+                res.status(404).send({message: 'User not found'});
                 return;
               }
-              res.send({ message: 'User updated' });
+              res.send({message: 'User updated'});
             })
             .catch((err) => {
-              res.status(500).send({ message: 'Error updating user' });
+              res.status(500).send({message: 'Error updating user'});
             });
         })
         .catch((err) => {
-          res.status(500).send({ message: 'Error updating user' });
+          res.status(500).send({message: 'Error updating user'});
         });
-    },
+    }
   )
-
-  .put('/:username', requireAuthentication, (req: Request, res: Response) => {
-    db.query(
-      'UPDATE User SET username = ?, password = ?, email = ?, role = ?, activated = ? WHERE uid = ?',
-      [
-        req.body.username,
-        req.body.password,
-        req.body.email,
-        req.body.role,
-        req.body.activated,
-        req.params.username,
-      ],
-    )
-      .then((result) => {
-        if (result.affectedRows === 0) {
-          res.status(404).send({ message: 'User not found' });
-          return;
-        }
-        res.send({ message: 'User updated' });
-      })
-      .catch((err) => {
-        res.status(500).send({ message: 'Error updating user' });
-      });
-  })
   .delete('/:id', requireAuthentication, (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder().deleteFrom('User').where('uid');
 
     db.query(qb.build(), [req.params.username])
       .then((result) => {
         if (result.affectedRows === 0) {
-          res.status(404).send({ message: 'User not found' });
+          res.status(404).send({message: 'User not found'});
           return;
         }
-        res.send({ message: 'User deleted' });
+        res.send({message: 'User deleted'});
       })
       .catch((err) => {
-        res.status(500).send({ message: 'Error deleting user' });
+        res.status(500).send({message: 'Error deleting user'});
       });
   });
 //Article routes
@@ -560,7 +579,6 @@ articleRouter
     const qb = new SqlQueryBuilder();
     qb.select(['*']).from('User_article').where('articleUid').and('liked');
 
-    //TODO REPLACE 0 (UserID) WITH USER ID FROM TOKEN
     if (requestContainsToken(req)) {
       jwt
         .getUserIdFromToken(req.header('Authorization').split(' ')[1])
@@ -570,24 +588,24 @@ articleRouter
               const likes = result.length;
               const liked =
                 result.find((like) => like.userUid === userId) !== undefined;
-              res.send({ likes, liked });
+              res.send({likes, liked});
             })
             .catch((err) => {
-              res.status(500).send({ message: 'Error fetching likes' });
+              res.status(500).send({message: 'Error fetching likes'});
             });
         })
         .catch((err) => {
-          res.status(500).send({ message: 'Error fetching likes' });
+          res.status(500).send({message: 'Error fetching likes'});
         });
     } else {
       db.query(qb.build(), [req.params.articleId, '0', 1])
         .then((result) => {
           const likes = result.length;
           const liked = false;
-          res.send({ likes, liked });
+          res.send({likes, liked});
         })
         .catch((err) => {
-          res.status(500).send({ message: 'Error fetching likes' });
+          res.status(500).send({message: 'Error fetching likes'});
         });
     }
   })
@@ -608,19 +626,26 @@ articleRouter
               if (result.affectedRows === 0) {
                 res
                   .status(500)
-                  .send({ message: 'Error updating article likes' });
+                  .send({message: 'Error updating article likes'});
                 return;
               }
-              res.send({ message: 'Article likes updated' });
+              res.send({message: 'Article likes updated'});
+              sendSSEEvent({
+                message: 'Article likes updated',
+                type: MessageEventType.ARTICLE,
+                action: MessageActionType.UPDATE,
+                uid: req.params.articleId
+              })
+              return;
             })
             .catch((err) => {
-              res.status(500).send({ message: 'Error updating article likes' });
+              res.status(500).send({message: 'Error updating article likes'});
             });
         })
         .catch((err) => {
-          res.status(500).send({ message: 'Error updating article likes' });
+          res.status(500).send({message: 'Error updating article likes'});
         });
-    },
+    }
   )
   .get('/:articleId/comments', (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder()
@@ -638,7 +663,7 @@ articleRouter
         res.send(result);
       })
       .catch((err) => {
-        return res.status(500).send({ message: 'Error fetching comments' });
+        return res.status(500).send({message: 'Error fetching comments'});
       });
   })
   .post(
@@ -653,15 +678,22 @@ articleRouter
         id,
         req.params.articleId,
         req.body.comment.userUid,
-        req.body.comment.content,
+        req.body.comment.content
       ])
         .then((result) => {
-          return res.status(201).send({ message: 'Comment created' });
+          res.status(201).send({message: 'Comment created'});
+          sendSSEEvent({
+            message: 'Comment created',
+            type: MessageEventType.COMMENT,
+            action: MessageActionType.CREATE,
+            uid: req.params.articleId,
+          })
+          return
         })
         .catch((err) => {
-          return res.status(500).send({ message: 'Error creating comment' });
+          return res.status(500).send({message: 'Error creating comment'});
         });
-    },
+    }
   )
   .delete(
     '/:articleId/comments/:commentId',
@@ -671,12 +703,22 @@ articleRouter
 
       db.query(qb.build(), [req.params.commentId])
         .then((result) => {
-          return res.send({ message: 'Comment deleted' });
+          if (result.affectedRows === 0) {
+            return res.status(404).send({message: 'Comment not found'});
+          }
+          res.send({message: 'Comment deleted'});
+          sendSSEEvent({
+            message: 'Comment deleted',
+            type: MessageEventType.COMMENT,
+            action: MessageActionType.DELETE,
+            uid: req.params.articleId,
+          })
+          return
         })
         .catch((err) => {
-          return res.status(500).send({ message: 'Error deleting comment' });
+          return res.status(500).send({message: 'Error deleting comment'});
         });
-    },
+    }
   )
   .get('/', (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder().select('*').from('Article');
@@ -686,7 +728,7 @@ articleRouter
         res.send(result);
       })
       .catch((err) => {
-        res.status(500).send({ message: 'Error fetching articles' });
+        res.status(500).send({message: 'Error fetching articles'});
       });
   })
   .get('/:id', (req: Request, res: Response) => {
@@ -695,31 +737,28 @@ articleRouter
     db.query(qb.build(), [req.params.id])
       .then((result) => {
         if (result.length === 0) {
-          res.status(404).send({ message: 'Article not found' });
+          res.status(404).send({message: 'Article not found'});
           return;
         }
         res.send(result[0]);
       })
       .catch((err) => {
-        res.status(500).send({ message: 'Error fetching article' });
+        res.status(500).send({message: 'Error fetching article'});
       });
   })
-  .post('/', upload.single('media'), (req: Request, res: Response) => {
+  .post('/', (req: Request, res: Response) => {
     const id = generateId(idType.Article);
-    const article: Partial<Article> = JSON.parse(req.body.article);
-    const image = req.file;
-
+    const article: Partial<Article> = req.body;
+    const columns = ['uid',
+      'title',
+      'content',
+      'subtitle',
+      'author',
+      'userUid',
+      'imageUid']
     const qb = new SqlQueryBuilder()
-      .insertInto('Article', [
-        'uid',
-        'title',
-        'content',
-        'subtitle',
-        'author',
-        'media',
-        'userUid',
-      ])
-      .values(7);
+      .insertInto('Article', columns)
+      .values(columns.length);
 
     db.query(qb.build(), [
       id,
@@ -727,26 +766,31 @@ articleRouter
       article.content,
       article.subtitle,
       article.author,
-      /*article.media,*/
-      image ? image.buffer : null,
       article.userUid,
+      article.imageUid ? article.imageUid : null,
+
     ])
       .then((result) => {
         if (result.affectedRows === 0) {
-          res.status(500).send({ message: 'Error creating article' });
+          res.status(500).send({message: 'Error creating article'});
           return;
         }
-        res.status(201).send({ message: 'Article created' });
+        res.status(201).send({message: 'Article created'});
+        sendSSEEvent({
+          message: 'Article created',
+          type: MessageEventType.ARTICLE,
+          action: MessageActionType.CREATE,
+          uid: id
+        })
       })
       .catch((err) => {
-        res.status(500).send({ message: 'Error creating article' });
+        res.status(500).send({message: 'Error creating article'});
       });
   })
   .put('/:id', upload.single('media'), (req: Request, res: Response) => {
     const params = [];
     const article: Partial<Article> = JSON.parse(req.body.article);
     const image = req.file; //uploaded image
-
     const qb = new SqlQueryBuilder().update('Article');
     if (article.title) {
       qb.set('title');
@@ -777,13 +821,20 @@ articleRouter
     db.query(qb.build(), params)
       .then((result) => {
         if (result.affectedRows === 0) {
-          res.status(404).send({ message: 'Article not found' });
+          res.status(404).send({message: 'Article not found'});
           return;
         }
-        res.send({ message: 'Article updated' });
+        res.send({message: 'Article updated'});
+        sendSSEEvent({
+          message: 'Article updated',
+          type: MessageEventType.ARTICLE,
+          action: MessageActionType.UPDATE,
+          uid: req.params.id
+        })
+        return;
       })
       .catch((err) => {
-        res.status(500).send({ message: 'Error updating article' });
+        return res.status(500).send({message: 'Error updating article'});
       });
   })
   .delete('/:id', (req: Request, res: Response) => {
@@ -796,13 +847,21 @@ articleRouter
       db.query(qb.build(), [req.params.id])
         .then((result) => {
           if (result.affectedRows === 0) {
-            res.status(404).send({ message: 'Article not found' });
+            res.status(404).send({message: 'Article not found'});
             return;
           }
-          res.send({ message: 'Article deleted' });
+          sendSSEEvent({
+            message: 'Article deleted',
+            type: MessageEventType.ARTICLE,
+            action: MessageActionType.DELETE,
+            uid: req.params.id
+          })
+          res.send({message: 'Article deleted'});
+
+          return;
         })
         .catch((err) => {
-          res.status(500).send({ message: 'Error deleting article' });
+          return res.status(500).send({message: 'Error deleting article'});
         });
     });
   });
@@ -826,24 +885,24 @@ eventRouter
     }
     db.query(qb.build()).then((result) => {
       if (result?.length === 0) {
-        res.status(404).send({ message: 'Event not found' });
-        return;
+        return res.status(404).send({message: 'Event not found'});
       }
-
-      res.send(result);
-    });
+      return res.send(result);
+    }).catch(
+      (err) => {
+        return res.status(500).send({message: 'Error fetching events'});
+      }
+    );
   })
   .get('/:id', (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder().select('*').from('Event').where('uid');
-
     db.query(qb.build(), [req.params.id]).then((result) => {
       if (result.length === 0) {
-        res.status(404).send({ message: 'Event not found' });
-        return;
+        return res.status(404).send({message: 'Event not found'});
       }
-      res.send(result[0]);
+      return res.send(result[0]);
     });
-    res.status(500).send({ message: 'Error fetching event' });
+    return res.status(500).send({message: 'Error fetching event'});
   })
   .post(
     '/',
@@ -852,7 +911,7 @@ eventRouter
       const event: Partial<Event> = req.body;
 
       if (!event.date || !event.title || !event.location || !event.description)
-        return res.status(400).send({ message: 'Missing required fields' });
+        return res.status(400).send({message: 'Missing required fields'});
       const id = generateId(idType.Event);
       const qb = new SqlQueryBuilder()
         .insertInto('Event', [
@@ -862,7 +921,7 @@ eventRouter
           'location',
           'date',
           'userUid',
-          'type',
+          'type'
         ])
         .values(7);
 
@@ -873,20 +932,26 @@ eventRouter
         event.location,
         event.date,
         event?.userUid ?? 0,
-        event.type,
+        event.type
       ])
         .then((result) => {
           if (result.affectedRows === 0) {
-            res.status(500).send({ message: 'Error creating event' });
-            return;
+            return res.status(500).send({message: 'Error creating event'});
           }
-          res.status(201).send({ message: 'Event created' });
+          sendSSEEvent(
+            {
+              message: 'Event created',
+              type: MessageEventType.EVENT,
+              action: MessageActionType.CREATE,
+              uid: id
+            }
+          )
+          return res.status(201).send({message: 'Event created'});
         })
         .catch((err) => {
-          res.status(500).send({ message: 'Error creating event' });
+          return res.status(500).send({message: 'Error creating event'});
         });
-    },
-  )
+    })
   .put(
     '/:id',
     requireAuthorization(UserRole.ADMIN),
@@ -924,45 +989,58 @@ eventRouter
       db.query(qb.build(), params)
         .then((result) => {
           if (result.affectedRows === 0) {
-            res.status(404).send({ message: 'Event not found' });
-            return;
+            return res.status(404).send({message: 'Event not found'});
           }
-          res.send({ message: 'Event updated' });
+
+          res.send({message: 'Event updated'});
+
+          sendSSEEvent({
+            message: 'Event updated',
+            type: MessageEventType.EVENT,
+            action: MessageActionType.UPDATE,
+            uid: req.params.id
+          })
+          return
+
         })
         .catch((err) => {
-          res.status(500).send({ message: 'Error updating event' });
+          return res.status(500).send({message: 'Error updating event'});
         });
-    },
-  )
+    })
   .delete(
     '/:id',
     requireAuthorization(UserRole.ADMIN),
     (req: Request, res: Response) => {
       const qb = new SqlQueryBuilder().deleteFrom('Event').where('uid');
-
       db.query(qb.build(), [req.params.id])
         .then((result) => {
           if (result.affectedRows === 0) {
-            res.status(404).send({ message: 'Event not found' });
-            return;
+            return res.status(404).send({message: 'Event not found'});
+
           }
-          res.send({ message: 'Event deleted' });
+          res.send({message: 'Event deleted'});
+          sendSSEEvent({
+            message: 'Event deleted',
+            type: MessageEventType.EVENT,
+            action: MessageActionType.DELETE,
+            uid: req.params.id
+          })
+          return
         })
         .catch((err) => {
-          res.status(500).send({ message: 'Error deleting event' });
+          return res.status(500).send({message: 'Error deleting event'});
         });
-    },
-  );
+    });
 //General Api routes
 router
   .get('/', (req: Request, res: Response) => {
-    res.send({ message: 'Express API Works!' });
+    res.send({message: 'Express API Works!'});
   })
   .get('/hello', (req: Request, res: Response) => {
-    res.send({ message: 'Hello World!' });
+    res.send({message: 'Hello World!'});
   })
   .get('/*', (req: Request, res: Response) => {
-    res.status(404).send({ message: 'Not Found' });
+    res.status(404).send({message: 'Not Found'});
   });
 
 export default router;

@@ -27,7 +27,6 @@
           "apps/web-app/src/manifest.webmanifest"
         ],
         "styles": [
-          "@angular/material/prebuilt-themes/indigo-pink.css",
           "apps/web-app/src/styles.scss"
         ],
         "scripts": [],

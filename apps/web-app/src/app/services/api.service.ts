@@ -1,23 +1,130 @@
-import {inject, Injectable} from '@angular/core';
+import {computed, effect, inject, Injectable, signal} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {combineLatest, map, Observable, of, retry, RetryConfig, switchMap} from 'rxjs';
-import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
-import {Article, Comment, CommentCreate, Contact, Event, Image, InfoText, User} from '@hsb-dbweb/shared';
+import {BehaviorSubject, combineLatest, map, Observable, of, retry, RetryConfig, switchMap} from 'rxjs';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {
+  Article,
+  Comment,
+  CommentCreate,
+  Contact,
+  Event,
+  Image,
+  InfoText,
+  MessageEventData,
+  MessageEventType,
+  User
+} from '@hsb-dbweb/shared';
 import {MatDialog} from '@angular/material/dialog';
 import {AddPictureComponent} from '../components/dialog/add-picture/add-picture.component';
 import {ConfirmationDialogComponent} from '../components/dialog/confirmation/confirmationDialog.component';
 
+
+interface apiServiceState {
+  events: Event[];
+  articles: Article[];
+}
+
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class ApiService {
   private http: HttpClient = inject(HttpClient);
   private dialog = inject(MatDialog);
   private apiURL = 'http://localhost:4201/api';
 
-  get events$(): Observable<MessageEvent> {
+  private state = signal<apiServiceState>({
+    events: [],
+    articles: [],
+  });
+
+  // Sources
+  private events$ = new BehaviorSubject<Event[]>([]);
+  private articles$ = new BehaviorSubject<Article[]>([]);
+
+  // Selectors
+  events = computed(() => this.state().events);
+  articles = computed(() => this.state().articles);
+
+
+  get SSEEvents$(): Observable<MessageEvent> {
     return this.constructSSERequest('http://localhost:4201/events');
   }
+
+  constructor() {
+
+    effect(() => console.debug(this.state()))
+
+    this.getAllEvents().pipe(takeUntilDestroyed()).subscribe((events) => {
+      this.events$.next(events);
+    });
+
+    this.getArticles().pipe(takeUntilDestroyed()).subscribe((articles) => {
+      this.articles$.next(articles);
+    });
+
+    this.events$.pipe(takeUntilDestroyed()).subscribe((events) => {
+      this.state.update((state) => ({
+        ...state,
+        events
+      }))
+    })
+    this.articles$.pipe(takeUntilDestroyed()).subscribe((articles) => {
+      articles.map((article) => {
+        this.getLikesByArticleId(article.uid).pipe().subscribe((likes) => {
+          this.state.update((state) => ({
+            ...state,
+            articles: state.articles.filter((a) => a.uid !== article.uid).concat({
+              ...article,
+              ...likes
+            })
+          }))
+        })
+      })
+      this.state.update((state) => ({
+        ...state,
+        articles
+      }))
+
+    })
+    this.SSEEvents$.pipe(takeUntilDestroyed()).subscribe((event) => {
+      const data: MessageEventData = JSON.parse(event.data);
+      switch (data.type) {
+        case MessageEventType.EVENT:
+          this.getEventById(data.uid).pipe().subscribe((event) => {
+            this.state.update((state) => ({
+              ...state,
+              events: [...state.events, event]
+            }))
+          })
+          break
+        case MessageEventType.ARTICLE:
+          this.getArticleById(data.uid).pipe().subscribe((article) => {
+            this.state.update((state: apiServiceState) => ({
+              ...state,
+              articles: state.articles.filter((a) => a.uid !== data.uid).concat(article)
+            }))
+          })
+          break
+        case MessageEventType.COMMENT:
+          this.getCommentsByArticleId(data.uid).pipe().subscribe((comments) => {
+            this.state.update((state) => ({
+              ...state,
+              articles: state.articles.map((article) => {
+                if (article.uid === data.uid) {
+                  return {
+                    ...article,
+                    comments
+                  }
+                }
+                return article
+              })
+            }))
+          })
+          break
+      }
+    })
+  }
+
 
   testApi() {
     this.http
@@ -26,10 +133,6 @@ export class ApiService {
       .subscribe((data) => {
         console.debug(data);
       });
-
-    this.events$.pipe(takeUntilDestroyed()).subscribe((event) => {
-      console.debug(JSON.parse(event.data));
-    });
   }
 
   getContact(): Observable<Contact> {
@@ -46,14 +149,14 @@ export class ApiService {
       name: 'Peter Griepentrog',
       telephone: '02065679631',
       fax: '0206563841',
-      mobile: '01709042408',
+      mobile: '01709042408'
     });
   }
 
-  requestAddPictureDialog(): Observable<any> {
+  requestAddPictureDialog() {
     return this.dialog
       .open(AddPictureComponent, {
-        autoFocus: 'input',
+        autoFocus: 'input'
       })
       .afterClosed();
   }
@@ -71,8 +174,8 @@ export class ApiService {
           title: 'Bild löschen',
           message: 'Möchten Sie das Bild wirklich löschen?',
           confirmText: 'Löschen',
-          cancelText: 'Abbrechen',
-        },
+          cancelText: 'Abbrechen'
+        }
       })
       .afterClosed()
       .pipe(
@@ -80,13 +183,13 @@ export class ApiService {
           if (result) {
             return this.http.delete(this.apiURL + '/gallery', {
               body: {
-                url: image,
-              },
+                url: image
+              }
             });
           } else {
             return of();
           }
-        }),
+        })
       );
   }
 
@@ -102,27 +205,27 @@ export class ApiService {
       schedule: [
         {
           time: '16:00 - 17:00 Uhr',
-          age: '4 - 6 Jahre',
+          age: '4 - 6 Jahre'
         },
         {
           time: '17:00 - 18:00 Uhr',
-          age: '7 - 8 Jahre',
+          age: '7 - 8 Jahre'
         },
         {
           time: '18:00 - 19:00 Uhr',
-          age: '9 - 11 Jahre',
+          age: '9 - 11 Jahre'
         },
         {
           time: '19:00 - 20:00 Uhr',
-          age: '12 - 14 Jahre',
+          age: '12 - 14 Jahre'
         },
         {
           time: '20:00 - 21:30 Uhr',
-          age: '15 - 80 Jahre',
-        },
+          age: '15 - 80 Jahre'
+        }
       ],
       schedule_title: 'Trainingszeiten',
-      schedule_days: 'Montag und Freitag',
+      schedule_days: 'Montag und Freitag'
     });
   }
 
@@ -146,15 +249,19 @@ export class ApiService {
       map(([article, likes]) => {
         return {
           ...article,
-          ...likes,
+          ...likes
         } as Article;
-      }),
+      })
     );
   }
 
-  getCommentsByArticleId(id: string): Observable<Comment[]> {
-    return this.http.get(this.apiURL + '/article/' + id + '/comments').pipe() as Observable<Comment[]>;
+  getCommentsByArticleId(id: string) {
+    return this.http.get<Comment[]>(this.apiURL + '/article/' + id + '/comments').pipe();
 
+  }
+
+  getLikesByArticleId(id: string) {
+    return this.http.get(this.apiURL + '/article/' + id + '/likes').pipe();
   }
 
   updateUser(id: string, user: Partial<User>, file?: File) {
@@ -168,21 +275,13 @@ export class ApiService {
   }
 
   createArticle(article: Article) {
-    const formData = new FormData();
-    formData.append('article', JSON.stringify(article));
-    if (article.media) {
-      formData.append('media', article.media);
-    }
-
-    return this.http.post(this.apiURL + '/article/', formData);
+    return this.http.post(this.apiURL + '/article/', article);
   }
 
   updateArticle(article: Partial<Article>) {
     const formData = new FormData();
     formData.append('article', JSON.stringify(article));
-    if (article.media) {
-      formData.append('media', article.media);
-    }
+
     return this.http.put(this.apiURL + '/article/' + article.uid, formData);
   }
 
@@ -196,7 +295,7 @@ export class ApiService {
 
   addArticleComment(id: string, comment: CommentCreate) {
     return this.http.post(this.apiURL + '/article/' + id + '/comments', {
-      comment,
+      comment
     });
   }
 
@@ -207,8 +306,8 @@ export class ApiService {
           title: 'Kommentar löschen',
           message: 'Möchten Sie den Kommentar wirklich löschen?',
           confirmText: 'Löschen',
-          cancelText: 'Abbrechen',
-        },
+          cancelText: 'Abbrechen'
+        }
       })
       .afterClosed()
       .pipe(
@@ -216,40 +315,40 @@ export class ApiService {
           if (result) {
             return this.http.delete(
               this.apiURL +
-                '/article/' +
-                articleUid +
-                '/comments/' +
-                commentUid,
+              '/article/' +
+              articleUid +
+              '/comments/' +
+              commentUid
             );
           } else {
             return of();
           }
-        }),
+        })
       );
   }
 
   getAllEvents() {
-    return this.http.get(this.apiURL + '/events') as Observable<Event[]>;
+    return this.http.get<Event[]>(this.apiURL + '/events');
   }
 
   getEventById(id: string) {
-    return this.http.get(this.apiURL + '/events/' + id);
+    return this.http.get<Event>(this.apiURL + '/events/' + id);
   }
 
   getEventsByType(type: string) {
-    return this.http.get(this.apiURL + '/events?type=' + type);
+    return this.http.get<Event[]>(this.apiURL + '/events?type=' + type);
   }
 
   getEventsByDate(date: Date) {
-    return this.http.get(this.apiURL + '/events?date=' + date.toISOString());
+    return this.http.get<Event[]>(this.apiURL + '/events?date=' + date.toISOString());
   }
 
   getEventsByLocation(location: string) {
-    return this.http.get(this.apiURL + '/events?location=' + location);
+    return this.http.get<Event[]>(this.apiURL + '/events?location=' + location);
   }
 
   getUpcomingEvents(range: number) {
-    return this.http.get(this.apiURL + '/events?upcoming=' + range);
+    return this.http.get<Event[]>(this.apiURL + '/events?upcoming=' + range);
   }
 
   createEvent(event: Event) {
@@ -264,20 +363,43 @@ export class ApiService {
     return this.http.delete(this.apiURL + '/events/' + id);
   }
 
-  private constructSSERequest(url: string) {
+  getImageById(id: number | string) {
+    /* Kinda does not make sense
+     Use Id in template instead to get image
+     But can be used when converting blob with URL.createObjectURL(blob)
+     */
+    return this.http.get(this.apiURL + '/images/' + id, {
+      responseType: 'blob'
+    }).pipe();
+  }
+
+  addImage(file: File) {
+    const formData = new FormData();
+    formData.append('media', file);
+    return this.http.post<{ message: string, id: number }>(this.apiURL + '/images', formData).pipe();
+  }
+
+  deleteImageById(id: string) {
+    return this.http.delete(this.apiURL + '/images/' + id).pipe();
+  }
+
+  private constructSSERequest(url: string): Observable<MessageEvent<MessageEventData>> {
     const retryConfig: RetryConfig = {
       delay: 1000,
-      resetOnSuccess: true,
+      resetOnSuccess: true
     };
-    return new Observable<MessageEvent>((observer) => {
+    return new Observable<MessageEvent<MessageEventData>>((observer) => {
       const eventSource = new EventSource(url);
       eventSource.onmessage = (event) => observer.next(event);
       eventSource.onerror = (error) => observer.error(error);
+      eventSource.onopen = () => {
+        console.log('SSE connection established');
+      };
     }).pipe(
       retry(retryConfig),
       map((event: MessageEvent) => {
         return event;
-      }),
+      })
     );
   }
 }

@@ -1,4 +1,5 @@
 @use "@angular/material" as mat;
+@use "m3-theme" as theme;
 
 @tailwind base;
 @tailwind components;
@@ -24,13 +25,72 @@ $dark-theme: mat.define-theme(
     )
 );
 
+// Example
+$light-theme: theme.$light-theme;
+$dark-theme: theme.$dark-theme;
+
+
+@include mat.core();
+
+
 body {
   @include mat.all-component-themes($light-theme);
+
+  .mat-primary {
+    @include mat.button-color($light-theme, $color-variant: primary);
+  }
+
+  .mat-secondary {
+    @include mat.button-color($light-theme, $color-variant: secondary);
+  }
+
+  .mat-tertiary {
+    @include mat.button-color($light-theme, $color-variant: tertiary);
+  }
+
+  .mat-error {
+    @include mat.button-color($light-theme, $color-variant: error);
+  }
+
+  mat-toolbar {
+    background: mat.get-theme-color($light-theme, surface-container-highest) !important;
+  }
+
+  mat-sidenav {
+    background: mat.get-theme-color($light-theme, surface-container-high) !important;
+  }
+
 }
 
 body.dark {
   @include mat.all-component-colors($dark-theme);
+
+  .mat-primary {
+    @include mat.button-color($dark-theme, $color-variant: primary);
+  }
+
+  .mat-secondary {
+    @include mat.button-color($dark-theme, $color-variant: secondary);
+  }
+
+  .mat-tertiary {
+    @include mat.button-color($dark-theme, $color-variant: tertiary);
+  }
+
+  .mat-error {
+    @include mat.button-color($dark-theme, $color-variant: error);
+  }
+
+  mat-toolbar {
+    background: mat.get-theme-color($dark-theme, surface-container-highest) !important;
+  }
+
+  mat-sidenav {
+    background: mat.get-theme-color($dark-theme, surface-container-high) !important;
+  }
+
 }
+
 
 /* You can add global styles to this file, and also import other style files */
 
@@ -53,37 +113,6 @@ a {
   @apply underline text-blue-600 hover:text-blue-800 visited:text-purple-600
 }
 
-mat-toolbar {
-  background: mat.get-theme-color($light-theme, surface-container-highest) !important;
-}
-
-mat-sidenav {
-  background: mat.get-theme-color($light-theme, surface-container-high) !important;
-}
-
-mat-card {
-  background: mat.get-theme-color($light-theme, surface-container-high) !important;
-}
-
-
-.dark {
-  mat-toolbar {
-    background: mat.get-theme-color($dark-theme, surface-container-highest) !important;
-  }
-
-  mat-sidenav {
-    background: mat.get-theme-color($dark-theme, surface-container-high) !important;
-  }
-  mat-card {
-    background: mat.get-theme-color($dark-theme, surface-container-high) !important;
-  }
-}
-
-mat-slide-toggle {
-  label.mdc-label {
-    color: var(--mat-app-text-color);
-  }
-}
 
 .mat-mdc-snack-bar-container.error > * {
   background: #a30800 !important;

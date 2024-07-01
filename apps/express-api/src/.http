@@ -22,3 +22,33 @@ Content-Type: application/json
 GET http://localhost:4201/profile/testuser
 Authorization: Bearer AUTH_TOKEN
 Content-Type: application/json
+
+
+###
+GET http://localhost:4201/api/article/A-19871716047693297/comments
+
+
+###
+POST http://localhost:4201/api/article/A-19871716047693297/comments
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1aWQiOiJVLTIwNTgxNzE3NTEyMjg3NjAxIiwicm9sZSI6ImFkbWluIiwic2NvcGUiOlsicmVhZCIsIndyaXRlIl0sInR5cGUiOiJhY2Nlc3MiLCJpYXQiOjE3MTkyMzA1MjQsImlzcyI6ImhzYi1kYndlYi1hcGkiLCJhdWQiOiJoc2ItZGJ3ZWItYXBwIiwiZXhwIjoxNzE5MjMxNDI0fQ.TnrCpKGr1ZK4JYyncfucSUfAr5jnPWCWITA7Js8-i3Q
+
+{
+  "content": "This is a test comment",
+  "articleUid": "A-19871716047693297",
+  "userUid": "U-19871716047693297"
+}
+
+###
+
+DELETE http://localhost:4201/api/gallery/
+Content-Type: application/json
+
+{
+  "url": "https://media.discordapp.net/attachments/1232311018143617096/1254732056642977854/cover.thumb256.png?ex=667a8fca&is=66793e4a&hm=0ad68a4f35823bbb87c9eae3c3628aa56e3d3f1882107c4a452f271b6cc4f5b0&=&format=webp&quality=lossless&width=384&height=384"
+}
+
+
+###
+
+DELETE http://localhost:4201/api/images/2

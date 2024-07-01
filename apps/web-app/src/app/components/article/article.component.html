@@ -1,4 +1,4 @@
-@if (article()) {
+@if (article2) {
   <article role="article" class="flex flex-col gap-3 justify-between">
     <div>
       <div class="grid gap-3 grid-cols-1 @4xl:grid-cols-2 items-end">
@@ -6,23 +6,23 @@
           <h2
             role="heading"
             class="text-3xl @md:text-4xl @lg:text-5xl @xl:text-6xl @2xl:text-7xl font-bold">
-            {{ article().title }}
+            {{ article2.title }}
           </h2>
-          @if (article().subtitle) {
+          @if (article2.subtitle) {
             <p
               class="text-xl @md:text-2xl @lg:text-3xl @xl:text-4xl @2xl:text-5xl font-semibold">
-              {{ article().subtitle }}
+              {{ article2.subtitle }}
             </p>
           }
           <div class="flex gap-3">
-            @if (article().author) {
+            @if (article2.author) {
               <address
                 class="text-md @md:text-lg @lg:text-xl @xl:text-2xl @2xl:text-3xl font-semibold text-gray-400"
               >
-                {{ article().author }}
+                {{ article2.author }}
               </address>
             }
-            @if (article().author && article().date) {
+            @if (article2.author && article2.date) {
               <span
                 class="text-md @md:text-lg @lg:text-xl @xl:text-2xl @2xl:text-3xl font-semibold text-gray-400"
                 aria-hidden="true"
@@ -30,38 +30,25 @@
               |
             </span>
             }
-            <time
-              class="text-md @md:text-lg @lg:text-xl @xl:text-2xl @2xl:text-3xl font-semibold text-gray-400"
-              [dateTime]="article().date"
-            >
-              {{ article().date | date: 'longDate' }}
-            </time>
+            @if (article2.date) {
+              <time
+                class="text-md @md:text-lg @lg:text-xl @xl:text-2xl @2xl:text-3xl font-semibold text-gray-400"
+                [dateTime]="article2.date"
+              >
+                {{ article2.date| date: 'longDate' }}
+              </time>
+            }
           </div>
         </div>
         <div class="relative">
-          @if (article().image) {
-            <img
-              role="img"
-              class="rounded w-full @md:h-auto"
-              [ngSrc]="article().image?.url ?? ''"
-              [alt]="article().image?.alt ?? article().title"
-              width="1280"
-              height="720"
-              priority
-            />
-            <div
-              class="absolute  bg-gradient-to-t from-custom_white dark:from-custom_dark object-center bottom-0 w-full h-full"
-            ></div>
-          }
           @if (imageUrl()) {
             <img
               role="img"
               class="rounded w-full @md:h-auto"
               [src]="imageUrl()"
-              [alt]="article().image?.alt ?? article().title"
+              [alt]="article2.image?.alt ?? article2.title"
               width="1280"
               height="720"
-              priority
             />
             <div
               class="absolute  bg-gradient-to-t from-custom_white dark:from-custom_dark object-center bottom-0 w-full h-full"
@@ -69,13 +56,13 @@
           }
         </div>
       </div>
-      <app-like-counter [(isLiked)]="article().liked" [likes]="article().likes ?? 0" (click)="onLike()">
+      <app-like-counter [(isLiked)]="article2.liked" [likes]="article2.likes ?? 0" (click)="onLike()">
       </app-like-counter>
 
-      <div class="mt-8" [innerHTML]="article().content | markdown"></div>
+      <div class="mt-8" [innerHTML]="article2.content | markdown"></div>
       @if (showComments()) {
         <div>
-          <h3 class="font-bold text-xl pb-1">{{ article().comments?.length ?? 0 }} Comments</h3>
+          <h3 class="font-bold text-xl pb-1">{{ comments().length }} Comments</h3>
           <form [formGroup]="commentForm">
             <mat-form-field class="w-full pb-3">
               <mat-label>Comment</mat-label>
@@ -105,7 +92,6 @@
                 <button mat-raised-button color="primary" type="submit" (click)="onAddComment()">Submit</button>
               </div>
             }
-
           </form>
 
           <div class="flex flex-col space-y-6">
@@ -118,4 +104,8 @@
       }
     </div>
   </article>
+} @else {
+  <div class="flex justify-center items-center h-96">
+    <p class="text-2xl font-bold">No article found</p>
+  </div>
 }
