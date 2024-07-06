@@ -60,10 +60,11 @@
         </mat-list-item>
       </mat-list>
     </mat-sidenav>
-    <mat-sidenav-content>
+    <mat-sidenav-content #matSidenavContent>
       <div class="min-h-fit max-w-screen-2xl mx-auto my-8">
         <router-outlet></router-outlet>
       </div>
+      <app-footer></app-footer>
     </mat-sidenav-content>
   </mat-sidenav-container>
 </div>

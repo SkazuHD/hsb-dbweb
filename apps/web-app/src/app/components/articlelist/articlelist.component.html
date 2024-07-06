@@ -1,6 +1,12 @@
 <mat-card class="m-5 !rounded-lg p-6 gap-6">
-  <h3 class="text-2xl font-bold text-center">{{ title() }}</h3>
-  @for (article of articleList(); track article) {
+  <div class="flex items-baseline">
+    <h3 class="text-3xl font-bold text-center">{{ title() }}</h3>
+    @if (limit() === 0) {
+      <app-search-field [(searchString)]="filterString" class="ml-auto"></app-search-field>
+    }
+
+  </div>
+  @for (article of filteredArticles(); track article) {
     <app-newsfeed [article]="article"></app-newsfeed>
   }
   @if (articles().length > limit() && limit() !== 0) {

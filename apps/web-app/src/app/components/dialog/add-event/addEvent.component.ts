@@ -26,7 +26,7 @@ export class AddEventComponent {
 
   date = new Date().toISOString().split('.')[0].substring(0, new Date().toISOString().split('.')[0].length - 3)
 
-  editEventForm: FormGroup = new FormGroup({
+  addEventForm: FormGroup = new FormGroup({
     title: new FormControl('', [Validators.required]),
     description: new FormControl('', [Validators.required]),
     date: new FormControl(this.date, [Validators.required]),
@@ -39,8 +39,9 @@ export class AddEventComponent {
   private dialog = inject(MatDialogRef);
 
   onSaveEvent() {
+    if (this.addEventForm.invalid) return;
     const updatedEvent: Event = {
-      ...this.editEventForm.value
+      ...this.addEventForm.value
     };
     this.dialog.close(updatedEvent);
   }

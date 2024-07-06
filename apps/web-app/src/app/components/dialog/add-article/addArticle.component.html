@@ -25,7 +25,7 @@
 <mat-dialog-content>
   <div class="grid grid-cols-2 gap-6">
     <div class="mx-auto w-full">
-      <form [formGroup]="editArticleForm" class="grid">
+      <form [formGroup]="addArticleForm" class="grid gap-3">
         <mat-form-field>
           <input
             autocomplete="off"
@@ -34,7 +34,7 @@
             placeholder="Title"
             type="text"
           />
-          <mat-error *ngIf="editArticleForm.get('title')?.hasError('required')">
+          <mat-error *ngIf="addArticleForm.get('title')?.hasError('required')">
             Please enter a title
           </mat-error>
         </mat-form-field>
@@ -48,7 +48,7 @@
             type="text"
           />
           <mat-error
-            *ngIf="editArticleForm.get('subtitle')?.hasError('required')"
+            *ngIf="addArticleForm.get('subtitle')?.hasError('required')"
           >
             Enter a subtitle here
           </mat-error>
@@ -63,7 +63,7 @@
             type="text"
           />
           <mat-error
-            *ngIf="editArticleForm.get('author')?.hasError('required')"
+            *ngIf="addArticleForm.get('author')?.hasError('required')"
           >
             Please enter your/author's name
           </mat-error>
@@ -79,9 +79,11 @@
             #autosize="cdkTextareaAutosize"
             cdkAutosizeMinRows="3"
             cdkAutosizeMaxRows="20"
+            #textArea
           ></textarea>
+          <mat-hint [align]="'end'">{{ textArea.textLength }} / &#8734;</mat-hint>
           <mat-error
-            *ngIf="editArticleForm.get('content')?.hasError('required')"
+            *ngIf="addArticleForm.get('content')?.hasError('required')"
           >
             Add content here
           </mat-error>
@@ -95,7 +97,7 @@
             placeholder="Date"
             type="datetime-local"
           />
-          <mat-error *ngIf="editArticleForm.get('date')?.hasError('required')">
+          <mat-error *ngIf="addArticleForm.get('date')?.hasError('required')">
             Please enter a date
           </mat-error>
         </mat-form-field>
@@ -112,7 +114,7 @@
     </div>
     <div class="w-full">
       <h3 class="text-xl font-bold">Preview</h3>
-      <app-article [showComments]="false" [preview]="true" [previewArticle]="articleWithImageId()"></app-article>
+      <app-article [preview]="true" [previewArticle]="articleWithImageId()"></app-article>
     </div>
   </div>
 </mat-dialog-content>

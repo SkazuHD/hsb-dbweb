@@ -111,11 +111,5 @@
     </p>
     <!-- ... -->
   </article>
-  <div>
-    <app-calendar #calendarComponent (selectedDate)="newSelectedEvent($event)" [events]="events"></app-calendar>
-    <div> selected Event: {{ selectedEvent?.title }}</div>
-  </div>
-  <div>
-    <app-upload-file [showPreview]="true" (fileUploaded)="alert($event)"></app-upload-file>
-  </div>
+  <app-search-field></app-search-field>
 </div>

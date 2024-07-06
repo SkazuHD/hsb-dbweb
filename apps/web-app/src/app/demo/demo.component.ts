@@ -11,11 +11,12 @@ import {MatDatepickerModule} from '@angular/material/datepicker';
 import {CalendarComponent} from '../components/calendar/calendar.component';
 import {Event, EventType} from '@hsb-dbweb/shared';
 import {UploadFileComponent} from '../components/upload-file/upload-file.component';
+import {SearchFieldComponent} from "../components/search/search-field.component";
 
 @Component({
   selector: 'app-demo',
   standalone: true,
-  imports: [CommonModule, MarkdownPlaygroundComponent, LikeCounterComponent, MatSlideToggleModule, MatIconModule, MatButtonModule, MatDividerModule, MatCardModule, MatDatepickerModule, CalendarComponent, UploadFileComponent],
+  imports: [CommonModule, MarkdownPlaygroundComponent, LikeCounterComponent, MatSlideToggleModule, MatIconModule, MatButtonModule, MatDividerModule, MatCardModule, MatDatepickerModule, CalendarComponent, UploadFileComponent, SearchFieldComponent],
   templateUrl: './demo.component.html',
   styleUrl: './demo.component.css'
 })

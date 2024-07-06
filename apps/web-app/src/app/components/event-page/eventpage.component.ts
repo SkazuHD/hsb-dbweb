@@ -1,10 +1,10 @@
-import {Component, inject, OnInit} from '@angular/core';
+import {Component, computed, inject, signal, WritableSignal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {CalendarComponent} from "../calendar/calendar.component";
 import {Event} from "@hsb-dbweb/shared";
-import {EventService} from "../../services/event.service";
 import {MatList, MatListItem} from "@angular/material/list";
 import {MatCard, MatCardContent, MatCardModule, MatCardTitleGroup} from "@angular/material/card";
+import {ApiService} from "../../services/api.service";
 
 @Component({
   selector: 'app-eventpage',
@@ -13,28 +13,20 @@ import {MatCard, MatCardContent, MatCardModule, MatCardTitleGroup} from "@angula
   templateUrl: './eventpage.component.html',
   styleUrl: './eventpage.component.css',
 })
-export class EventpageComponent implements OnInit {
+export class EventpageComponent {
 
-  events: Event[] = []
-  selectedEvent: Event | undefined;
-  eventSReady = false;
-  private eventService: EventService = inject(EventService);
-
-  newSelectedEvent(event: Event | undefined) {
-    this.selectedEvent = event;
-  }
-
-  ngOnInit(): void {
-    this.eventService.getAllEvents().subscribe(events => {
-      events.map(event => {
+  events = computed(() => {
+    return this.api.events()
+      .map(event => {
         event.date = new Date(event.date)
-        this.events.push(event)
-      })
-      this.eventSReady = true;
-    })
-  }
+        return event
+      }).sort((a, b) => a.date.getTime() - b.date.getTime())
+  });
+  upcomingEvents = computed(() => this.getUpcomingEvents(3));
+  selectedEvent: WritableSignal<Event | undefined> = signal(undefined);
+  private api = inject(ApiService)
 
   getUpcomingEvents(count: number): Event[] {
-    return this.events.filter(event => event.date >= new Date()).slice(0, count)
+    return this.events().filter(event => event.date >= new Date()).slice(0, count)
   }
 }

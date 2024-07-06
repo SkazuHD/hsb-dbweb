@@ -1,4 +1,4 @@
-import {Component, input, output} from '@angular/core';
+import {Component, input, model} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {DateRange, MatCalendar, MatCalendarCellCssClasses, MatDatepickerModule} from "@angular/material/datepicker";
 import {MatCard} from "@angular/material/card";
@@ -16,13 +16,13 @@ import {ReactiveFormsModule} from "@angular/forms";
 export class CalendarComponent {
   selected: Date | DateRange<Date> | null;
   events = input.required<Event[]>();
-  public selectedDate = output<Event | undefined>()
+  public selectedDate = model<Event | undefined>()
 
 
   onSelectionChange(date: Date | null) {
     if (!date) return;
     const event = this.events().find(event => this.compareDates(event.date, date))
-    this.selectedDate.emit(event);
+    this.selectedDate.set(event);
   }
 
   dateClass() {

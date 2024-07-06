@@ -16,7 +16,7 @@
 <mat-dialog-content>
   <div class="grid grid-cols-2 gap-6">
     <div class="mx-auto w-full">
-      <form [formGroup]="editArticleForm" class="grid ">
+      <form [formGroup]="editArticleForm" class="grid gap-3">
         <mat-form-field>
           <input
             autocomplete="off"
@@ -66,7 +66,9 @@
         #autosize="cdkTextareaAutosize"
         cdkAutosizeMinRows="3"
         cdkAutosizeMaxRows="20"
+        #textArea
       ></textarea>
+          <mat-hint [align]="'end'">{{ textArea.textLength }} / &#8734;</mat-hint>
           <mat-error *ngIf="editArticleForm.get('content')?.hasError('required')">
             Add content here
           </mat-error>
@@ -98,7 +100,7 @@
     </div>
     <div class="w-full">
       <h3 class="text-xl font-bold">Preview</h3>
-      <app-article [showComments]="false" [preview]="true" [previewArticle]="articleWithImageId()"></app-article>
+      <app-article [preview]="true" [previewArticle]="articleWithImageId()"></app-article>
 
     </div>
   </div>

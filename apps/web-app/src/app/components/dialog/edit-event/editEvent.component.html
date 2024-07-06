@@ -13,7 +13,7 @@
 </div>
 
 <mat-dialog-content>
-  <form [formGroup]="editEventForm" class="grid">
+  <form [formGroup]="editEventForm" class="grid gap-3">
     <mat-form-field>
       <input
         autocomplete="off"
@@ -22,9 +22,11 @@
         placeholder="Title"
         type="text"
       />
-      <mat-error *ngIf="editEventForm.get('title')?.hasError('required')">
-        Please enter a title
-      </mat-error>
+      @if (editEventForm.get('title')?.hasError('required')) {
+        <mat-error>
+          Please enter a title
+        </mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field>
@@ -35,9 +37,11 @@
         placeholder="Location"
         type="text"
       />
-      <mat-error *ngIf="editEventForm.get('location')?.hasError('required')">
-        Please enter a location
-      </mat-error>
+      @if (editEventForm.get('location')?.hasError('required')) {
+        <mat-error>
+          Please enter a location
+        </mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field>
@@ -47,9 +51,11 @@
         matInput
         placeholder="Description"
       ></textarea>
-      <mat-error *ngIf="editEventForm.get('description')?.hasError('required')">
-        Please enter a description
-      </mat-error>
+      @if (editEventForm.get('description')?.hasError('required')) {
+        <mat-error>
+          Please enter a description
+        </mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field>
@@ -60,9 +66,11 @@
         placeholder="Date"
         type="datetime-local"
       />
-      <mat-error *ngIf="editEventForm.get('date')?.hasError('required')">
-        Please enter a date
-      </mat-error>
+      @if (editEventForm.get('date')?.hasError('required')) {
+        <mat-error>
+          Please enter a date
+        </mat-error>
+      }
     </mat-form-field>
     <mat-form-field>
       <mat-label>Type</mat-label>

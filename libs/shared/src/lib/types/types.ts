@@ -11,7 +11,7 @@ export type Article = {
   subtitle?: string;
   author?: string;
   image?: Image;
-  date?: string;
+  date: string;
   uid: string;
   content: string;
   imageUid?: number;

@@ -48,7 +48,6 @@ export class ArticleComponent {
   })
   article2: Article | undefined = this.article();
   comments = signal(this.article()?.comments ?? []);
-  showComments = input(true);
 
   commentMaxLength = 1000;
 

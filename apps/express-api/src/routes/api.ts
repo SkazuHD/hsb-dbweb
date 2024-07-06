@@ -752,6 +752,7 @@ articleRouter
       'subtitle',
       'author',
       'userUid',
+      'date',
       'imageUid']
     const qb = new SqlQueryBuilder()
       .insertInto('Article', columns)
@@ -764,6 +765,7 @@ articleRouter
       article.subtitle,
       article.author,
       article.userUid,
+      article.date,
       article.imageUid ? article.imageUid : null,
 
     ])
@@ -784,10 +786,9 @@ articleRouter
         res.status(500).send({message: 'Error creating article'});
       });
   })
-  .put('/:id', upload.single('media'), (req: Request, res: Response) => {
+  .put('/:id', (req: Request, res: Response) => {
     const params = [];
-    const article: Partial<Article> = JSON.parse(req.body.article);
-    const image = req.file; //uploaded image
+    const article: Partial<Article> = req.body;
     const qb = new SqlQueryBuilder().update('Article');
     if (article.title) {
       qb.set('title');
@@ -805,9 +806,13 @@ articleRouter
       qb.set('author');
       params.push(article.author);
     }
-    if (image) {
-      qb.set('media');
-      params.push(image.buffer);
+    if (article.date) {
+      qb.set('date');
+      params.push(article.date);
+    }
+    if (article.imageUid) {
+      qb.set('imageUid');
+      params.push(article.imageUid);
     }
     if (article.userUid) {
       qb.set('userUid');
@@ -840,27 +845,29 @@ articleRouter
       .deleteFrom('User_article')
       .where('articleUid');
 
-    db.query(qb2.build(), [req.params.id]).then((result) => {
-      db.query(qb.build(), [req.params.id])
-        .then((result) => {
-          if (result.affectedRows === 0) {
-            res.status(404).send({message: 'Article not found'});
-            return;
-          }
-          sendSSEEvent({
-            message: 'Article deleted',
-            type: MessageEventType.ARTICLE,
-            action: MessageActionType.DELETE,
-            uid: req.params.id
+    const qb3 = new SqlQueryBuilder().deleteFrom('Comment').where('articleUid');
+    db.query(qb3.build(), [req.params.id]).then((result) => {
+      db.query(qb2.build(), [req.params.id]).then((result) => {
+        db.query(qb.build(), [req.params.id])
+          .then((result) => {
+            sendSSEEvent({
+              message: 'Article deleted',
+              type: MessageEventType.ARTICLE,
+              action: MessageActionType.DELETE,
+              uid: req.params.id
+            })
+            return res.send({message: 'Article deleted'});
           })
-          res.send({message: 'Article deleted'});
-
-          return;
-        })
-        .catch((err) => {
-          return res.status(500).send({message: 'Error deleting article'});
-        });
+          .catch((err) => {
+            return res.status(500).send({message: 'Error deleting article'});
+          });
+      }).catch((err) => {
+        return res.status(500).send({message: 'Error deleting article'});
+      });
+    }).catch((err) => {
+      return res.status(500).send({message: 'Error deleting article'});
     });
+
   });
 //Event routes
 eventRouter
@@ -898,8 +905,11 @@ eventRouter
         return res.status(404).send({message: 'Event not found'});
       }
       return res.send(result[0]);
-    });
-    return res.status(500).send({message: 'Error fetching event'});
+    }).catch(
+      (err) => {
+        return res.status(500).send({message: 'Error fetching events'});
+      }
+    );
   })
   .post(
     '/',
@@ -989,7 +999,6 @@ eventRouter
             return res.status(404).send({message: 'Event not found'});
           }
 
-          res.send({message: 'Event updated'});
 
           sendSSEEvent({
             message: 'Event updated',
@@ -997,7 +1006,7 @@ eventRouter
             action: MessageActionType.UPDATE,
             uid: req.params.id
           })
-          return
+          return res.send({message: 'Event updated'});
 
         })
         .catch((err) => {

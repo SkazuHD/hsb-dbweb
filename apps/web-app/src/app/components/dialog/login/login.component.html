@@ -40,7 +40,7 @@
           <mat-error>Please enter a password</mat-error>
         }
       </mat-form-field>
-      <a (click)="authService.requestPasswordReset()">Forgot Password?</a>
+      <a (click)="authService.requestPasswordReset()" class="link">Forgot Password?</a>
       <button
         mat-flat-button
         color="primary"
@@ -53,7 +53,7 @@
     </form>
     <span class="text-center">
       No Account?
-      <a (click)="onRegister()"> SignUp Now!</a></span
+      <a (click)="onRegister()" class="link"> SignUp Now!</a></span
     >
     <mat-divider></mat-divider>
     <button mat-flat-button color="accent" (click)="onGoogleSignIn()">
