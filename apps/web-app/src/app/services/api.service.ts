@@ -264,6 +264,20 @@ export class ApiService {
     return this.http.delete(this.apiURL + '/events/' + id);
   }
 
+  // getGallery(): Observable<Image[]> {
+  //   return this.http.get(this.apiURL + '/gallery/').pipe() as Observable<Image[]>;
+  // }
+
+  getUser(): Observable<User[]>{
+    return this.http.get(this.apiURL + '/profile/').pipe() as Observable<User[]>
+  } 
+
+  changeUserActivation(id: string, active: boolean){
+    return this.http.put(this.apiURL + '/profile/' + id + '/activate',{
+      activated: active
+    });
+  }
+
   private constructSSERequest(url: string) {
     const retryConfig: RetryConfig = {
       delay: 1000,

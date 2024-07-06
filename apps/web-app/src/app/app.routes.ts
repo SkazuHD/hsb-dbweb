@@ -9,6 +9,7 @@ import {EventpageComponent} from "./components/event-page/eventpage.component";
 import {LandingPageComponent} from './components/landingpage/landingPage.component';
 import {ArticlelistComponent} from './components/articlelist/articlelist.component';
 import {GalleryComponent} from './components/gallery/gallery.component';
+import { UserVerwaltungComponent } from './components/user-verwaltung/userVerwaltung.component';
 import {ProfilePageComponent} from './components/profile-page/profile-page.component';
 import {ProfileEditComponent} from './components/profile-edit/profile-edit.component';
 
@@ -31,6 +32,7 @@ export const appRoutes: Route[] = [
       {path: 'impressum', component: AppComponent},
       {path: 'datenschutz', component: AppComponent},
       {path: 'sponsor', component: AppComponent},
+      {path:'userVerwaltung', component: UserVerwaltungComponent},
       {path: 'demo', loadComponent: () => import('./demo/demo.component').then(m => m.DemoComponent)},
       {
         path: '404',
