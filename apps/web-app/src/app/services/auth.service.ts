@@ -1,6 +1,6 @@
 import {computed, inject, Injectable, signal} from '@angular/core';
 import {MatDialog} from '@angular/material/dialog';
-import { BehaviorSubject, exhaustMap, map, Observable, of, tap } from 'rxjs';
+import {BehaviorSubject, exhaustMap, map, Observable, of, tap} from 'rxjs';
 import {NotificationService} from './notification.service';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {HttpClient} from '@angular/common/http';
@@ -107,8 +107,6 @@ export class AuthService {
     });
   }
 
-
-
   async requestRegisterDialog() {
     const {RegisterComponent} = await import(
       '../components/dialog/register/register.component'
@@ -199,7 +197,7 @@ export class AuthService {
   getTokenExpirationTime(token: AuthAccessToken | AuthRefreshToken | AuthIdToken): Date {
     token = token || '';
     const tokenParts = token.split('.');
-    if (tokenParts.length < 2) return new Date(0);
+    if (tokenParts.length < 2) return new Date();
     const tokenDecoded = JSON.parse(atob(tokenParts[1]));
     return new Date(tokenDecoded.exp * 1000);
   }
