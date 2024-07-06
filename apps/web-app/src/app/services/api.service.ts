@@ -15,7 +15,6 @@ import {
   User
 } from '@hsb-dbweb/shared';
 import {MatDialog} from '@angular/material/dialog';
-import {AddPictureComponent} from '../components/dialog/add-picture/add-picture.component';
 import {ConfirmationDialogComponent} from '../components/dialog/confirmation/confirmationDialog.component';
 
 
@@ -151,14 +150,6 @@ export class ApiService {
       fax: '0206563841',
       mobile: '01709042408'
     });
-  }
-
-  requestAddPictureDialog() {
-    return this.dialog
-      .open(AddPictureComponent, {
-        autoFocus: 'input'
-      })
-      .afterClosed();
   }
 
   getGallery(): Observable<Image[]> {

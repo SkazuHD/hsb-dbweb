@@ -1,13 +1,12 @@
-import { Component, inject, model, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { MetatagService } from '../../services/metatag.service';
-import { ApiService } from '../../services/api.service';
-// eslint-disable-next-line @nx/enforce-module-boundaries
-import { Image, UserRole } from '../../../../../../libs/shared/src/lib/types/types';
-import { MatButton, MatIconButton } from '@angular/material/button';
-import { MatIcon, MatIconModule } from '@angular/material/icon';
-import { MatDialogClose } from '@angular/material/dialog';
-import { AuthService } from '../../services/auth.service';
+import {Component, inject, model, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {ApiService} from '../../services/api.service';
+import {Image, UserRole} from '@hsb-dbweb/shared';
+import {MatButton, MatIconButton} from '@angular/material/button';
+import {MatIcon, MatIconModule} from '@angular/material/icon';
+import {MatDialog, MatDialogClose} from '@angular/material/dialog';
+import {AuthService} from '../../services/auth.service';
+import {AddPictureComponent} from "../dialog/add-picture/add-picture.component";
 
 @Component({
   selector: 'app-gallery',
@@ -25,7 +24,8 @@ import { AuthService } from '../../services/auth.service';
 })
 export class GalleryComponent implements OnInit {
   apiService = inject(ApiService);
-  auth= inject(AuthService)
+  auth = inject(AuthService)
+  private dialog = inject(MatDialog)
   gallery = model.required<Image[]>();
 
   ngOnInit(): void {
@@ -43,10 +43,8 @@ export class GalleryComponent implements OnInit {
 
 
   requestAddPictureDialog() {
-    this.apiService.requestAddPictureDialog().subscribe(()=> {
-      this.apiService.getGallery().subscribe((images) => {
-        this.gallery.set(images);
-      });
+    this.dialog.open(AddPictureComponent).afterClosed().subscribe(() => {
+      this.updateGallery()
     });
   }
 

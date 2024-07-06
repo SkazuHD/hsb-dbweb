@@ -1,10 +1,10 @@
 import {Component, inject, input, model} from '@angular/core';
-import {CommonModule, NgOptimizedImage} from '@angular/common';
-import {MatFormFieldModule, MatLabel} from '@angular/material/form-field';
-import {MatInput} from '@angular/material/input';
-import {MatIcon} from '@angular/material/icon';
+import {CommonModule} from '@angular/common';
+import {MatFormFieldModule} from '@angular/material/form-field';
+import {MatInputModule} from '@angular/material/input';
+import {MatIconModule} from '@angular/material/icon';
 import {FormControl, FormGroup, ReactiveFormsModule} from '@angular/forms';
-import {MatButton} from '@angular/material/button';
+import {MatButtonModule} from '@angular/material/button';
 import {HttpClient} from '@angular/common/http';
 import {NotificationService} from '../../services/notification.service';
 import {ApiService} from "../../services/api.service";
@@ -12,7 +12,7 @@ import {ApiService} from "../../services/api.service";
 @Component({
   selector: 'app-upload-file',
   standalone: true,
-  imports: [CommonModule, MatFormFieldModule, MatLabel, MatInput, MatIcon, ReactiveFormsModule, MatButton, NgOptimizedImage],
+  imports: [CommonModule, MatFormFieldModule, MatInputModule, ReactiveFormsModule, MatIconModule, MatButtonModule],
   templateUrl: './upload-file.component.html',
   styleUrl: './upload-file.component.css'
 })
