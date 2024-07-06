@@ -1,4 +1,4 @@
-import {Component, computed, inject, Input, model} from '@angular/core';
+import {Component, computed, inject, Input, model, signal, WritableSignal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {MatCardModule} from '@angular/material/card';
 import {MatIcon} from '@angular/material/icon';
@@ -10,6 +10,7 @@ import {User} from '@hsb-dbweb/shared';
 import {ApiService} from '../../services/api.service';
 import {AuthService} from "../../services/auth.service";
 import {ImageLoad} from '../../utils/image-load';
+import {UploadFileComponent} from "../upload-file/upload-file.component";
 
 
 @Component({
@@ -23,7 +24,7 @@ import {ImageLoad} from '../../utils/image-load';
     ReactiveFormsModule,
     MatFormFieldModule,
     MatFormField,
-    MatInputModule
+    MatInputModule, UploadFileComponent
 
   ],
   templateUrl: './profile-edit.component.html',
@@ -33,18 +34,23 @@ export class ProfileEditComponent {
 
 
   private auth = inject(AuthService);
-  private router = inject(Router);
-  private imageLoad = new ImageLoad();
   user = model<User>(
     <User>this.auth.user());
-  private api: ApiService = inject(ApiService);
-  file: File | undefined = undefined;
+  protected profileForm = new FormGroup(
+    {
+      name: new FormControl(this.user()?.name ?? '', [Validators.required]),
+      username: new FormControl(this.user()?.username ?? '', [Validators.required]),
+    }
+  );
+  imageId: WritableSignal<number | undefined> = signal(this.user().imageUid ?? undefined);
   imageUrl = computed(() => {
-    if (this.user().imageUid !== undefined && this.user().imageUid !== null)
-      return "http://localhost:4201/api/images/" + this.user().imageUid;
+    if (this.imageId())
+      return "http://localhost:4201/api/images/" + this.imageId();
     return "http://placeholder.co/150";
   })
-
+  private router = inject(Router);
+  private imageLoad = new ImageLoad();
+  private api: ApiService = inject(ApiService);
 
   @Input() set uid(uid: string) {
     if (this.auth.user()?.uid === uid) {
@@ -54,24 +60,6 @@ export class ProfileEditComponent {
     }
   }
 
-  protected profileForm = new FormGroup(
-    {
-      name: new FormControl(this.user()?.name ?? '', [Validators.required]),
-      username: new FormControl(this.user()?.username ?? '', [Validators.required]),
-    }
-  );
-
-  onFileSelected(event: any) {
-    this.file = event.target.files[0];
-    if (this.file) {
-      const reader = this.imageLoad.setImageUrl(this.file);
-      reader.onload = (e) => {
-        //this.imageUrl = reader.result as string;
-      }
-    }
-  }
-
-
   onSave() {
     this.profileForm.markAllAsTouched();
     this.profileForm.updateValueAndValidity()
@@ -80,16 +68,13 @@ export class ProfileEditComponent {
     }
 
 
-    if (this.file) {
-      this.imageLoad.setImageUrl(this.file);
-    }
-
     const credentials: Partial<User> = {
       name: this.profileForm.value.name ?? this.user().name,
-      username: this.profileForm.value.username ?? this.user().username
+      username: this.profileForm.value.username ?? this.user().username,
+      imageUid: this.imageId() ?? this.user().imageUid,
     }
 
-    this.api.updateUser(this.user().uid, credentials, this.file).subscribe(() => {
+    this.api.updateUser(this.user().uid, credentials).subscribe(() => {
       this.auth.refreshTokens().subscribe(() => {
         this.user.set(<User>this.auth.user());
         this.router.navigate(['/profile/' + this.user().uid,]);

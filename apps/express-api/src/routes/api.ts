@@ -471,7 +471,7 @@ profileRouter
         'name',
         'role',
         'activated',
-        'picture'
+        'imageUid'
       ])
       .from('User')
       .where('uid');
@@ -491,11 +491,9 @@ profileRouter
 profileRouter
   .put(
     '/:uid',
-    upload.single('picture'),
     requireAuthentication,
     async (req: Request, res: Response) => {
-      const user: Partial<User> = JSON.parse(req.body.user);
-      const picture = req.file; // This is the uploaded file
+      const user: Partial<User> = req.body
       await jwt
         .getUserIdFromToken(req.header('Authorization').split(' ')[1])
         .then((userId) => {
@@ -529,9 +527,9 @@ profileRouter
             qb.set('activated');
             params.push(user.activated);
           }
-          if (picture) {
-            qb.set('picture');
-            params.push(picture.buffer);
+          if (user.imageUid) {
+            qb.set('imageUid');
+            params.push(user.imageUid);
           }
           if (params.length === 0) {
             res.status(400).send({message: 'No fields to update'});
@@ -649,7 +647,7 @@ articleRouter
   )
   .get('/:articleId/comments', (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder()
-      .select(['Comment.*', 'User.username'])
+      .select(['Comment.*', 'User.username', "User.ImageUid"])
       .from('Comment')
       .join('User', 'User.uid = Comment.userUid')
       .where('articleUid')

@@ -1,7 +1,7 @@
 @if (comment()) {
   <mat-card>
     <mat-card-header class="flex items-center">
-      <img mat-card-avatar class="!mb-0" [src]="imageUrlFinal" alt="{{ comment()?.username }}">
+      <img mat-card-avatar class="!mb-0" [src]="profileImage()" alt="{{ comment()?.username }}">
       <mat-card-subtitle>
         <span class="flex items-center gap-2">
           <button class="hover:underline hover:text-blue-500"

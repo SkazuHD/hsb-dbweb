@@ -264,14 +264,10 @@ export class ApiService {
     return this.http.get(this.apiURL + '/article/' + id + '/likes').pipe();
   }
 
-  updateUser(id: string, user: Partial<User>, file?: File) {
-    const formData = new FormData();
-    formData.append('user', JSON.stringify(user));
-    if (file) {
-      formData.append('picture', file);
-    }
+  updateUser(id: string, user: Partial<User>) {
 
-    return this.http.put(this.apiURL + '/profile/' + id, formData);
+
+    return this.http.put(this.apiURL + '/profile/' + id, user);
   }
 
   createArticle(article: Article) {

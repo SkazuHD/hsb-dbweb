@@ -86,7 +86,7 @@ export type Comment = {
   uid: string;
   username: string;
   timestamp: Date;
-  picture: any;
+  ImageUid?: number;
 }
 
 export type CommentCreate = {
