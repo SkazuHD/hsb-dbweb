@@ -45,7 +45,8 @@
             }
           </mat-form-field>
         </form>
-        <input (change)="onFileSelected($event)" accept="image/png, image/gif, image/jpeg" name="image" type="file">
+        <app-upload-file [(fileUploaded)]="imageId"></app-upload-file>
+
       </div>
     </div>
     <mat-card-content>

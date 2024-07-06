@@ -1,6 +1,6 @@
 import {Component, computed, effect, inject, input, Input, signal} from '@angular/core';
 import {CommonModule, NgOptimizedImage} from '@angular/common';
-import {Article, Comment, CommentCreate, User} from '@hsb-dbweb/shared';
+import {Article, Comment, CommentCreate} from '@hsb-dbweb/shared';
 import {MarkdownPipe} from '../../utils/pipes/markdown.pipe';
 import {ApiService} from '../../services/api.service';
 import {LikeCounterComponent} from '../like-counter/like-counter.component';
@@ -11,7 +11,6 @@ import {MatInput} from '@angular/material/input';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {AuthService} from '../../services/auth.service';
 import {CdkTextareaAutosize} from "@angular/cdk/text-field";
-import {map} from "rxjs";
 import {toSignal} from "@angular/core/rxjs-interop";
 
 @Component({
@@ -52,8 +51,6 @@ export class ArticleComponent {
   showComments = input(true);
 
   commentMaxLength = 1000;
-
-  userProfileCache = new Map<string, User>()
 
   commentForm: FormGroup = new FormGroup({
     comment: new FormControl('',
@@ -111,22 +108,7 @@ export class ArticleComponent {
 
   updateComments() {
 
-    this.api.getCommentsByArticleId(this.article()?.uid ?? '').pipe(map((comment) => {
-      return comment.map((c) => {
-        const commentWithPicture = {
-          ...c,
-          // picture: this.userProfileCache.get(c.userUid)?.picture
-        };
-
-        if (!this.userProfileCache.has(c.userUid)) {
-          this.api.getUserById(c.userUid).subscribe((user: User) => {
-            this.userProfileCache.set(c.userUid, user);
-            //commentWithPicture.picture = user.picture;
-          })
-        }
-        return commentWithPicture;
-      })
-    })).subscribe((comments: Comment[]) => {
+    this.api.getCommentsByArticleId(this.article()?.uid ?? '').pipe().subscribe((comments: Comment[]) => {
       this.comments.set(comments)
     });
   }
