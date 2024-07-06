@@ -48,12 +48,14 @@ import {UploadFileComponent} from "../../upload-file/upload-file.component";
   styleUrl: './addArticle.component.css',
 })
 export class AddArticleComponent {
-  date = new Date();
+  date = new Date().toISOString().split('.')[0].substring(0, new Date().toISOString().split('.')[0].length - 3)
+
   private router = inject(Router);
   article = signal<Article>({
     title: '',
     content: '',
     uid: '000',
+    date: this.date,
     liked: false,
   });
   imageId: WritableSignal<number> = signal(0);
@@ -67,9 +69,9 @@ export class AddArticleComponent {
 
   })
 
-  editArticleForm: FormGroup = new FormGroup({
+  addArticleForm: FormGroup = new FormGroup({
     title: new FormControl('', [Validators.required]),
-    subtitle: new FormControl('', [Validators.required]),
+    subtitle: new FormControl('', []),
     author: new FormControl('', [Validators.required]),
     date: new FormControl(this.date, [Validators.required]),
     content: new FormControl('', [Validators.required]),
@@ -79,14 +81,15 @@ export class AddArticleComponent {
   private dialog = inject(MatDialogRef);
 
   constructor() {
-    this.editArticleForm.valueChanges.subscribe((value) => {
+    this.addArticleForm.valueChanges.subscribe((value) => {
       this.article.update((article) => ({...article, ...value}));
     });
   }
 
   onSaveArticle() {
+    if (this.addArticleForm.invalid) return
     const updatedArticle: Article = {
-      ...this.editArticleForm.value,
+      ...this.addArticleForm.value,
       imageUid: this.imageId(),
     };
     this.dialog.close(updatedArticle);

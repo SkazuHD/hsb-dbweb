@@ -1,0 +1,8 @@
+<mat-form-field [formGroup]="searchFormGroup">
+  <mat-label>Search</mat-label>
+  <input matInput type="text" formControlName="searchString" [autocomplete]="'on'">
+  <button matSuffix mat-icon-button aria-label="Search">
+    <mat-icon>search</mat-icon>
+  </button>
+
+</mat-form-field>

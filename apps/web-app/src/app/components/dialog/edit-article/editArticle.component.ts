@@ -49,6 +49,10 @@ import {UploadFileComponent} from "../../upload-file/upload-file.component";
 })
 export class EditArticleComponent {
   data: Article = inject(MAT_DIALOG_DATA);
+
+  date = this.data.date ? new Date(this.data.date) : undefined
+  dateTimeLocalValue = this.date ? (new Date(this.date.getTime() - this.date.getTimezoneOffset() * 60000).toISOString()).slice(0, -1) : '';
+
   article = signal<Article>(this.data)
   imageId: WritableSignal<number | undefined> = signal(this.data.imageUid ?? undefined);
   articleWithImageId: Signal<Article> = computed(() => {
@@ -59,12 +63,11 @@ export class EditArticleComponent {
 
   })
 
-  date = new Date();
   editArticleForm: FormGroup = new FormGroup({
     title: new FormControl(this.article().title, [Validators.required]),
     subtitle: new FormControl(this.article().subtitle, [Validators.required]),
     author: new FormControl(this.article().author, [Validators.required]),
-    date: new FormControl(this.date, [Validators.required]),
+    date: new FormControl(this.dateTimeLocalValue, [Validators.required]),
     content: new FormControl(this.article().content, [Validators.required]),
   });
 
@@ -84,8 +87,13 @@ export class EditArticleComponent {
   }
 
   onSaveArticle() {
+
+    const date = new Date(this.editArticleForm.get('date')?.value ?? this.date);
+    date.setHours(date.getHours() + date.getTimezoneOffset() / 60)
+
     const updatedArticle: Article = {
       uid: this.article().uid,
+      date: date,
       ...this.editArticleForm.value,
     };
     this.dialog.close(updatedArticle);

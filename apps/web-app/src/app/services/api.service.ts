@@ -10,12 +10,14 @@ import {
   Event,
   Image,
   InfoText,
+  MessageActionType,
   MessageEventData,
   MessageEventType,
   User
 } from '@hsb-dbweb/shared';
 import {MatDialog} from '@angular/material/dialog';
 import {ConfirmationDialogComponent} from '../components/dialog/confirmation/confirmationDialog.component';
+import {AuthService} from "./auth.service";
 
 
 interface apiServiceState {
@@ -29,6 +31,7 @@ interface apiServiceState {
 export class ApiService {
   private http: HttpClient = inject(HttpClient);
   private dialog = inject(MatDialog);
+  private auth = inject(AuthService);
   private apiURL = 'http://localhost:4201/api';
 
   private state = signal<apiServiceState>({
@@ -42,7 +45,7 @@ export class ApiService {
 
   // Selectors
   events = computed(() => this.state().events);
-  articles = computed(() => this.state().articles);
+  articles = computed(() => this.state().articles.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
 
 
   get SSEEvents$(): Observable<MessageEvent> {
@@ -51,7 +54,13 @@ export class ApiService {
 
   constructor() {
 
-    effect(() => console.debug(this.state()))
+    effect(() => {
+      if (this.auth.user() || !this.auth.user()) {
+        this.getArticles().pipe().subscribe((articles) => {
+          this.articles$.next(articles);
+        });
+      }
+    })
 
     this.getAllEvents().pipe(takeUntilDestroyed()).subscribe((events) => {
       this.events$.next(events);
@@ -89,20 +98,36 @@ export class ApiService {
       const data: MessageEventData = JSON.parse(event.data);
       switch (data.type) {
         case MessageEventType.EVENT:
-          this.getEventById(data.uid).pipe().subscribe((event) => {
+          if (data.action === MessageActionType.DELETE) {
             this.state.update((state) => ({
               ...state,
-              events: [...state.events, event]
+              events: state.events.filter((e) => e.uid !== data.uid)
             }))
-          })
+          } else {
+            this.getEventById(data.uid).pipe().subscribe((event) => {
+              this.state.update((state) => ({
+                ...state,
+                events: state.events.filter((e) => e.uid !== data.uid)
+                  .concat(event)
+              }))
+            })
+          }
           break
         case MessageEventType.ARTICLE:
-          this.getArticleById(data.uid).pipe().subscribe((article) => {
+          if (data.action === MessageActionType.DELETE) {
             this.state.update((state: apiServiceState) => ({
               ...state,
-              articles: state.articles.filter((a) => a.uid !== data.uid).concat(article)
+              articles: state.articles.filter((a) => a.uid !== data.uid)
             }))
-          })
+          } else {
+            this.getArticleById(data.uid).pipe().subscribe((article) => {
+              this.state.update((state: apiServiceState) => ({
+                ...state,
+                articles: state.articles.filter((a) => a.uid !== data.uid).concat(article)
+              }))
+            })
+          }
+
           break
         case MessageEventType.COMMENT:
           this.getCommentsByArticleId(data.uid).pipe().subscribe((comments) => {
@@ -266,10 +291,7 @@ export class ApiService {
   }
 
   updateArticle(article: Partial<Article>) {
-    const formData = new FormData();
-    formData.append('article', JSON.stringify(article));
-
-    return this.http.put(this.apiURL + '/article/' + article.uid, formData);
+    return this.http.put(this.apiURL + '/article/' + article.uid, article);
   }
 
   deleteArticle(id: string) {

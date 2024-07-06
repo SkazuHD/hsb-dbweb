@@ -60,6 +60,23 @@ body {
     background: mat.get-theme-color($light-theme, surface-container-high) !important;
   }
 
+  footer {
+    background: mat.get-theme-color($light-theme, surface-container-high) !important;
+    color: mat.get-theme-color($light-theme, on-surface) !important;
+  }
+
+  .surface-highest {
+    background: mat.get-theme-color($light-theme, surface-container-highest) !important;
+  }
+
+  .surface-lowest {
+    background: mat.get-theme-color($light-theme, surface-container-lowest) !important;
+  }
+
+  .on-surface-accent {
+    color: mat.get-theme-color($light-theme, on-surface-variant) !important;
+  }
+
 }
 
 body.dark {
@@ -89,6 +106,22 @@ body.dark {
     background: mat.get-theme-color($dark-theme, surface-container-high) !important;
   }
 
+  footer {
+    background: mat.get-theme-color($dark-theme, surface-container-high) !important;
+    color: mat.get-theme-color($dark-theme, on-surface) !important;
+  }
+
+  .surface-highest {
+    background: mat.get-theme-color($dark-theme, surface-container-highest) !important;
+  }
+
+  .surface-lowest {
+    background: mat.get-theme-color($dark-theme, surface-container-lowest) !important;
+  }
+
+  .on-surface-accent {
+    color: mat.get-theme-color($dark-theme, on-surface-variant) !important;
+  }
 }
 
 
@@ -107,10 +140,6 @@ body {
 
 *, *::after, *::before {
   box-sizing: border-box;
-}
-
-a {
-  @apply underline text-blue-600 hover:text-blue-800 visited:text-purple-600
 }
 
 
@@ -182,9 +211,17 @@ a {
   }
 }
 
+.link {
+  @apply underline text-blue-600 hover:text-blue-800 visited:text-purple-600;
+}
+
 // Typography for markdown content
 .markdown {
-  @apply prose dark:prose-invert
+  @apply prose dark:prose-invert;
+
+  a {
+    @apply link;
+  }
 }
 
 

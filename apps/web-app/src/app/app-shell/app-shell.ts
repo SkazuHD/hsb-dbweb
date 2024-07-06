@@ -1,6 +1,6 @@
-import {AfterViewInit, Component, effect, ElementRef, inject, Signal, viewChild} from '@angular/core';
+import {AfterViewInit, Component, effect, ElementRef, inject, OnInit, Signal, viewChild} from '@angular/core';
 import {CommonModule, NgOptimizedImage} from '@angular/common';
-import {Router, RouterLink, RouterOutlet} from '@angular/router';
+import {EventType, Router, RouterLink, RouterOutlet} from '@angular/router';
 import {MatSidenav, MatSidenavModule} from '@angular/material/sidenav';
 import {MatList, MatListItem, MatNavList} from '@angular/material/list';
 import {MatCheckbox} from '@angular/material/checkbox';
@@ -14,6 +14,7 @@ import {AppLink, UserRole} from '@hsb-dbweb/shared';
 import {ToolbarComponent} from "./toolbar.component";
 import {BreakpointObserver, Breakpoints} from "@angular/cdk/layout";
 import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
+import {FooterComponent} from "../components/footer/footer.component";
 
 @Component({
   selector: 'app-shell',
@@ -37,13 +38,15 @@ import {takeUntilDestroyed} from "@angular/core/rxjs-interop";
     MatSlideToggle,
     ReactiveFormsModule,
     ToolbarComponent,
+    FooterComponent,
   ],
   templateUrl: './app-shell.html',
   styleUrl: './app-shell.css',
 })
-export class AppShellComponent implements AfterViewInit {
+export class AppShellComponent implements AfterViewInit, OnInit {
   sidenav: Signal<MatSidenav> = viewChild.required('sidenav', {read: MatSidenav});
   themeToggleRef: Signal<ElementRef> = viewChild.required('darkModeSwitch', {read: ElementRef});
+  matSideNavContent: Signal<ElementRef> = viewChild.required('matSidenavContent', {read: ElementRef});
 
   authService: AuthService = inject(AuthService);
   breakpointObserver = inject(BreakpointObserver);
@@ -142,6 +145,14 @@ export class AppShellComponent implements AfterViewInit {
     })
 
 
+  }
+
+  ngOnInit(): void {
+    this.router.events.subscribe((event) => {
+      if (event.type !== EventType.NavigationStart) return
+      window.scrollTo(0, 0);
+      this.matSideNavContent().nativeElement.scrollTo(0, 0)
+    });
   }
 
   ngAfterViewInit() {

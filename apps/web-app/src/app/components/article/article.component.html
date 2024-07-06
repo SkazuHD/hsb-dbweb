@@ -56,11 +56,14 @@
           }
         </div>
       </div>
-      <app-like-counter [(isLiked)]="article2.liked" [likes]="article2.likes ?? 0" (click)="onLike()">
-      </app-like-counter>
+      @if (!preview()) {
+        <app-like-counter [(isLiked)]="article2.liked" [likes]="article2.likes ?? 0" (click)="onLike()">
+        </app-like-counter>
+      }
+
 
       <div class="mt-8" [innerHTML]="article2.content | markdown"></div>
-      @if (showComments()) {
+      @if (!preview()) {
         <div>
           <h3 class="font-bold text-xl pb-1">{{ comments().length }} Comments</h3>
           <form [formGroup]="commentForm">
@@ -88,8 +91,8 @@
 
             @if (commentField.value !== '') {
               <div class="flex gap-3 justify-end pb-3">
-                <button mat-button color="warn" type="button" (click)="commentForm.reset()">Clear</button>
-                <button mat-raised-button color="primary" type="submit" (click)="onAddComment()">Submit</button>
+                <button mat-button color="error" type="button" (click)="commentForm.reset()">Clear</button>
+                <button mat-flat-button color="primary" type="submit" (click)="onAddComment()">Submit</button>
               </div>
             }
           </form>
