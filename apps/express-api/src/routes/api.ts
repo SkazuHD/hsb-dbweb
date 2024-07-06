@@ -423,7 +423,6 @@ profileRouter
           return;
         }
         res.send({ message: 'User found!' });
-        res.send(result[0]);
       })
       .catch((err) => {
         res.status(500).send({ message: 'Error fetching user' });
@@ -447,31 +446,77 @@ profileRouter
         res.status(500).send({ message: 'Error updating user' });
       });
   })
-  .put('/:uid', (req: Request, res: Response) => {
-    db.query(
-      'UPDATE User SET username = ?, password = ?, email = ?, role = ?, activated = ? WHERE uid = ?',
-      [
-        req.body.username,
-        req.body.password,
-        req.body.email,
-        req.body.role,
-        req.body.activated,
-        req.params.uid,
-      ],
-    )
-      .then((result) => {
-        if (result.affectedRows === 0) {
-          res.status(404).send({ message: 'User not found' });
-          return;
-        }
-        res.send({ message: 'User updated' });
-      })
-      .catch((err) => {
-        res.status(500).send({ message: 'Error updating user' });
-      });
-  })
+  .put(
+    '/:uid',
+    upload.single('picture'),
+    requireAuthentication,
+    async (req: Request, res: Response) => {
+      const user: Partial<User> = JSON.parse(req.body.user);
+      const picture = req.file; // This is the uploaded file
+      await jwt
+        .getUserIdFromToken(req.header('Authorization').split(' ')[1])
+        .then((userId) => {
+          if (req.params.uid !== userId) {
+            return res.status(403).send({ message: 'Forbidden' });
+          }
+          const params = [];
 
-  .delete('/:id', (req: Request, res: Response) => {
+          const qb = new SqlQueryBuilder().update('User');
+          if (user.username) {
+            qb.set('username');
+            params.push(user.username);
+          }
+          if (user.password) {
+            qb.set('password');
+            params.push(user.password);
+          }
+          if (user.name) {
+            qb.set('name');
+            params.push(user.name);
+          }
+          if (user.email) {
+            qb.set('email');
+            params.push(user.email);
+          }
+          if (user.role) {
+            qb.set('role');
+            params.push(user.role);
+          }
+          if (user.activated) {
+            qb.set('activated');
+            params.push(user.activated);
+          }
+          if (picture) {
+            qb.set('picture');
+            params.push(picture.buffer);
+          }
+          if (params.length === 0) {
+            res.status(400).send({ message: 'No fields to update' });
+            return;
+          }
+
+          qb.where('uid');
+          params.push(req.params.uid);
+
+          db.query(qb.build(), params)
+            .then((result) => {
+              if (result.affectedRows === 0) {
+                res.status(404).send({ message: 'User not found' });
+                return;
+              }
+              res.send({ message: 'User updated' });
+            })
+            .catch((err) => {
+              res.status(500).send({ message: 'Error updating user' });
+            });
+        })
+        .catch((err) => {
+          res.status(500).send({ message: 'Error updating user' });
+        });
+    },
+  )
+
+  .delete('/:id',requireAuthentication, (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder().deleteFrom('User').where('uid');
 
     db.query(qb.build(), [req.params.username])
@@ -638,7 +683,7 @@ articleRouter
   })
   .post('/', (req: Request, res: Response) => {
     const id = generateId(idType.Article);
-    const article: Partial<Article> = req.body;
+    const article: Partial<Article> = JSON.parse(req.body.article);
     const image = req.file;
     
     const qb = new SqlQueryBuilder()
@@ -674,7 +719,7 @@ articleRouter
         res.status(500).send({ message: 'Error creating article' });
       });
   })
-  .put('/:id', (req: Request, res: Response) => {
+  .put('/:id', upload.single('media'), (req: Request, res: Response) => {
     const params = [];
     const article: Partial<Article> = JSON.parse(req.body.article);
     const image = req.file; //uploaded image
