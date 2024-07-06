@@ -46,6 +46,9 @@ export const appRoutes: Route[] = [
     children: [
       {
         path: '', loadComponent: () => import('./admin/admin.component').then(m => m.AdminComponent),
+      },
+      {
+        path: 'userVerwaltung', loadComponent: () => import('./components/userVerwaltung/userVerwaltung.component').then(m => m.UserVerwaltungComponent),
       }
     ]
   },

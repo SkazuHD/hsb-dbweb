@@ -43,6 +43,20 @@ export class AdminShellComponent implements AfterViewInit {
       isInToolbar: true,
       requiresAuth: false,
     },
+    {
+      label: 'Artikel/Event Verwaltung',
+      route: '/admin',
+      icon: 'code',
+      isInToolbar: true,
+      requiresAuth: false,
+    },
+    {
+      label: 'User Verwaltung',
+      route: '/admin/userVerwaltung',
+      icon: 'code',
+      isInToolbar: true,
+      requiresAuth: false,
+    },
   ];
 
   themeToggle = new FormControl(false);
