@@ -114,28 +114,4 @@
       </div>
     </ng-template>
   </mat-tab>
-
-  <mat-tab>
-    <ng-template mat-tab-label> Users</ng-template>
-    <ng-template matTabContent>
-      <div class="grid gap-3 p-3">
-        @for (user of users$ | async; track user) {
-          <mat-card>
-            <mat-card-content>
-              {{ user.username }}
-              {{ user.email }}
-            </mat-card-content>
-            <mat-card-actions>
-              <button mat-icon-button color="primary">
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button mat-icon-button color="warn">
-                <mat-icon> delete</mat-icon>
-              </button>
-            </mat-card-actions>
-          </mat-card>
-        }
-      </div>
-    </ng-template>
-  </mat-tab>
 </mat-tab-group>

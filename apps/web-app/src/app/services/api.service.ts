@@ -23,6 +23,7 @@ import {AuthService} from "./auth.service";
 interface apiServiceState {
   events: Event[];
   articles: Article[];
+  users: User[];
 }
 
 @Injectable({
@@ -37,15 +38,18 @@ export class ApiService {
   private state = signal<apiServiceState>({
     events: [],
     articles: [],
+    users: [],
   });
 
   // Sources
   private events$ = new BehaviorSubject<Event[]>([]);
   private articles$ = new BehaviorSubject<Article[]>([]);
+  private users$ = new BehaviorSubject<User[]>([]);
 
   // Selectors
   events = computed(() => this.state().events);
   articles = computed(() => this.state().articles.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+  users = computed(() => this.state().users);
 
 
   get SSEEvents$(): Observable<MessageEvent> {
@@ -145,6 +149,22 @@ export class ApiService {
             }))
           })
           break
+          case MessageEventType.USER:
+            if (data.action === MessageActionType.DELETE) {
+              this.state.update((state) => ({
+                ...state,
+                users: state.users.filter((e) => e.uid !== data.uid)
+              }))
+            } else {
+              this.getUserById(data.uid).pipe().subscribe((user) => {
+                this.state.update((state) => ({
+                  ...state,
+                  users: state.users.filter((e) => e.uid !== data.uid)
+                    .concat(user)
+                }))
+              })
+            }
+            break
       }
     })
   }
@@ -370,6 +390,47 @@ export class ApiService {
 
   deleteEvent(id: string) {
     return this.http.delete(this.apiURL + '/events/' + id);
+  }
+
+
+  getUser(): Observable<User[]> {
+    return this.http.get(this.apiURL + '/profile/').pipe() as Observable<
+      User[]
+    >;
+  }
+
+  deleteUser(id: string) {
+    return this.dialog
+      .open(ConfirmationDialogComponent, {
+        data: {
+          title: 'User Löschen',
+          message: 'Möchten Sie den User wirklich löschen?',
+          confirmText: 'Löschen',
+          cancelText: 'Abbrechen',
+        },
+      })
+      .afterClosed()
+      .pipe(
+        switchMap((result) => {
+          if (result) {
+            return this.http.delete(this.apiURL + '/profile/' + id);
+          } else {
+            return of();
+          }
+        }),
+      );
+  }
+
+  changeUserRole(id: string, role: string) {
+    return this.http.put(this.apiURL + '/profile/' + id + '/role', {
+      role: role,
+    });
+  }
+
+  changeUserActivation(id: string, active: boolean) {
+    return this.http.put(this.apiURL + '/profile/' + id + '/activate', {
+      activated: active,
+    });
   }
 
   getImageById(id: number | string) {

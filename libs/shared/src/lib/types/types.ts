@@ -120,6 +120,7 @@ export enum MessageEventType {
   COMMENT = 'comment',
   EVENT = 'event',
   GALLERY = 'gallery',
+  USER = 'user',
 }
 
 export enum UserRole {

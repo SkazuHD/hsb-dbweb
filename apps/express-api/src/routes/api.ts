@@ -292,12 +292,19 @@ authRouter
       }
 
       const hashedPassword = result[0].password;
-      const match = bcrypt.compare(req.body.password, hashedPassword);
+      const match = await bcrypt.compare(req.body.password, hashedPassword);
       if (!match) {
         res.status(401).send({message: 'Invalid username or password'});
         return;
       }
+    
+
       const user: Omit<User, 'password'> = {...result[0], password: null};
+      if(!user.activated){
+        res.status(401).send({message: 'You have been banned'});
+        return;
+      }
+
       const token = await jwt.createAccessToken({
         uid: user.uid,
         role: user.role,
@@ -469,7 +476,7 @@ profileRouter
         'name',
         'role',
         'activated',
-        'picture'
+        'imageUid'
       ])
       .from('User');
 
@@ -574,19 +581,75 @@ profileRouter
         });
     }
   )
-  .delete('/:id', requireAuthentication, (req: Request, res: Response) => {
-    const qb = new SqlQueryBuilder().deleteFrom('User').where('uid');
 
-    db.query(qb.build(), [req.params.username])
+
+  .put('/:uid/role', requireAuthorization(UserRole.ADMIN), (req: Request, res: Response) => {
+    const qb = new SqlQueryBuilder().update('User');
+    qb.set('role');
+    qb.where('uid');
+    db.query(qb.build(), [req.body.role, req.params.uid])
       .then((result) => {
         if (result.affectedRows === 0) {
-          res.status(404).send({message: 'User not found'});
+          res.status(404).send({ message: 'User not found' });
           return;
         }
-        res.send({message: 'User deleted'});
+        sendSSEEvent({
+          message: 'User role updated',
+          type: MessageEventType.USER,
+          action: MessageActionType.UPDATE,
+          uid: req.params.uid
+        })
+        res.send({ message: 'User updated' });
       })
       .catch((err) => {
-        res.status(500).send({message: 'Error deleting user'});
+        res.status(500).send({ message: 'Error updating user' });
+      });
+  })
+
+  .put('/:uid/activate', requireAuthorization(UserRole.ADMIN), (req: Request, res: Response) => {
+    console.log(req.body.uid);
+    console.log(req.body);
+    const qb = new SqlQueryBuilder().update('User');
+    qb.set('activated');
+    qb.where('uid');
+    db.query(qb.build(), [req.body.activated, req.params.uid])
+      .then((result) => {
+        if (result.affectedRows === 0) {
+          res.status(404).send({ message: 'User not found' });
+          return;
+        }
+        sendSSEEvent({
+          message: 'User Status updated',
+          type: MessageEventType.USER,
+          action: MessageActionType.UPDATE,
+          uid: req.params.uid
+        })
+        res.send({ message: 'User updated' });
+      })
+      .catch((err) => {
+        res.status(500).send({ message: 'Error updating user' });
+      });
+  })
+  .delete('/:uid',requireAuthentication, (req: Request, res: Response) => {
+    const qb = new SqlQueryBuilder().deleteFrom('User').where('uid');
+
+    console.log(req.body)
+    db.query(qb.build(), [req.params.uid])
+      .then((result) => {
+        if (result.affectedRows === 0) {
+          res.status(404).send({ message: 'User not found' });
+          return;
+        }
+        sendSSEEvent({
+          message: 'User Deleted',
+          type: MessageEventType.USER,
+          action: MessageActionType.UPDATE,
+          uid: req.params.uid
+        })
+        res.send({ message: 'User deleted' });
+      })
+      .catch((err) => {
+        res.status(500).send({ message: 'Error deleting user' });
       });
   });
 //Article routes
