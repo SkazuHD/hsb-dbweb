@@ -1,4 +1,4 @@
-import {Component, inject, signal} from '@angular/core';
+import {Component, computed, effect, inject, signal} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {MatDialogModule, MatDialogRef,} from '@angular/material/dialog';
 import {MatFormFieldModule} from '@angular/material/form-field';
@@ -39,7 +39,16 @@ export class AddPictureComponent {
 
   imageId = signal(undefined)
 
+
   isLoading = false;
+
+  constructor() {
+    effect(() => {
+      if(this.imageId()){
+        this.formGroup.get('picture')?.setValue("http://localhost:4201/api/images/" + this.imageId()) 
+        }
+    })
+  }
 
   onAdd() {
     if (this.formGroup?.invalid) {
@@ -47,20 +56,45 @@ export class AddPictureComponent {
       return;
     }
     this.isLoading = true;
-    const image: Image = {
-      url: this.formGroup.get('picture')?.value,
-      alt: this.formGroup.get('alt')?.value,
-    };
-    this.apiService.addPicture(image).subscribe({
-      next: (result) => {
-        if (result instanceof Error) {
-          this.isLoading = false;
-        } else {
+    if (this.imageId() === undefined){
+      const image: Image = {
+        url: this.formGroup.get('picture')?.value,
+        alt: this.formGroup.get('alt')?.value,
+      };
 
-          this.dialogRef.close();
-          this.isLoading = false;
-        }
-      },
-    });
+      this.apiService.addPicture(image).subscribe({
+        next: (result) => {
+          if (result instanceof Error) {
+            this.isLoading = false;
+          } else {
+  
+            this.dialogRef.close();
+            this.isLoading = false;
+          }
+        },
+      });
+    }
+    if (this.imageId() !== undefined){
+      
+      const image: Image = {
+        url: this.formGroup.get('picture')?.value,
+        alt: this.formGroup.get('alt')?.value,
+        imageUid: this.imageId(),
+      };
+      
+      
+
+      this.apiService.addPicture(image).subscribe({
+        next: (result) => {
+          if (result instanceof Error) {
+            this.isLoading = false;
+          } else {
+  
+            this.dialogRef.close();
+            this.isLoading = false;
+          }
+        },
+      });
+    }
   }
 }

@@ -27,13 +27,21 @@
             <mat-icon>close</mat-icon>
           </button>
           }
-          <img
+          @if (image.imageUid){
+            <img
+            [src]="'http://localhost:4201/api/images/' + image.imageUid"
+            [alt]="image.alt"
+            />
+          }@else{
+            <img
             class="w-full sm:w-2/3 md:w-3/4 lg:w-full h-auto rounded"
             [src]="image.url"
             [alt]="image.alt"
             
             priority
           />
+          }
+          
         </div>
       }
     </div>
