@@ -12,7 +12,8 @@ import {
   RefreshTokenPayload,
   User,
   UserRole,
-  UserScope
+  UserScope,
+  Image
 } from '@hsb-dbweb/shared';
 import {SqlQueryBuilder} from './SqlQueryBuilder';
 import bcrypt from 'bcrypt';
@@ -222,13 +223,31 @@ galleryRouter
     '/',
     requireAuthorization(UserRole.ADMIN),
     async (req: Request, res: Response) => {
-      if (!req.body.url || !req.body.alt) {
-        return res.status(400).json({error: 'missing Parameters'});
-      }
+      const params = [];
+      const columns = [];
+      const image: Partial<Image> = req.body;
       const qb = new SqlQueryBuilder()
-        .insertInto('Gallery', ['Url', 'Alt'])
-        .values(2);
-      db.query(qb.build(), [req.body.url, req.body.alt])
+      if (!image.alt && (!image.url || !image.imageUid)) {
+        res.status(400).send({message: 'Missing parameters'});
+        return;
+      }
+      
+      if(image.alt){
+        columns.push('alt');
+        params.push(image.alt);
+      }
+      if(image.url){
+        columns.push('url');
+        params.push(image.url);
+      }
+      if(image.imageUid){
+        columns.push('imageUid');
+        params.push(image.imageUid);
+      }
+      console.log(params)
+      qb.insertInto('Gallery', columns)
+        .values(params.length);  
+      db.query(qb.build(), params)
         .then((result) => {
           if (result.affectedRows === 0) {
             res.status(500).send({message: 'Error creating gallery item'});

@@ -3,6 +3,7 @@ import {JWTPayload} from 'jose';
 export type Image = {
   url: string;
   alt?: string;
+  imageUid?: number;
 };
 
 
