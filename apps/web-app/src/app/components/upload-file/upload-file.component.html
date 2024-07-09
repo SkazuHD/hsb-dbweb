@@ -1,13 +1,20 @@
 <div class="space-y-3">
   <form [formGroup]="fileUploadForm">
-
-    <input type="file" formControlName="fileName" (change)="onFileChange($event)" accept="image/*"/>
-    <button mat-raised-button color="primary" (click)="onUpload()">Upload</button>
-
+    <input
+      type="file"
+      formControlName="fileName"
+      (change)="onFileChange($event)"
+      accept="image/*"
+    />
+    <button mat-flat-button color="primary" (click)="onUpload()">Upload</button>
   </form>
   @if (showPreview() && previewUrl !== '') {
     <div class="max-w-64 max-h-64">
-      <img [src]="previewUrl" alt="preview" class="w-full h-full object-contain"/>
+      <img
+        [src]="previewUrl"
+        alt="preview"
+        class="w-full h-full object-contain"
+      />
     </div>
   }
 </div>
