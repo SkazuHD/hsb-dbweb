@@ -28,9 +28,7 @@ export class ArticleComponent {
 
   preview = input(false);
   previewArticle = input<Article | undefined>(undefined);
-
   uid = signal('');
-
   private api: ApiService = inject(ApiService);
   private auth: AuthService = inject(AuthService);
 
@@ -38,7 +36,6 @@ export class ArticleComponent {
     if (this.preview()) {
       return this.previewArticle();
     }
-
     if (this.api.articles()) {
       return this.api.articles()?.find((a) => a.uid === this.uid())
     } else {
@@ -46,11 +43,9 @@ export class ArticleComponent {
     }
 
   })
-  article2: Article | undefined = this.article();
   comments = signal(this.article()?.comments ?? []);
 
   commentMaxLength = 1000;
-
   commentForm: FormGroup = new FormGroup({
     comment: new FormControl('',
       [Validators.required,
@@ -72,7 +67,6 @@ export class ArticleComponent {
     });
 
     effect(() => {
-      this.article2 = this.article();
       if (this.preview())
         return;
       if (this.article()?.uid !== undefined)

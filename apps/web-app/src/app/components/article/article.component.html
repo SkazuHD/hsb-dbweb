@@ -1,4 +1,4 @@
-@if (article2) {
+@if (article()) {
   <article role="article" class="flex flex-col gap-3 justify-between">
     <div>
       <div class="grid gap-3 grid-cols-1 @4xl:grid-cols-2 items-end">
@@ -6,23 +6,23 @@
           <h2
             role="heading"
             class="text-3xl @md:text-4xl @lg:text-5xl @xl:text-6xl @2xl:text-7xl font-bold">
-            {{ article2.title }}
+            {{ article()!.title }}
           </h2>
-          @if (article2.subtitle) {
+          @if (article()!.subtitle) {
             <p
               class="text-xl @md:text-2xl @lg:text-3xl @xl:text-4xl @2xl:text-5xl font-semibold">
-              {{ article2.subtitle }}
+              {{ article()!.subtitle }}
             </p>
           }
           <div class="flex gap-3">
-            @if (article2.author) {
+            @if (article()!.author) {
               <address
                 class="text-md @md:text-lg @lg:text-xl @xl:text-2xl @2xl:text-3xl font-semibold text-gray-400"
               >
-                {{ article2.author }}
+                {{ article()!.author }}
               </address>
             }
-            @if (article2.author && article2.date) {
+            @if (article()!.author && article()!.date) {
               <span
                 class="text-md @md:text-lg @lg:text-xl @xl:text-2xl @2xl:text-3xl font-semibold text-gray-400"
                 aria-hidden="true"
@@ -30,12 +30,12 @@
               |
             </span>
             }
-            @if (article2.date) {
+            @if (article()!.date) {
               <time
                 class="text-md @md:text-lg @lg:text-xl @xl:text-2xl @2xl:text-3xl font-semibold text-gray-400"
-                [dateTime]="article2.date"
+                [dateTime]="article()!.date"
               >
-                {{ article2.date| date: 'longDate' }}
+                {{ article()!.date| date: 'longDate' }}
               </time>
             }
           </div>
@@ -46,7 +46,7 @@
               role="img"
               class="rounded w-full @md:h-auto"
               [src]="imageUrl()"
-              [alt]="article2.image?.alt ?? article2.title"
+              [alt]="article()!.title"
               width="1280"
               height="720"
             />
@@ -57,12 +57,12 @@
         </div>
       </div>
       @if (!preview()) {
-        <app-like-counter [(isLiked)]="article2.liked" [likes]="article2.likes ?? 0" (click)="onLike()">
+        <app-like-counter [(isLiked)]="article()!.liked" [likes]="article()!.likes ?? 0" (click)="onLike()">
         </app-like-counter>
       }
 
 
-      <div class="mt-8" [innerHTML]="article2.content | markdown"></div>
+      <div class="mt-8" [innerHTML]="article()!.content | markdown"></div>
       @if (!preview()) {
         <div>
           <h3 class="font-bold text-xl pb-1">{{ comments().length }} Comments</h3>

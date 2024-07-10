@@ -1,44 +1,40 @@
-<mat-card class="@container/newsfeed p-2 !rounded-lg">
-  <div class="@lg:grid grid-rows-3 grid-flow-col gap-2">
-    <div class="row-span-3 order-last">
-      @if (article().image?.url) {
-        <img
-          class="w-full xs:w-52 rounded-[10px] xs:ml-auto"
-          [src]="article().image?.url"
-          [alt]="article().image?.alt"
-        />
-      }
-      @if (imageUrl()) {
-        <img
-          class="w-full xs:w-52 rounded-[10px] xs:ml-auto"
-          [src]="imageUrl()"
-          [alt]="article().image?.alt"/>
-      }
+@if (article()) {
 
-    </div>
-    <div class="row-span-2 col-span-2">
-      <mat-card-header>
-        <h3 class="text-lg font-bold mr-4">{{ article().title }}</h3>
-        @if (article().author) {
-          <p class="text-sm font-thin">
-            {{ 'von ' + article().author }}
-          </p>
+
+  <mat-card class="@container/newsfeed p-2 !rounded-lg">
+    <div class="@lg:grid grid-rows-3 grid-flow-col gap-2">
+      <div class="row-span-3 order-last">
+        @if (imageUrl()) {
+          <img
+            class="w-full xs:w-52 rounded-[10px] xs:ml-auto"
+            [src]="imageUrl()"
+            [alt]="article().title"/>
         }
-      </mat-card-header>
-      <mat-card-content>
-        <p class="line-clamp-4" [innerHTML]="article().content | markdown"></p>
-      </mat-card-content>
+      </div>
+      <div class="row-span-2 col-span-2">
+        <mat-card-header>
+          <h3 class="text-lg font-bold mr-4">{{ article().title }}</h3>
+          @if (article().author) {
+            <p class="text-sm font-thin">
+              {{ 'von ' + article().author }}
+            </p>
+          }
+        </mat-card-header>
+        <mat-card-content>
+          <p class="line-clamp-4" [innerHTML]="article().content | markdown"></p>
+        </mat-card-content>
+      </div>
+      <div class="col-span-2 justify-self-left">
+        <mat-card-actions>
+          <button
+            mat-flat-button
+            color="accent"
+            routerLink="/articles/{{ article().uid }}"
+          >
+            Weiterlesen
+          </button>
+        </mat-card-actions>
+      </div>
     </div>
-    <div class="col-span-2 justify-self-left">
-      <mat-card-actions>
-        <button
-          mat-flat-button
-          color="accent"
-          routerLink="/articles/{{ article().uid }}"
-        >
-          Weiterlesen
-        </button>
-      </mat-card-actions>
-    </div>
-  </div>
-</mat-card>
+  </mat-card>
+}
