@@ -46,7 +46,7 @@ export class MetatagService {
       },
       {
         name: "og:image",
-        content: article?.image?.url ?? "",
+        content: article.imageUid?.toString() ?? "",
       },
       {
         name: "og:url",
