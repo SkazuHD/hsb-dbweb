@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "serve": "nx run-many -t serve -p express-api web-app",
+    "serve": "npx nx run-many -t serve -p express-api web-app",
     "build": "nx run-many -t build -p express-api web-app",
     "test": "nx run-many -t test -p express-api web-app",
     "lint": "nx run-many -t lint -p express-api web-app",
