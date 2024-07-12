@@ -66,15 +66,12 @@ export class LoginComponent {
 
     this.authService.signInWithEmail$(credentials).subscribe({
       next: (result) => {
-        if (result instanceof Error) {
-          this.isLoading = false;
-        } else if (!result) {
-          this.notificationService.error('Invalid Credentials');
-          this.isLoading = false;
-        } else {
-          this.dialogRef.close();
-          this.isLoading = false;
-        }
+        this.dialogRef.close();
+        this.isLoading = false;
+      },
+      error: (error) => {
+        this.notificationService.error('Invalid Credentials');
+        this.isLoading = false;
       }
     });
   }

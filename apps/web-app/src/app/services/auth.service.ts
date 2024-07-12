@@ -1,11 +1,11 @@
-import {computed, inject, Injectable, signal} from '@angular/core';
-import {MatDialog} from '@angular/material/dialog';
-import {BehaviorSubject, exhaustMap, map, Observable, of, tap} from 'rxjs';
-import {NotificationService} from './notification.service';
-import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
-import {HttpClient} from '@angular/common/http';
-import {AccessTokenPayload, registerCredential, User} from '@hsb-dbweb/shared';
-import {Error} from "@firebase/auth-types";
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { BehaviorSubject, exhaustMap, map, Observable, of, tap } from 'rxjs';
+import { NotificationService } from './notification.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { HttpClient } from '@angular/common/http';
+import { AccessTokenPayload, registerCredential, User } from '@hsb-dbweb/shared';
+import { Error } from '@firebase/auth-types';
 
 export type AuthUser = User | null | undefined;
 export type AuthIdToken = string | null | undefined;
@@ -25,24 +25,24 @@ export type Credentials = {
 };
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class AuthService {
-  user$ = new BehaviorSubject<AuthUser>(null)
-  accessToken$ = new BehaviorSubject<AuthAccessToken>(null)
+  user$ = new BehaviorSubject<AuthUser>(null);
+  accessToken$ = new BehaviorSubject<AuthAccessToken>(null);
   //Sources
   private dialog = inject(MatDialog);
   private notificationService: NotificationService =
     inject(NotificationService);
   private http = inject(HttpClient);
-  private idToken$ = new BehaviorSubject<AuthIdToken>(null)
-  private refreshToken$ = new BehaviorSubject<AuthRefreshToken>(null)
+  private idToken$ = new BehaviorSubject<AuthIdToken>(null);
+  private refreshToken$ = new BehaviorSubject<AuthRefreshToken>(null);
   //State
   private state = signal<AuthState>({
     user: undefined,
     idToken: undefined,
     accessToken: undefined,
-    refreshToken: undefined,
+    refreshToken: undefined
   });
   //Selectors
   user = computed(() => this.state().user);
@@ -58,7 +58,7 @@ export class AuthService {
     this.user$.pipe(takeUntilDestroyed()).subscribe((user) => {
       return this.state.update((state) => ({
         ...state,
-        user,
+        user
       }));
     });
     this.idToken$.pipe(takeUntilDestroyed()).subscribe((idToken) => {
@@ -66,10 +66,10 @@ export class AuthService {
         if (this.isTokenExpired(idToken, 60)) {
           this.refreshTokens().subscribe();
         }
-      }, this.getTokenExpirationTime(idToken).getTime() - new Date().getTime() - 60000)
+      }, this.getTokenExpirationTime(idToken).getTime() - new Date().getTime() - 60000);
       return this.state.update((state) => ({
         ...state,
-        idToken,
+        idToken
       }));
     });
     this.accessToken$.pipe(takeUntilDestroyed()).subscribe((accessToken) => {
@@ -77,10 +77,10 @@ export class AuthService {
         if (this.isTokenExpired(accessToken, 60)) {
           this.refreshTokens().subscribe();
         }
-      }, this.getTokenExpirationTime(accessToken).getTime() - new Date().getTime() - 60000)
+      }, this.getTokenExpirationTime(accessToken).getTime() - new Date().getTime() - 60000);
       return this.state.update((state) => ({
         ...state,
-        accessToken,
+        accessToken
       }));
     });
     this.refreshToken$.pipe(takeUntilDestroyed()).subscribe((refreshToken) => {
@@ -89,40 +89,40 @@ export class AuthService {
         if (this.isTokenExpired(refreshToken, 60)) {
           this.refreshTokens().subscribe();
         }
-      }, this.getTokenExpirationTime(refreshToken).getTime() - new Date().getTime() - 60000)
+      }, this.getTokenExpirationTime(refreshToken).getTime() - new Date().getTime() - 60000);
 
       return this.state.update((state) => ({
         ...state,
-        refreshToken,
+        refreshToken
       }));
     });
   }
 
   async requestLoginDialog() {
-    const {LoginComponent} = await import(
+    const { LoginComponent } = await import(
       '../components/dialog/login/login.component'
       );
     return this.dialog.open(LoginComponent, {
-      autoFocus: 'input',
+      autoFocus: 'input'
     });
   }
 
   async requestRegisterDialog() {
-    const {RegisterComponent} = await import(
+    const { RegisterComponent } = await import(
       '../components/dialog/register/register.component'
       );
     return this.dialog.open(RegisterComponent, {
-      autoFocus: 'input',
+      autoFocus: 'input'
     });
   }
 
   async requestPasswordReset() {
-    const {ResetPasswordComponent} = await import(
+    const { ResetPasswordComponent } = await import(
       '../components/dialog/reset-password/reset-password.component'
       );
     return this.dialog
       .open(ResetPasswordComponent, {
-        autoFocus: 'input',
+        autoFocus: 'input'
       })
       .afterClosed()
       .subscribe((email) => {
@@ -139,37 +139,33 @@ export class AuthService {
     return new Observable();
   }
 
-  signInWithEmail$(credentials: Credentials): Observable<AuthUser | Error> {
-    //TODO ERROR HANDLING
+  signInWithEmail$(credentials: Credentials): Observable<AuthUser> {
     return this.http.post<AuthState & { message: string }>(this.apiURL + '/auth' + '/login', {
         email: credentials.email,
-        password: credentials.password,
-
+        password: credentials.password
       }, {
-        withCredentials: true,
+        withCredentials: true
       }
     ).pipe(tap((res) => {
-      this.handleAuthStateChange(res)
-
+      this.handleAuthStateChange(res);
     }), map((res) => res.user));
   }
 
   signUpWithEmail$(
-    credentials: registerCredential,
-  ): Observable<AuthUser | Error> {
-    //TODO ERROR HANDLING
+    credentials: registerCredential
+  ): Observable<AuthUser> {
     return this.http.post<AuthState & { message: string }>(
       this.apiURL + '/auth' + '/register',
       {
         username: credentials.username,
         password: credentials.password,
-        email: credentials.email,
+        email: credentials.email
       },
       {
-        withCredentials: true,
+        withCredentials: true
       }
     ).pipe(tap((res) => {
-      this.handleAuthStateChange(res)
+      this.handleAuthStateChange(res);
 
     }), map((res) => res.user));
   }
@@ -180,9 +176,9 @@ export class AuthService {
       idToken: null,
       accessToken: null,
       refreshToken: null,
-      message: 'Logged out successfully',
-    }
-    this.handleAuthStateChange(authState)
+      message: 'Logged out successfully'
+    };
+    this.handleAuthStateChange(authState);
   }
 
   isTokenExpired(token: AuthAccessToken | AuthRefreshToken | AuthIdToken, offsetSeconds = 0): boolean {
@@ -209,15 +205,15 @@ export class AuthService {
         return this.http.post<AuthState & { message: string }>(
           this.apiURL + '/auth' + '/refresh',
           {
-            refreshToken: refreshToken,
+            refreshToken: refreshToken
           },
           {
-            withCredentials: true,
+            withCredentials: true
           }
-        )
+        );
       }),
       tap((res) => {
-        this.handleAuthStateChange(res)
+        this.handleAuthStateChange(res);
       }),
       map((res) => res.user)
     );
@@ -225,10 +221,10 @@ export class AuthService {
 
   getRoleClaims(token: AuthAccessToken): string {
 
-    const tokenParts = token?.split('.') || []
+    const tokenParts = token?.split('.') || [];
     if (tokenParts.length < 2) [];
     const tokenDecoded: AccessTokenPayload = JSON.parse(atob(tokenParts[1]));
-    return tokenDecoded.role || ''
+    return tokenDecoded.role || '';
 
   }
 
