@@ -5,12 +5,12 @@
         <div>
           <h2
             role="heading"
-            class="text-3xl @md:text-4xl @lg:text-5xl @xl:text-6xl @2xl:text-7xl font-bold">
+            class="text-3xl @md:text-4xl @lg:text-5xl @xl:text-6xl @2xl:text-7xl font-bold mb-2">
             {{ article()!.title }}
           </h2>
           @if (article()!.subtitle) {
             <p
-              class="text-xl @md:text-2xl @lg:text-3xl @xl:text-4xl @2xl:text-5xl font-semibold">
+              class="text-xl @md:text-2xl @lg:text-3xl @xl:text-4xl @2xl:text-5xl font-thin">
               {{ article()!.subtitle }}
             </p>
           }
@@ -61,50 +61,52 @@
         </app-like-counter>
       }
 
-
-      <div class="mt-8" [innerHTML]="article()!.content | markdown"></div>
-      @if (!preview()) {
-        <div>
-          <h3 class="font-bold text-xl pb-1">{{ comments().length }} Comments</h3>
-          <form [formGroup]="commentForm">
-            <mat-form-field class="w-full pb-3">
-              <mat-label>Comment</mat-label>
-              <textarea formControlName="comment" matInput placeholder="Add a comment" #commentField
-                        cdkTextareaAutosize
-                        #autosize="cdkTextareaAutosize"
-                        cdkAutosizeMinRows="1"
-                        cdkAutosizeMaxRows="5"
-              ></textarea>
-              <mat-hint align="end">
-                <span>{{ commentField.textLength }}/{{ commentMaxLength }}</span>
-              </mat-hint>
-            </mat-form-field>
-            @if (commentForm.touched && commentField.value !== '') {
-              @if (commentForm.get('comment')?.hasError('required')) {
-                <mat-error>Comment is required</mat-error>
-              } @else if (commentForm.get('comment')?.hasError('minlength')) {
-                <mat-error>Comment must be at least 3 characters</mat-error>
-              } @else if (commentForm.get('comment')?.hasError('maxlength')) {
-                <mat-error>Comment must be at most 500 characters</mat-error>
+      <div class="w-full grid lg:grid-cols-2 gap-3">
+        <div class="mt-8 mx-auto" [innerHTML]="article()!.content | markdown"></div>
+        @if (!preview()) {
+          <div class="mt-12">
+            <h3 class="font-bold text-xl pb-1">{{ comments().length }} Comments</h3>
+            <form [formGroup]="commentForm">
+              <mat-form-field class="w-full pb-3">
+                <mat-label>Comment</mat-label>
+                <textarea formControlName="comment" matInput placeholder="Add a comment" #commentField
+                          cdkTextareaAutosize
+                          #autosize="cdkTextareaAutosize"
+                          cdkAutosizeMinRows="1"
+                          cdkAutosizeMaxRows="5"
+                ></textarea>
+                <mat-hint align="end">
+                  <span>{{ commentField.textLength }}/{{ commentMaxLength }}</span>
+                </mat-hint>
+              </mat-form-field>
+              @if (commentForm.touched && commentField.value !== '') {
+                @if (commentForm.get('comment')?.hasError('required')) {
+                  <mat-error>Comment is required</mat-error>
+                } @else if (commentForm.get('comment')?.hasError('minlength')) {
+                  <mat-error>Comment must be at least 3 characters</mat-error>
+                } @else if (commentForm.get('comment')?.hasError('maxlength')) {
+                  <mat-error>Comment must be at most 500 characters</mat-error>
+                }
               }
-            }
 
-            @if (commentField.value !== '') {
-              <div class="flex gap-3 justify-end pb-3">
-                <button mat-button color="error" type="button" (click)="commentForm.reset()">Clear</button>
-                <button mat-flat-button color="primary" type="submit" (click)="onAddComment()">Submit</button>
-              </div>
-            }
-          </form>
+              @if (commentField.value !== '') {
+                <div class="flex gap-3 justify-end pb-3">
+                  <button mat-button color="error" type="button" (click)="commentForm.reset()">Clear</button>
+                  <button mat-flat-button color="primary" type="submit" (click)="onAddComment()">Submit</button>
+                </div>
+              }
+            </form>
 
-          <div class="flex flex-col space-y-6">
-            @for (comment of comments(); track comment.uid) {
-              <app-single-comment [comment]="comment"
-                                  (commentChange)="onCommentChange($event)"></app-single-comment>
-            }
+            <div class="flex flex-col space-y-6">
+              @for (comment of comments(); track comment.uid) {
+                <app-single-comment [comment]="comment"
+                                    (commentChange)="onCommentChange($event)"></app-single-comment>
+              }
+            </div>
           </div>
-        </div>
-      }
+        }
+      </div>
+
     </div>
   </article>
 } @else {
