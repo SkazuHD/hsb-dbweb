@@ -18,6 +18,7 @@ import {
 import {MatDialog} from '@angular/material/dialog';
 import {ConfirmationDialogComponent} from '../components/dialog/confirmation/confirmationDialog.component';
 import {AuthService} from "./auth.service";
+import {NotificationService} from "./notification.service";
 
 
 interface apiServiceState {
@@ -32,6 +33,7 @@ interface apiServiceState {
 export class ApiService {
   private http: HttpClient = inject(HttpClient);
   private dialog = inject(MatDialog);
+  private notificationService = inject(NotificationService);
   private auth = inject(AuthService);
   private apiURL = 'http://localhost:4201/api';
 
@@ -74,6 +76,10 @@ export class ApiService {
       this.articles$.next(articles);
     });
 
+    this.getUser().pipe(takeUntilDestroyed()).subscribe((users) => {
+      this.users$.next(users);
+    })
+
     this.events$.pipe(takeUntilDestroyed()).subscribe((events) => {
       this.state.update((state) => ({
         ...state,
@@ -96,7 +102,12 @@ export class ApiService {
         ...state,
         articles
       }))
-
+    })
+    this.users$.pipe(takeUntilDestroyed()).subscribe((users) => {
+      this.state.update((state) => ({
+        ...state,
+        users
+      }))
     })
     this.SSEEvents$.pipe(takeUntilDestroyed()).subscribe((event) => {
       const data: MessageEventData = JSON.parse(event.data);
@@ -149,22 +160,22 @@ export class ApiService {
             }))
           })
           break
-          case MessageEventType.USER:
-            if (data.action === MessageActionType.DELETE) {
+        case MessageEventType.USER:
+          if (data.action === MessageActionType.DELETE) {
+            this.state.update((state) => ({
+              ...state,
+              users: state.users.filter((e) => e.uid !== data.uid)
+            }))
+          } else {
+            this.getUserById(data.uid).pipe().subscribe((user) => {
               this.state.update((state) => ({
                 ...state,
                 users: state.users.filter((e) => e.uid !== data.uid)
+                  .concat(user)
               }))
-            } else {
-              this.getUserById(data.uid).pipe().subscribe((user) => {
-                this.state.update((state) => ({
-                  ...state,
-                  users: state.users.filter((e) => e.uid !== data.uid)
-                    .concat(user)
-                }))
-              })
-            }
-            break
+            })
+          }
+          break
       }
     })
   }
@@ -415,6 +426,7 @@ export class ApiService {
           if (result) {
             return this.http.delete(this.apiURL + '/profile/' + id);
           } else {
+            this.notificationService.error('No changes made');
             return of();
           }
         }),

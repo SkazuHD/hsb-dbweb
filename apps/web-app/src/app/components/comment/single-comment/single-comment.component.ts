@@ -21,13 +21,12 @@ export class SingleCommentComponent {
     return this.comment()?.ImageUid ? `http://localhost:4201/api/images/${this.comment()?.ImageUid}` : 'http://placeholder.co/150';
 
   })
+  profileRoute = computed(() => {
+    return `/profile/${this.comment()?.userUid}`;
+  })
   protected auth: AuthService = inject(AuthService);
   protected api: ApiService = inject(ApiService);
 
-
-  getProfileRoute() {
-    return `/profiles/${this.comment()?.userUid}`;
-  }
 
   onDelete() {
     if (!this.canDelete()) return;

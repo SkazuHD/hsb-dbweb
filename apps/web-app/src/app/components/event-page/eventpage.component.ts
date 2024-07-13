@@ -22,7 +22,7 @@ export class EventpageComponent {
         return event
       }).sort((a, b) => a.date.getTime() - b.date.getTime())
   });
-  upcomingEvents = computed(() => this.getUpcomingEvents(3));
+  upcomingEvents = computed(() => this.getUpcomingEvents(5));
   selectedEvent: WritableSignal<Event | undefined> = signal(undefined);
   private api = inject(ApiService)
 

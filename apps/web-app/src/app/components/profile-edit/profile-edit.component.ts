@@ -11,6 +11,7 @@ import {ApiService} from '../../services/api.service';
 import {AuthService} from "../../services/auth.service";
 import {ImageLoad} from '../../utils/image-load';
 import {UploadFileComponent} from "../upload-file/upload-file.component";
+import {MatButton} from "@angular/material/button";
 
 
 @Component({
@@ -24,7 +25,7 @@ import {UploadFileComponent} from "../upload-file/upload-file.component";
     ReactiveFormsModule,
     MatFormFieldModule,
     MatFormField,
-    MatInputModule, UploadFileComponent
+    MatInputModule, UploadFileComponent, MatButton
 
   ],
   templateUrl: './profile-edit.component.html',

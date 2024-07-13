@@ -55,7 +55,7 @@ export class ArticleComponent {
   });
 
   imageUrl = computed(() => {
-    if (this.article()?.imageUid !== undefined)
+    if (this.article()?.imageUid)
       return "http://localhost:4201/api/images/" + this.article()?.imageUid;
     return undefined;
   })

@@ -60,6 +60,15 @@ body {
     background: mat.get-theme-color($light-theme, surface-container-high) !important;
   }
 
+  mat-card {
+    background: mat.get-theme-color($light-theme, surface-container-lowest) !important;
+
+    mat-card {
+      background: mat.get-theme-color($light-theme, surface-container-low) !important;
+    }
+  }
+
+
   footer {
     background: mat.get-theme-color($light-theme, surface-container-high) !important;
     color: mat.get-theme-color($light-theme, on-surface) !important;
@@ -104,6 +113,14 @@ body.dark {
 
   mat-sidenav {
     background: mat.get-theme-color($dark-theme, surface-container-high) !important;
+  }
+
+  mat-card {
+    background: mat.get-theme-color($dark-theme, surface-container-lowest) !important;
+
+    mat-card {
+      background: mat.get-theme-color($dark-theme, surface-container-low) !important;
+    }
   }
 
   footer {
