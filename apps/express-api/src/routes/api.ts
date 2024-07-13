@@ -5,6 +5,7 @@ import {
   AccessTokenPayload,
   Article,
   Event,
+  Image,
   JWTScope,
   MessageActionType,
   MessageEventData,
@@ -12,8 +13,7 @@ import {
   RefreshTokenPayload,
   User,
   UserRole,
-  UserScope,
-  Image
+  UserScope
 } from '@hsb-dbweb/shared';
 import {SqlQueryBuilder} from './SqlQueryBuilder';
 import bcrypt from 'bcrypt';
@@ -124,8 +124,6 @@ const requestLogger = (req: Request, res: Response, next: NextFunction) => {
 };
 
 function sendSSEEvent(data: MessageEventData) {
-
-  console.debug('Sending SSE event to ' + sseConnections.length + ' connections')
   sseConnections.forEach((sseRes) => {
     sseRes.sseConnection.send(data);
   });
@@ -231,22 +229,21 @@ galleryRouter
         res.status(400).send({message: 'Missing parameters'});
         return;
       }
-      
-      if(image.alt){
+
+      if (image.alt) {
         columns.push('alt');
         params.push(image.alt);
       }
-      if(image.url){
+      if (image.url) {
         columns.push('url');
         params.push(image.url);
       }
-      if(image.imageUid){
+      if (image.imageUid) {
         columns.push('imageUid');
         params.push(image.imageUid);
       }
-      console.log(params)
       qb.insertInto('Gallery', columns)
-        .values(params.length);  
+        .values(params.length);
       db.query(qb.build(), params)
         .then((result) => {
           if (result.affectedRows === 0) {
@@ -297,10 +294,10 @@ authRouter
         res.status(401).send({message: 'Invalid username or password'});
         return;
       }
-    
+
 
       const user: Omit<User, 'password'> = {...result[0], password: null};
-      if(!user.activated){
+      if (!user.activated) {
         res.status(401).send({message: 'You have been banned'});
         return;
       }
@@ -407,6 +404,13 @@ authRouter
           refreshToken,
           user
         });
+        sendSSEEvent({
+          message: 'User updated',
+          type: MessageEventType.USER,
+          action: MessageActionType.UPDATE,
+          uid: user.uid
+        })
+
       })
       .catch((err) => {
         res.status(500).send({message: 'Error creating user'});
@@ -571,6 +575,12 @@ profileRouter
                 return;
               }
               res.send({message: 'User updated'});
+              sendSSEEvent({
+                message: 'User updated',
+                type: MessageEventType.USER,
+                action: MessageActionType.UPDATE,
+                uid: req.params.uid
+              })
             })
             .catch((err) => {
               res.status(500).send({message: 'Error updating user'});
@@ -590,7 +600,7 @@ profileRouter
     db.query(qb.build(), [req.body.role, req.params.uid])
       .then((result) => {
         if (result.affectedRows === 0) {
-          res.status(404).send({ message: 'User not found' });
+          res.status(404).send({message: 'User not found'});
           return;
         }
         sendSSEEvent({
@@ -599,23 +609,21 @@ profileRouter
           action: MessageActionType.UPDATE,
           uid: req.params.uid
         })
-        res.send({ message: 'User updated' });
+        res.send({message: 'User updated'});
       })
       .catch((err) => {
-        res.status(500).send({ message: 'Error updating user' });
+        res.status(500).send({message: 'Error updating user'});
       });
   })
 
   .put('/:uid/activate', requireAuthorization(UserRole.ADMIN), (req: Request, res: Response) => {
-    console.log(req.body.uid);
-    console.log(req.body);
     const qb = new SqlQueryBuilder().update('User');
     qb.set('activated');
     qb.where('uid');
     db.query(qb.build(), [req.body.activated, req.params.uid])
       .then((result) => {
         if (result.affectedRows === 0) {
-          res.status(404).send({ message: 'User not found' });
+          res.status(404).send({message: 'User not found'});
           return;
         }
         sendSSEEvent({
@@ -624,32 +632,30 @@ profileRouter
           action: MessageActionType.UPDATE,
           uid: req.params.uid
         })
-        res.send({ message: 'User updated' });
+        res.send({message: 'User updated'});
       })
       .catch((err) => {
-        res.status(500).send({ message: 'Error updating user' });
+        res.status(500).send({message: 'Error updating user'});
       });
   })
-  .delete('/:uid',requireAuthentication, (req: Request, res: Response) => {
+  .delete('/:uid', requireAuthentication, (req: Request, res: Response) => {
     const qb = new SqlQueryBuilder().deleteFrom('User').where('uid');
-
-    console.log(req.body)
     db.query(qb.build(), [req.params.uid])
       .then((result) => {
         if (result.affectedRows === 0) {
-          res.status(404).send({ message: 'User not found' });
+          res.status(404).send({message: 'User not found'});
           return;
         }
         sendSSEEvent({
           message: 'User Deleted',
           type: MessageEventType.USER,
-          action: MessageActionType.UPDATE,
+          action: MessageActionType.DELETE,
           uid: req.params.uid
         })
-        res.send({ message: 'User deleted' });
+        res.send({message: 'User deleted'});
       })
       .catch((err) => {
-        res.status(500).send({ message: 'Error deleting user' });
+        res.status(500).send({message: 'Error deleting user'});
       });
   });
 //Article routes

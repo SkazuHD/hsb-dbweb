@@ -5,7 +5,7 @@
       <mat-card-subtitle>
         <span class="flex items-center gap-2">
           <button class="hover:underline hover:text-blue-500"
-                  [routerLink]=[getProfileRoute()]>{{ comment()?.username }}
+                  [routerLink]=[profileRoute()]>{{ comment()?.username }}
           </button>
           <span> | </span>
           {{ comment()?.timestamp | date: 'dd.MM.YYYY HH:mm' }}</span>

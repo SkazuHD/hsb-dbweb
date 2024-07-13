@@ -51,8 +51,6 @@ export class EditEventComponent {
       date: date,
       ...this.editEventForm.value
     };
-    console.debug('Before update:', this.event)
-    console.debug('Updated event:', updatedEvent)
     this.dialog.close(updatedEvent);
   }
 }

@@ -59,7 +59,6 @@ export class FirebaseAuthService {
   constructor() {
     // Side effects
     this.user$.pipe(takeUntilDestroyed()).subscribe((user) => {
-      console.debug('User', user);
       return this.state.update((state) => ({
         ...state,
         user,
