@@ -10,8 +10,8 @@
 
 ## Test User Accounts
 
-- Admin: `E-Mail: xyz@xyz | Passwort: 12341234`
-- User: Register a new account or `E-Mail: xyz@xyz2 | Passwort: 12341234`
+- Admin: `E-Mail: admin@123 | Passwort: admin123`
+- User: Register a new account or `E-Mail: test@user | Passwort: test1234`
 
 <a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
 
