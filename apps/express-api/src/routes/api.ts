@@ -639,24 +639,36 @@ profileRouter
       });
   })
   .delete('/:uid', requireAuthentication, (req: Request, res: Response) => {
-    const qb = new SqlQueryBuilder().deleteFrom('User').where('uid');
-    db.query(qb.build(), [req.params.uid])
-      .then((result) => {
-        if (result.affectedRows === 0) {
-          res.status(404).send({message: 'User not found'});
-          return;
-        }
-        sendSSEEvent({
-          message: 'User Deleted',
-          type: MessageEventType.USER,
-          action: MessageActionType.DELETE,
-          uid: req.params.uid
-        })
-        res.send({message: 'User deleted'});
-      })
-      .catch((err) => {
+    const qb1 = new SqlQueryBuilder()
+      .deleteFrom('User_article')
+      .where('userUid');
+    const qb2 = new SqlQueryBuilder().update('Comment').set('userUid').where('userUid');
+    db.query(qb2.build(), ['0', req.params.uid,]).then((result) => {
+      db.query(qb1.build(), [req.params.uid]).then((result) => {
+        const qb = new SqlQueryBuilder().deleteFrom('User').where('uid');
+        db.query(qb.build(), [req.params.uid])
+          .then((result) => {
+            if (result.affectedRows === 0) {
+              res.status(404).send({message: 'User not found'});
+              return;
+            }
+            sendSSEEvent({
+              message: 'User Deleted',
+              type: MessageEventType.USER,
+              action: MessageActionType.DELETE,
+              uid: req.params.uid
+            })
+            res.send({message: 'User deleted'});
+          })
+          .catch((err) => {
+            res.status(500).send({message: 'Error deleting user'});
+          });
+      }).catch((err) => {
         res.status(500).send({message: 'Error deleting user'});
       });
+    }).catch((err) => {
+      res.status(500).send({message: 'Error deleting user'});
+    });
   });
 //Article routes
 articleRouter
