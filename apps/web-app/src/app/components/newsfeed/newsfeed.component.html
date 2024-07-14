@@ -13,12 +13,28 @@
       </div>
       <div class="row-span-2 col-span-2">
         <mat-card-header>
-          <h3 class="text-lg font-bold mr-4">{{ article().title }}</h3>
-          @if (article().author) {
-            <p class="text-sm font-thin">
-              {{ 'von ' + article().author }}
-            </p>
-          }
+          <div>
+            <div>
+              <h3 class="text-lg font-bold mr-4">{{ article().title }}</h3>
+            </div>
+            <div>
+
+              @if (article().author) {
+                <span class="text-sm font-thin">
+              {{ 'von ' + article().author + ' ' }}
+            </span>
+              }
+              <span>| </span>
+              @if (article()!.date) {
+                <time
+                  class="text-sm font-thin"
+                  [dateTime]="article()!.date"
+                >
+                  {{ article()!.date| date: 'longDate' }}
+                </time>
+              }
+            </div>
+          </div>
         </mat-card-header>
         <mat-card-content>
           <p class="line-clamp-4" [innerHTML]="article().content | markdown"></p>

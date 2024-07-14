@@ -37,7 +37,7 @@ class Database {
     } catch (err) {
       console.error(`Error executing query: ${err}`);
     } finally {
-      if (conn) conn.release();
+      if (conn) await conn.release();
     }
   }
 }
